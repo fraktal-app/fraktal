@@ -1,0 +1,26 @@
+{
+    "canisters": {
+        "fraktal-main": {
+            "type": "azle",
+            "main": "src/backend/index.ts",
+            "custom": {
+                "experimental": true,
+                "assets": [
+                    [
+                        "src/frontend/dist",
+                        "dist"
+                    ]
+                ],
+                "build_assets": "npm run build"
+            }
+        },
+        
+        "database": {
+            "type": "azle",
+            "main": "src/database/index.ts",
+            "custom": {
+                "experimental": true
+            }
+        }
+    }
+}
