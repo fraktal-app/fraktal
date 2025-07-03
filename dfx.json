@@ -21,6 +21,14 @@
             "custom": {
                 "experimental": true
             }
+        },
+
+        "trigger-engine": {
+            "type": "azle",
+            "main": "src/trigger-engine/index.ts",
+            "custom": {
+                "experimental": true
+            }
         }
     }
 }
