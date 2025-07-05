@@ -24,16 +24,23 @@ let stableDbMap = new StableBTreeMap<'DATABASE', Uint8Array>(0, stableJson, {
 
 export default Server(initServer, {
     init: init([], async () => {
+        //Initializing Empty DB
         db = await initDb();
     }),
     preUpgrade: preUpgrade(() => {
-        stableDbMap.insert('DATABASE', db.export());
+        //Save DB in stable memory before upgrade
+        if(db){
+            stableDbMap.insert('DATABASE', db.export());
+        }
     }),
     postUpgrade: postUpgrade([], async () => {
+        //Get saved DB post upgrade and initialize DB from saved memory
         const database = stableDbMap.get('DATABASE');
+
         if (database === null) {
             throw new Error('Failed to get database');
         }
+        
         db = await initDb(database);
     })
 });

@@ -1,7 +1,5 @@
 import { Database, SqlValue } from 'sql.js/dist/sql-asm.js';
 
-import { sqlite } from '../../db';
-
 export type User = {
   id: string;                
   email: string;             
@@ -10,54 +8,82 @@ export type User = {
   avatar_url: string;        
 };
 
-
 export function getUsers(db: Database, limit: number, offset: number): User[] {
-    return sqlite<User>`SELECT * FROM users LIMIT ${limit} OFFSET ${offset}`(
-        db,
-        convertUser
-    );
+    
+    try{
+        var users = db.exec(
+            `SELECT * FROM users LIMIT $limit OFFSET $offset`,
+            {
+                "$limit": limit, "$offset" : offset
+            } 
+        );
+    }
+    catch{
+        throw new Error("getUsers: Failed to get users");
+    }
+        
+    const queryExecResult = users[0]
+
+    if (queryExecResult === undefined) {
+        return [];
+    } else {
+        return queryExecResult.values.map((sqlValues) => {
+            return convertUser(sqlValues);
+        });
+    }
+
 }
 
 export function getUser(db: Database, id: string): User | null {
-    const users = sqlite<User>`SELECT * FROM users WHERE id = ${id}`(
-        db,
-        convertUser
-    );
 
-    return users.length === 0 ? null : users[0];
+    try{
+        var user = db.exec(
+            `SELECT * FROM users WHERE id = $id`,
+            {
+                "$id": id
+            } 
+        );
+            
+    }
+    catch{
+        throw new Error("getUser: Failed to get user with id: " + id);
+    }
+
+    const queryExecResult = user[0]
+
+    if (queryExecResult === undefined) {
+        return null;
+    } else {
+        if(queryExecResult.values.length == 1){
+            return convertUser(queryExecResult.values[0])
+        }
+        else{
+            return null;
+        }
+    }
 }
 
 
-export function createUser(db: Database, userCreate: User): User {
-    sqlite`INSERT INTO users (id, email, name, provider, avatar_url) VALUES (${userCreate.id}, ${userCreate.email}, ${userCreate.name}, ${userCreate.provider}, ${userCreate.avatar_url})`(
-        db
-    );
+export function createUser(db: Database, userCreate: User) : User {
 
-    const id = sqlite<string>`SELECT last_insert_rowid()`(
-        db,
-        (sqlValues) => sqlValues[0] as string
-    )[0];
+    try{
+        var user = db.exec(
+            `INSERT INTO users (id, email, name, provider, avatar_url) VALUES ($id, $email, $name, $provider, $avatar_url)`,
+            {
+                "$id": userCreate.id, 
+                "$email": userCreate.email, 
+                "$name": userCreate.name, 
+                "$provider": userCreate.provider, 
+                "$avatar_url": userCreate.avatar_url
+            } 
+        );
 
-    const user = getUser(db, userCreate.id);
-
-    if (user === null) {
-        throw new Error(`updateUser: could not find user with id ${userCreate.id}`);
+        return getUser(db, userCreate.id)!;
+            
     }
-
-    return user;
-}
-
-
-export function deleteUser(db: Database, id: string): string {
-    sqlite`DELETE FROM users WHERE id = ${id}`(db);
-
-    const user = getUser(db, id);
-
-    if (user !== null) {
-        throw new Error(`deleteUser: could not delete user with id ${id}`);
+    catch{
+        throw new Error("createUser: Failed to create user with id: " + userCreate.id);
     }
-
-    return id;
 }
 
 
