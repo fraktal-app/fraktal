@@ -1,33 +1,87 @@
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { Loader } from 'lucide-react';
 
 import Aurora from "../components/Aurora"
 import "../components/Aurora.css"
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Login() {
 
   const signupWindowRef = useRef<Window | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+
+    setIsLoading(false);
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
           if (signupWindowRef.current) {
             signupWindowRef.current.close();
           }
+
+          registerUserOnDB(session);
+
+          setIsLoading(false);
           navigate('/dashboard');
         }
       }
     );
+
+
 
     return () => {
       authListener.subscription?.unsubscribe();
     };
   }, []);
 
+  //TODO: *Close Loading screen if popup closes
+  // useEffect(() => {
+  //   const signupWindow = signupWindowRef.current;
+  //   if (!signupWindow) return;
+
+  //   const handleClose = () => {
+  //     setIsLoading(false);
+  //   };
+
+  //   signupWindow.addEventListener("close", handleClose);
+
+  //   return () => {
+  //     signupWindow.removeEventListener("close", handleClose);
+  //   };
+  // }, [signupWindowRef]);
+
+  async function registerUserOnDB(session: any){
+    try{
+      const baseURL = `${window.location.protocol}//${window.location.host}`;
+
+      await fetch(baseURL + "/create-user", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata.full_name,
+          provider: session.user.app_metadata.provider,
+          avatar_url: session.user.user_metadata.avatar_url
+        })
+      });
+
+    }
+    catch(e){
+      alert(e)
+    }
+  }
+
   async function handleSignUp( provider: 'google' | 'github'){
+
+    setIsLoading(true);
+
     const { data, error } = await supabase.auth.signInWithOAuth({ 
       provider,
       options: {    
@@ -48,7 +102,16 @@ export default function Login() {
   }
 
   return (
-    <div className="h-screen w-screen flex">
+    <>
+    {isLoading ? (
+    
+    <div className='h-screen w-screen bg-black flex justify-center items-center'>
+      <Loader className='animate-spin w-12 h-12' />
+    </div>
+    
+    ): (
+      <div className="h-screen w-screen flex">
+    
 
     <ToastContainer
       position="bottom-right"
@@ -119,5 +182,9 @@ export default function Login() {
         </div>
       </div>
     </div>
+    )}
+
+    
+    </>
   )
 }
