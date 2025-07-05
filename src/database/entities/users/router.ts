@@ -34,7 +34,8 @@ export function getRouter(): Router {
             const users = getUsers(db, limit, offset);
             res.status(200).json(users);
         } catch (error) {
-            res.status(500).json(error); // Internal Server Error
+            console.error(error);
+            res.status(500).json({ error: "Internal Server Error" });
         }
     });
 
@@ -52,65 +53,45 @@ export function getRouter(): Router {
 
         try {
             const user = getUser(db, id);
+
+            if(!user){
+                return res.status(404).json({ error: "User not found" });
+            }
+
             res.status(200).json(user);
         } catch (error) {
-            res.status(500).json(error); // Internal Server Error
+            res.status(500).json({ error: "Internal Server Error" }); // Internal Server Error
         }
     });
 
     /**
      * POST /create-user
      * Creates a new user.
-     * Body params: { id, email, name, provider, avatar_url }
+     * Query params: { id, email, name, provider, avatar_url }
      */
     router.post('/create-user', (req: Request, res: Response) => {
-        const { id, email, name, provider, avatar_url } = req.body;
-
+        
         try {
-            const userObj: User = {
-                id,
-                email,
-                name,
-                provider,
-                avatar_url
-            };
+            const result = userSchema.safeParse(req.query);
 
-            // Validate user input using Zod schema
-            if (!userSchema.safeParse(userObj).success) {
-                return res.status(400).json({
-                    error: "Invalid inputs."
+            if (!result.success) {
+                return res.status(400).json({ 
+                    error: result.error.format() 
                 });
+            }
+
+            const userObj: User = result.data;
+
+            //Check if user exists
+            if(getUser(db, userObj.id)){
+                return res.status(409).json({ error: "User already exists" }); 
             }
 
             // Create user in database
             const user = createUser(db, userObj);
             res.status(200).json(user);
         } catch (error) {
-            res.status(500).json(error); // Internal Server Error
-        }
-    });
-
-    /**
-     * GET /health
-     * Health check endpoint.
-     * Verifies DB connectivity and returns basic server status.
-     */
-    router.get('/health', (req: Request, res: Response) => {
-        try {
-            db.exec('SELECT 1'); // Simple DB check
-
-            res.status(200).json({
-                status: 'ok',
-                db: 'connected',
-                timestamp: new Date().toISOString(),
-            });
-        } catch (error) {
-            console.error('Health check failed:', error);
-            res.status(500).json({
-                status: 'error',
-                db: 'unavailable',
-                timestamp: new Date().toISOString(),
-            });
+            res.status(500).json({ error: "Internal Server Error" }); // Internal Server Error
         }
     });
 

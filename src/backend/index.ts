@@ -1,23 +1,107 @@
+import { serialize } from 'azle/experimental';
 import express, { Request } from 'express';
-
-let db = {
-    hello: ''
-};
+import z from 'zod';
 
 const app = express();
-
 app.use(express.json());
 
-app.get('/db', (_req: any, res: any) => {
-    res.json(db);
+//Constructing the database canister URL from env variable
+const dbURL = `icp://${process.env.CANISTER_ID_database}`;
+
+
+/**
+ * Converts a JS object into a URL-encoded query string.
+ * Used because I couldnt get `req.body` to work in Azle Inter-canister calls.
+ */
+function toUrlEncoded(obj) {
+  return Object.entries(obj)
+    .map(([key, value]) => 
+      encodeURIComponent(key) + '=' + encodeURIComponent(value as string)
+    )
+    .join('&');
+}
+
+/**
+ * Parses the encoded ICP canister response
+ * Converts char codes to string, then parses it as JSON.
+ */
+function parseEncodedResponse(obj: Object){
+    const result = Object.keys(obj)
+        .sort((a, b) => Number(a) - Number(b))   // Ensure correct order
+        .map(key => String.fromCharCode(obj[key]))
+        .join('');
+
+    return JSON.parse(result);
+}
+
+// Zod schema for validating User objects
+const userSchema = z.object({
+    id: z.string().length(36).nonempty(),                // UUID (36 chars)
+    email: z.string().email().nonempty(),                // Must be a valid email
+    name: z.string().nonempty(),                         // Name
+    provider: z.string().nonempty(),                     // Provider
+    avatar_url: z.string().nonempty()                    // URL to avatar image
 });
 
-app.post('/db/update', (req: Request<any, any, typeof db>, res) => {
-    db = req.body;
+/**
+ * GET /canister-ids
+ * Returns the current canister IDs - helpful for debugging
+ */
+app.get("/canister-ids", (req, res) => {
+    res.json({
+        "fraktail-main": process.env.CANISTER_ID_fraktal_main,
+        "database": process.env.CANISTER_ID_database,
+        "trigger-engine": process.env.CANISTER_ID_trigger_engine
+    })
+})
 
-    res.json(db);
-});
+/**
+ * POST /create-user
+ * Validates incoming user object, serializes it into a query string, and performs an inter-canister HTTP update call
+ * TODO: Change to `req.body`
+ */
+app.post("/create-user", async (req, res) => {
 
+    try{
+        const { id, email, name, provider, avatar_url } = req.body;
+        const userObj = { id, email, name, provider, avatar_url };
+
+        const validation = userSchema.safeParse(userObj);
+
+        if (!validation.success) {
+            return res.status(400).json({ 
+                error: validation.error.format() 
+            });
+        }
+
+        //req.body does not work, so we'll put req info in query by encoding into the URL
+        const params = toUrlEncoded(userObj);
+
+        const response = await fetch(dbURL + "/http_request_update", {
+            body: serialize({
+                candidPath: '/scripts/http_canister.did',
+                args: [{
+                    url : "/users/create-user?" + params,
+                    method : "POST",
+                    body : [],
+                    headers : [
+                         ["Content-Type", "application/json"]
+                    ]
+                }]
+            })
+        });
+    
+        const responseJson = await response.json();
+        const result = parseEncodedResponse(responseJson.body)
+        res.json(result);
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({"error": "Internal Server Error"})
+    }
+})
+
+// Serve static frontend files from /dist
 app.use(express.static('/dist'));
 
 app.listen();

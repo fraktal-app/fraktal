@@ -1,0 +1,49 @@
+service : {
+  http_request : (
+      record {
+        url : text;
+        method : text;
+        body : blob;
+        headers : vec record { text; text };
+        certificate_version : opt nat16;
+      },
+    ) -> (
+      record {
+        body : blob;
+        headers : vec record { text; text };
+        upgrade : opt bool;
+        streaming_strategy : opt variant {
+          Callback : record {
+            token : blob;
+            callback : func (blob) -> (
+                opt record { token : opt blob; body : blob },
+              ) query;
+          };
+        };
+        status_code : nat16;
+      },
+    ) query;
+  http_request_update : (
+      record {
+        url : text;
+        method : text;
+        body : blob;
+        headers : vec record { text; text };
+      },
+    ) -> (
+      record {
+        body : blob;
+        headers : vec record { text; text };
+        upgrade : opt bool;
+        streaming_strategy : opt variant {
+          Callback : record {
+            token : blob;
+            callback : func (blob) -> (
+                opt record { token : opt blob; body : blob },
+              ) query;
+          };
+        };
+        status_code : nat16;
+      },
+    );
+}

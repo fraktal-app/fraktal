@@ -2,7 +2,7 @@
     "name": "fraktal",
     "version": "0.0.0",
     "scripts": {
-        "build": "cd src/frontend && VITE_CANISTER_ORIGIN=http://$(dfx canister id fraktal-main).raw.localhost:4943 VITE_CANISTER_DATABASE=http://$(dfx canister id database).raw.localhost:4943 npm run build"
+        "build": "cd src/frontend && VITE_CANISTER_ORIGIN=http://$(dfx canister id fraktal-main).raw.localhost:4943 npm run build"
     },
     "dependencies": {
         "@supabase/supabase-js": "^2.50.2",
