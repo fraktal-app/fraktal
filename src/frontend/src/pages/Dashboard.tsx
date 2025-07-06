@@ -6,7 +6,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Home from "./Home";
 import Settings from "./Settings";
-import Notifications from "./Notifications";
+import Executions from "./Executions";
 import Profile from "./Profile";
 
 function Dashboard() {
@@ -50,7 +50,7 @@ function Dashboard() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="profile" element={<Profile userData={userData} />} />
-            <Route path="notifications" element={<Notifications />} />
+            <Route path="executions" element={<Executions />} />
             <Route path="settings" element={<Settings />} />
           </Routes>
         </main>

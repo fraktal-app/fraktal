@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Home, Settings, User, LogOut, Bell } from "lucide-react";
+import { Home, Settings, User, LogOut, RefreshCcw } from "lucide-react";
 import { signOutCurrentUser } from "../lib/userAuth"
 
 const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
@@ -28,9 +28,9 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
             </span>
         </Link>
         <Link to="/dashboard/notifications" className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-gray-800 text-lg">
-          <Bell className="w-6 h-6 shrink-0" />
+          <RefreshCcw  className="w-6 h-6 shrink-0" />
            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 w-auto overflow-hidden' : 'opacity-100 w-auto'}`}>
-                Notifications
+                Executions
             </span>
         </Link>
         <Link to="/dashboard/settings" className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-gray-800 text-lg">
