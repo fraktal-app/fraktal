@@ -64,41 +64,11 @@ const appBlocks: AppBlock[] = [
   { type: "github", label: "GitHub", icon: Github, iconUrl: github, color: "white", category: "trigger" },
   { type: "wallet-tracking", label: "Wallet Tracking", icon: TrendingUp, iconUrl: metamask, color: "white", category: "trigger"},
   { type: "token-price", label: "Token Price", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
-
-  {
-    type: "discord-send",
-    label: "Discord",
-    icon: MessageSquare,
-    iconUrl: discord,
-    color: "white",
-    category: "action",
-  },
-  {
-    type: "notion-create",
-    label: "Notion",
-    icon: FileText,
-    iconUrl: notion,
-    color: "white",
-    category: "action",
-  },
-  {
-    type: "telegram-send",
-    label: "Telegram",
-    icon: Send,
-    iconUrl: telegram,
-    color: "white",
-    category: "action",
-  },
+  { type: "discord-send",label: "Discord",icon: MessageSquare,iconUrl: discord,color: "white",category: "action"},
+  { type: "notion-create",label: "Notion",icon: FileText,iconUrl: notion,color: "white",category: "action"},
+  { type: "telegram-send",label: "Telegram",icon: Send,iconUrl: telegram,color: "white",category: "action",},
   { type: "webhook-post", label: "Post to Webhook", icon: Webhook, color: "white", category: "action" },
-  {
-    type: "gmail-send",
-    label: "Gmail",
-    icon: Mail,
-    iconUrl: gmail,
-    color: "white",
-    category: "action",
-  },
-  
+  { type: "gmail-send",label: "Gmail",icon: Mail,iconUrl: gmail,color: "white",category: "action",}
 ]
 
 export default function WorkflowBuilder() {
@@ -112,9 +82,7 @@ export default function WorkflowBuilder() {
     discord: ["Send message", "Send alert", "Create channel"],
     telegram: ["Send message", "Pin message"],
     notion: ["Create page", "Log database"],
-    forms: ["Send response summary"],
-    github: ["Create Issue", "Comment on PR"],
-    portfolio: ["Notify portfolio value"],
+    webhook: ["abhinav add karega ye"]
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -529,27 +497,27 @@ export default function WorkflowBuilder() {
                           </div>
                           {step.type === "action" && trigger?.app?.type && (
                             <div className="mt-3">
-                              <label className="block text-sm text-[#9b9bab] mb-1">Select action</label>
-                              <select
-                                value={step.configData?.event || ""}
-                                onChange={(e) =>
-                                  handleSaveConfig(step.id, {
-                                    ...step.configData,
-                                    event: e.target.value,
-                                  })
-                                }
-                                className="w-full bg-[#1b1f2a] border border-[#3a3f52] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6d3be4]"
-                              >
-                                <option value="" disabled>
-                                  Select an action
+                            <label className="block text-sm text-[#9b9bab] mb-1">Select action</label>
+                            <select
+                              value={step.configData?.event || ""}
+                              onChange={(e) =>
+                                handleSaveConfig(step.id, {
+                                  ...step.configData,
+                                  event: e.target.value,
+                                })
+                              }
+                              className="w-full bg-[#1b1f2a] border border-[#3a3f52] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6d3be4]"
+                            >
+                              <option value="" disabled>
+                                Select an action
+                              </option>
+                              {(actionDropdownOptions[step.app?.type.split("-")[0] || ""] || []).map((actionLabel) => (
+                                <option key={actionLabel} value={actionLabel}>
+                                  {actionLabel}
                                 </option>
-                                {(actionDropdownOptions[trigger.app.type] || []).map((actionLabel) => (
-                                  <option key={actionLabel} value={actionLabel}>
-                                    {actionLabel}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
+                              ))}
+                            </select>
+                          </div>
                           )}
                         </div>
                       ) : (

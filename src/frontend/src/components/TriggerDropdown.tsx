@@ -11,12 +11,29 @@ import {
   Coins,
 } from "lucide-react"
 
+// Define credentials per app
+const inputFieldsByApp: Record<
+  string,
+  Array<{
+    key: string
+    label: string
+    placeholder: string
+    type: "text" | "password"
+    required?: boolean
+  }>
+> = {
+  gmail: [
+    { key: "clientId", label: "Client ID", placeholder: "Enter Client ID", type: "text", required: true },
+    { key: "clientSecret", label: "Client Secret", placeholder: "Enter Client Secret", type: "password", required: true },
+  ],
+  discord: [
+    { key: "client", label: "token id", placeholder: "Enter token ID", type: "text", required: true }
+  ]
+}
+
 const triggerEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {
   gmail: [
     { value: "new-email", label: "New Email Received", icon: Mail },
-    // { value: "starred-email", label: "Email Starred", icon: Mail },
-    // { value: "email-with-attachment", label: "Email with Attachment", icon: Mail },
-    // { value: "email-from-sender", label: "Email from Specific Sender", icon: Mail },
   ],
   github: [
     { value: "new-issue", label: "New Issue Created", icon: Github },
@@ -33,36 +50,13 @@ const triggerEventsByApp: Record<string, Array<{ value: string; label: string; i
     { value: "new-message", label: "New Message Received", icon: Send },
     { value: "bot-command", label: "Bot Command Received", icon: Send },
   ],
-  
-  // stripe: [
-  //   { value: "payment-received", label: "Payment Received", icon: CreditCard },
-  //   { value: "subscription-created", label: "New Subscription", icon: CreditCard },
-  //   { value: "payment-failed", label: "Payment Failed", icon: CreditCard },
-  //   { value: "refund-created", label: "Refund Created", icon: CreditCard },
-  // ],
-  // paypal: [
-  //   { value: "payment-received", label: "Payment Received", icon: Wallet },
-  //   { value: "subscription-created", label: "Subscription Created", icon: Wallet },
-  //   { value: "dispute-created", label: "Dispute Created", icon: Wallet },
-  // ],
-  forms: [
-    { value: "new-response", label: "New Response Received", icon: FileText },
-  ],
-  webhook: [
-    { value: "webhook-received", label: "Webhook Received", icon: Webhook },
-  ],
-  // icp: [
-  //   { value: "transaction-received", label: "Transaction Received", icon: Coins },
-  //   { value: "balance-changed", label: "Balance Changed", icon: Coins },
-  //   { value: "token-transfer", label: "Token Transfer", icon: Coins },
-  // ],
+  forms: [{ value: "new-response", label: "New Response Received", icon: FileText }],
+  webhook: [{ value: "webhook-received", label: "Webhook Received", icon: Webhook }],
   "wallet-tracking": [
     { value: "balance-threshold", label: "Balance Above/Below Threshold", icon: TrendingUp },
     { value: "new-transaction", label: "New Transaction", icon: TrendingUp },
   ],
-  "token-price": [
-    { value: "price-threshold", label: "Token value crosses a threshold", icon: Coins },
-  ],
+  "token-price": [{ value: "price-threshold", label: "Token value crosses a threshold", icon: Coins }],
 }
 
 function CustomSelect({
@@ -87,7 +81,6 @@ function CustomSelect({
         setIsOpen(false)
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
@@ -142,33 +135,38 @@ export default function TriggerDropdown({
   appType,
 }: {
   isOpen: boolean
-  onSave: (formData: { event: string; clientId?: string; clientPassword?: string }) => void
+  onSave: (formData: { event: string; [key: string]: string }) => void
   onCancel: () => void
   appType?: string
 }) {
   const [selectedEvent, setSelectedEvent] = useState("")
-  const [clientId, setClientId] = useState("")
-  const [clientPassword, setClientPassword] = useState("")
+  const [credentials, setCredentials] = useState<Record<string, string>>({})
 
   const eventOptions = appType ? triggerEventsByApp[appType] || [] : []
+  const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
+  const selectedEventOption = eventOptions.find((option) => option.value === selectedEvent)
+
+  const handleCredentialChange = (key: string, value: string) => {
+    setCredentials((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const isFormValid =
+    selectedEvent &&
+    credentialFields.every((field) => !field.required || credentials[field.key]?.trim())
 
   const handleSave = () => {
-    if (selectedEvent && clientId && clientPassword) {
-      onSave({ event: selectedEvent, clientId, clientPassword })
+    if (isFormValid) {
+      onSave({ event: selectedEvent, ...credentials })
       setSelectedEvent("")
-      setClientId("")
-      setClientPassword("")
+      setCredentials({})
     }
   }
 
   const handleCancel = () => {
     setSelectedEvent("")
-    setClientId("")
-    setClientPassword("")
+    setCredentials({})
     onCancel()
   }
-
-  const selectedEventOption = eventOptions.find((option) => option.value === selectedEvent)
 
   if (!isOpen) return null
 
@@ -209,33 +207,23 @@ export default function TriggerDropdown({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-[#c5c5d2]">Client ID</label>
-              <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+          {credentialFields.map((field) => (
+            <div className="flex flex-col gap-2" key={field.key}>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+                {field.required && (
+                  <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+                )}
+              </div>
+              <input
+                type={field.type}
+                value={credentials[field.key] || ""}
+                onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+              />
             </div>
-            <input
-              type="text"
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              placeholder="Enter Client ID"
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-[#c5c5d2]">Client Secret</label>
-              <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-            </div>
-            <input
-              type="password"
-              value={clientPassword}
-              onChange={(e) => setClientPassword(e.target.value)}
-              placeholder="Enter Client Password"
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-            />
-          </div>
+          ))}
         </div>
       )}
 
@@ -248,7 +236,7 @@ export default function TriggerDropdown({
         </button>
         <button
           onClick={handleSave}
-          disabled={!selectedEvent || !clientId || !clientPassword}
+          disabled={!isFormValid}
           className="px-3 py-1.5 text-sm font-medium text-white bg-[#6d3be4] border border-transparent rounded-md hover:bg-[#5a2fc7] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save Configuration
