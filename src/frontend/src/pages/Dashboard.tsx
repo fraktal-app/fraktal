@@ -1,11 +1,19 @@
+//dashboard
 import { useEffect, useState } from "react"
-import { getUserData, signOutCurrentUser } from "../lib/userAuth"
-import { useNavigate } from "react-router-dom";
+import { getUserData} from "../lib/userAuth"
+import { Route, Routes, useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import Home from "./Home";
+import Settings from "./Settings";
+import Notifications from "./Notifications";
+import Profile from "./Profile";
 
 function Dashboard() {
-
+  
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [userData, setUserData] = useState<any>();
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   
   
@@ -31,23 +39,26 @@ function Dashboard() {
         {isLoading ? 
             (<h1>Loading.....</h1>) :
             (
-                <div>
-                    <h1>ID: {userData.id}</h1>
-                    <h1>Email: {userData.email}</h1>
-                    <h1>Full Name: {userData.user_metadata.full_name}</h1>
-                    <h1>
-                        <img src={userData.user_metadata.avatar_url} />
-                    </h1>
-                    <h1>Providers: {userData.app_metadata.providers}</h1>
-                </div>
+
+
+                 <div className="flex">
+      <Navbar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Sidebar collapsed={collapsed} />
+      <div className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"}`}>
+        
+        <main className="pt-16 p-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="profile" element={<Profile userData={userData} />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
             )
         }
 
-        <div>
-            <button onClick={() => signOutCurrentUser(navigate)}>
-                Sign Out
-            </button>
-        </div>
     </div>
   )
 }
