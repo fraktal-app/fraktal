@@ -23,6 +23,7 @@ import {
   ArrowDown,
   Undo2,
   Coins,
+  AlertCircle,
 } from "lucide-react"
 
 import discord from "../assets/discord.png"
@@ -35,6 +36,8 @@ import etherium from "../assets/eth.png"
 
 import TriggerDropdown from "../components/TriggerDropdown"
 import ActionDropdown from "../components/ActionDropdown";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 interface AppBlock {
   type: string
@@ -89,6 +92,7 @@ export default function WorkflowBuilder() {
   const [draggedApp, setDraggedApp] = useState<AppBlock | null>(null)
   const [showSavePopup, setShowSavePopup] = useState(false)
   const [workflowName, setWorkflowName] = useState("Untitled")
+  const [validationError, setValidationError] = useState<string>("")
 
   async function manageUserSession() {
     const currentUserData = await getUserData()
@@ -102,6 +106,24 @@ export default function WorkflowBuilder() {
   useEffect(() => {
     manageUserSession()
   }, [])
+
+  // Validation function to check if workflow can be saved
+  const validateWorkflow = () => {
+    const configuredTrigger = workflowSteps.find(
+      step => step.type === "trigger" && step.app && step.configData?.event
+    )
+    const configuredActions = workflowSteps.filter(
+      step => step.type === "action" && step.app && step.configData?.event
+    )
+
+    if (!configuredTrigger) {
+      return "Please configure at least one trigger to save the workflow."
+    }
+    if (configuredActions.length === 0) {
+      return "Please configure at least one action to save the workflow."
+    }
+    return ""
+  }
 
   const onDragStart = (event: React.DragEvent, app: AppBlock) => {
     setDraggedApp(app)
@@ -176,71 +198,93 @@ export default function WorkflowBuilder() {
   }
 
   const handleSaveWorkflow = () => {
-    const trigger = workflowSteps.find((step) => step.type === "trigger" && step.app)
-    const actions = workflowSteps.filter((step) => step.type === "action" && step.app)
-
-    const workflowData = {
-      name: workflowName,
-      trigger: trigger
-        ? {
-            id: trigger.id,
-            type: trigger.type,
-            appType: trigger.app?.type,
-            label: trigger.app?.label,
-            event: trigger.configData?.event || null,
-            clientId: trigger.configData?.clientId || null,
-            clientPassword: trigger.configData?.clientPassword || null,
-            export: trigger.configData?.export || null,
-          }
-        : null,
-      actions: actions.map((action) => ({
-          id: action.id,
-          type: action.type,
-          appType: action.app?.type,
-          label: action.app?.label,
-          event: action.configData?.event || null,
-          export: action.configData?.export || null,
-          credentials: Object.fromEntries(
-            Object.entries(action.configData || {}).filter(
-              ([key]) => !["event", "export"].includes(key)
-            )
-          ),
-        })),
-    }
-
-    console.log("Workflow Name:", workflowData.name)
-    console.log("client id:", workflowData.trigger?.clientId)
-    console.log("client password:", workflowData.trigger?.clientPassword)
-    console.log("trigger app:", workflowData.trigger?.label)
-    console.log("trigger event:", workflowData.trigger?.event)
-    console.log("export:", workflowData.trigger?.export)
-    console.log(
-      "All Actions:",
-      workflowData.actions.map((action) => action.label),
-    )
-    console.log("Full Workflow JSON:", workflowData)
-
-    // Here you would typically send the workflow data to your backend
-    // For now, we'll just close the popup
-    setShowSavePopup(false)
-    
-    // You can add success notification here
-    alert(`Workflow "${workflowName}" saved successfully!`)
+  const trigger = workflowSteps.find((step) => step.type === "trigger" && step.app)
+  const actions = workflowSteps.filter((step) => step.type === "action" && step.app)
+  const workflowData = {
+    name: workflowName,
+    trigger: trigger
+      ? {
+          id: trigger.id,
+          type: trigger.type,
+          appType: trigger.app?.type,
+          label: trigger.app?.label,
+          event: trigger.configData?.event || null,
+          clientId: trigger.configData?.clientId || null,
+          clientPassword: trigger.configData?.clientPassword || null,
+          export: trigger.configData?.export || null,
+        }
+      : null,
+    actions: actions.map((action) => ({
+      id: action.id,
+      type: action.type,
+      appType: action.app?.type,
+      label: action.app?.label,
+      event: action.configData?.event || null,
+      export: action.configData?.export || null,
+      credentials: Object.fromEntries(
+        Object.entries(action.configData || {}).filter(
+          ([key]) => !["event", "export"].includes(key)
+        )
+      ),
+    })),
   }
+  
+  console.log("Workflow Name:", workflowData.name)
+  console.log("client id:", workflowData.trigger?.clientId)
+  console.log("client password:", workflowData.trigger?.clientPassword)
+  console.log("trigger app:", workflowData.trigger?.label)
+  console.log("trigger event:", workflowData.trigger?.event)
+  console.log("export:", workflowData.trigger?.export)
+  console.log(
+    "All Actions:",
+    workflowData.actions.map((action) => action.label),
+  )
+  console.log("Full Workflow JSON:", workflowData)
+  
+  // Here you would typically send the workflow data to your backend
+  // For now, we'll just close the popup
+  setShowSavePopup(false)
+  setValidationError("")
+  
+  // Success toast notification (top-right position)
+  toast.success(`Workflow "${workflowName}" saved successfully!`, {
+    position: "top-right",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
 
   const handleSaveButtonClick = () => {
+    const error = validateWorkflow()
+    if (error) {
+      setValidationError(error)
+      return
+    }
+    setValidationError("")
     setShowSavePopup(true)
   }
 
   const handlePopupSave = () => {
+    const error = validateWorkflow()
+    if (error) {
+      setValidationError(error)
+      return
+    }
     handleSaveWorkflow()
   }
 
   const handlePopupCancel = () => {
     setShowSavePopup(false)
+    setValidationError("")
   }
 
   const filteredApps = appBlocks.filter((app) => app.category === activeTab || app.category === "both")
+
+  // Check if workflow is valid for save button styling
+  const isWorkflowValid = validateWorkflow() === ""
 
   // Loading state
   if (isLoading) {
@@ -266,7 +310,12 @@ export default function WorkflowBuilder() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleSaveButtonClick}
-            className="flex items-center gap-2 px-4 py-2 border border-white text-white hover:bg-white hover:text-black rounded-lg font-medium transition-colors"
+            disabled={!isWorkflowValid}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg font-medium transition-colors ${
+              isWorkflowValid
+                ? "border-white text-white hover:bg-white hover:text-black"
+                : "border-gray-500 text-gray-500 cursor-not-allowed"
+            }`}
           >
             <Save className="w-4 h-4" />
             Save Workflow
@@ -278,11 +327,28 @@ export default function WorkflowBuilder() {
         </div>
       </header>
 
+      {/* Validation Error Banner */}
+      {validationError && (
+        <div className="bg-red-900/20 border-b border-red-500/50 px-6 py-3 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <span className="text-red-400 text-sm">{validationError}</span>
+        </div>
+      )}
+
       {/* Save Workflow Popup */}
       {showSavePopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#1b1f2a] border border-[#2a2e3f] rounded-lg p-6 w-96 max-w-md">
             <h2 className="text-lg font-bold text-[#ffffff] mb-4">Save Workflow</h2>
+            
+            {/* Show validation error in popup if any */}
+            {validationError && (
+              <div className="mb-4 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400" />
+                <span className="text-red-400 text-sm">{validationError}</span>
+              </div>
+            )}
+            
             <div className="mb-4">
               <label className="block text-sm font-medium text-[#9b9bab] mb-2">
                 Workflow Name
@@ -305,7 +371,12 @@ export default function WorkflowBuilder() {
               </button>
               <button
                 onClick={handlePopupSave}
-                className="px-4 py-2 bg-[#6d3be4] hover:bg-[#5a2fc7] text-white rounded-lg font-medium transition-colors"
+                disabled={!!validationError}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  validationError
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-[#6d3be4] hover:bg-[#5a2fc7] text-white"
+                }`}
               >
                 OK
               </button>
@@ -508,18 +579,18 @@ export default function WorkflowBuilder() {
                           </div>
                         )}
 
-{step.type === "action" && !step.configData?.event && (
-  <div className="mt-2">
-    <button
-      onClick={() => setWorkflowSteps(prev => 
-        prev.map(s => s.id === step.id ? {...s, showDropdown: true} : s)
-      )}
-      className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] text-[#9b9bab] rounded-lg hover:bg-[#3a3f52] text-sm"
-    >
-      Configure Action
-    </button>
-  </div>
-)}
+                        {step.type === "action" && !step.configData?.event && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => setWorkflowSteps(prev => 
+                                prev.map(s => s.id === step.id ? {...s, showDropdown: true} : s)
+                              )}
+                              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] text-[#9b9bab] rounded-lg hover:bg-[#3a3f52] text-sm"
+                            >
+                              Configure Action
+                            </button>
+                          </div>
+                        )}
                         </div>
                       ) : (
                         <div className="text-center py-4">
@@ -584,6 +655,21 @@ export default function WorkflowBuilder() {
           </div>
         </main>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        style={{ top: '80px' }}
+      />
     </div>
   )
 }
