@@ -9,7 +9,6 @@ import {
   Coins,
 } from "lucide-react"
 
-// Define credentials per app
 const inputFieldsByApp: Record<
   string,
   Array<{
@@ -26,7 +25,20 @@ const inputFieldsByApp: Record<
   ],
   discord: [
     { key: "client", label: "token id", placeholder: "Enter token ID", type: "text", required: true }
-  ]
+  ],
+  telegram: [
+  { key: "botToken", label: "Bot Token", placeholder: "Enter your Telegram Bot Token", type: "text", required: true },
+  { key: "chatId", label: "Chat ID", placeholder: "Enter Chat ID to listen for messages", type: "text", required: true }
+  ],
+  "wallet-tracking": [
+  { key: "walletAddress", label: "Wallet Address", placeholder: "Enter wallet address to track", type: "text", required: true },
+  { key: "network", label: "Network", placeholder: "e.g., Ethereum, Solana", type: "text", required: true }
+  ],
+  "token-price": [
+  { key: "tokenSymbol", label: "Token Symbol", placeholder: "e.g., ETH, BTC", type: "text", required: true },
+  { key: "threshold", label: "Price Threshold", placeholder: "Enter price threshold (e.g., 2500)", type: "text", required: true },
+  { key: "direction", label: "Direction", placeholder: "above or below", type: "text", required: true }
+]
 }
 
 const triggerEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {

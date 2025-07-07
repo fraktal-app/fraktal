@@ -34,6 +34,7 @@ import telegram from "../assets/telegram.png"
 import etherium from "../assets/eth.png"
 
 import TriggerDropdown from "../components/TriggerDropdown"
+import ActionDropdown from "../components/ActionDropdown";
 
 interface AppBlock {
   type: string
@@ -83,7 +84,7 @@ export default function WorkflowBuilder() {
     discord: ["Send message", "Send alert", "Create channel"],
     telegram: ["Send message", "Pin message"],
     notion: ["Create page", "Log database"],
-    webhook: ["abhinav add karega ye"]
+    webhook: ["Send custom payload", "Trigger external service", "Forward data"]
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -200,14 +201,18 @@ export default function WorkflowBuilder() {
           }
         : null,
       actions: actions.map((action) => ({
-        id: action.id,
-        type: action.type,
-        appType: action.app!.type,
-        label: action.app!.label,
-        event: action.configData?.event || null,
-        export: action.configData?.export || null,
-
-      })),
+          id: action.id,
+          type: action.type,
+          appType: action.app?.type,
+          label: action.app?.label,
+          event: action.configData?.event || null,
+          export: action.configData?.export || null,
+          credentials: Object.fromEntries(
+            Object.entries(action.configData || {}).filter(
+              ([key]) => !["event", "export"].includes(key)
+            )
+          ),
+        })),
     }
 
     console.log("Workflow Name:", workflowData.name)
@@ -325,7 +330,7 @@ export default function WorkflowBuilder() {
 >
   {!sidebarCollapsed && (
     <div className="p-4 h-full flex flex-col">
-      {/* Header */}
+      {/* Header wala part*/}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Settings className="w-5 h-5 text-[#e545a0]" />
@@ -363,7 +368,6 @@ export default function WorkflowBuilder() {
         </button>
       </div>
 
-      {/* Scrollable Apps Area - This takes up remaining space */}
       <div
         className="space-y-2 flex-1 overflow-y-auto"
         style={{
@@ -406,8 +410,6 @@ export default function WorkflowBuilder() {
           );
         })}
       </div>
-
-      {/* Back Button - Fixed at bottom, outside the scrollable area */}
       <div className="border-t border-[#2a2e3f] pt-4 mt-4">
         <button
           className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[#2a2e3f] transition-colors text-[#9b9bab] hover:text-[#ffffff] w-full"
@@ -500,31 +502,34 @@ export default function WorkflowBuilder() {
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                          {step.type === "action" && trigger?.app?.type && (
-                            <div className="mt-3">
-                            <label className="block text-sm text-[#9b9bab] mb-1">Select action</label>
-                            <select
-                              value={step.configData?.event || ""}
-                              onChange={(e) =>
-                                handleSaveConfig(step.id, {
-                                  ...step.configData,
-                                  event: e.target.value,
-                                  export: e.target.value,
-                                })
-                              }
-                              className="w-full bg-[#1b1f2a] border border-[#3a3f52] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6d3be4]"
+                          {step.type === "action" && !step.showDropdown && step.configData?.event && (
+                          <div className="mt-2 p-2 bg-[#2a2e3f] rounded-lg">
+                            <p className="text-sm text-[#9b9bab]">
+                              Action: <span className="text-[#ffffff]">{step.configData.event}</span>
+                            </p>
+                            <button
+                              onClick={() => setWorkflowSteps(prev => 
+                                prev.map(s => s.id === step.id ? {...s, showDropdown: true} : s)
+                              )}
+                              className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] underline"
                             >
-                              <option value="" disabled>
-                                Select an action
-                              </option>
-                              {(actionDropdownOptions[step.app?.type.split("-")[0] || ""] || []).map((actionLabel) => (
-                                <option key={actionLabel} value={actionLabel}>
-                                  {actionLabel}
-                                </option>
-                              ))}
-                            </select>
+                              Edit Configuration
+                            </button>
                           </div>
-                          )}
+                        )}
+
+{step.type === "action" && !step.configData?.event && (
+  <div className="mt-2">
+    <button
+      onClick={() => setWorkflowSteps(prev => 
+        prev.map(s => s.id === step.id ? {...s, showDropdown: true} : s)
+      )}
+      className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] text-[#9b9bab] rounded-lg hover:bg-[#3a3f52] text-sm"
+    >
+      Configure Action
+    </button>
+  </div>
+)}
                         </div>
                       ) : (
                         <div className="text-center py-4">
@@ -541,6 +546,21 @@ export default function WorkflowBuilder() {
                           isOpen={step.showDropdown as boolean}
                           onSave={(formData: { event: string; clientId?: string; clientPassword?: string; export: string }) =>
                             handleSaveConfig(step.id, formData)
+                          }
+                          onCancel={() => handleCancelConfig(step.id)}
+                          appType={step.app?.type}
+                        />
+                      )}
+                      {step.showDropdown && step.type === "action" && (
+                        <ActionDropdown
+                          isOpen={step.showDropdown as boolean}
+                          onSave={(formData: { [key: string]: string }) =>
+                            handleSaveConfig(step.id, { 
+                              ...step.configData, 
+                              ...formData, 
+                              event: formData.event ?? "", 
+                              export: formData.export ?? "" 
+                            })
                           }
                           onCancel={() => handleCancelConfig(step.id)}
                           appType={step.app?.type}
