@@ -33,6 +33,7 @@ import metamask from "../assets/metamask.png"
 import notion from "../assets/notion.png"
 import telegram from "../assets/telegram.png"
 import etherium from "../assets/eth.png"
+import twitter from "../assets/twitter.jpg"
 
 import TriggerDropdown from "../components/TriggerDropdown"
 import ActionDropdown from "../components/ActionDropdown";
@@ -69,11 +70,14 @@ const appBlocks: AppBlock[] = [
   { type: "github", label: "GitHub", icon: Github, iconUrl: github, color: "white", category: "trigger" },
   { type: "wallet-tracking", label: "Wallet Tracking", icon: TrendingUp, iconUrl: metamask, color: "white", category: "trigger"},
   { type: "token-price", label: "Token Price", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
+  { type: "RSS", label: "RSS Feed", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
   { type: "discord-send",label: "Discord",icon: MessageSquare,iconUrl: discord,color: "white",category: "action"},
   { type: "notion-create",label: "Notion",icon: FileText,iconUrl: notion,color: "white",category: "action"},
   { type: "telegram-send",label: "Telegram",icon: Send,iconUrl: telegram,color: "white",category: "action",},
   { type: "webhook-post", label: "Post to Webhook", icon: Webhook, color: "white", category: "action" },
-  { type: "gmail-send",label: "Gmail",icon: Mail,iconUrl: gmail,color: "white",category: "action",}
+  { type: "twitter",label: "Twitter",icon: X,iconUrl: twitter,color: "white",category: "action",},
+  { type: "AI",label: "AI",icon: Mail,iconUrl: gmail,color: "white",category: "action",},
+  { type: "API",label: "API Call",icon: Mail,iconUrl: gmail,color: "white",category: "action",}
 ]
 
 export default function WorkflowBuilder() {

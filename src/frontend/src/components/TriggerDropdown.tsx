@@ -7,40 +7,143 @@ import {
   Github,
   TrendingUp,
   Coins,
+  Rss,
+  Search
 } from "lucide-react"
 
-const inputFieldsByApp: Record<
-  string,
-  Array<{
-    key: string
-    label: string
-    placeholder: string
-    type: "text" | "password"
-    required?: boolean
-  }>
-> = {
+
+type InputField =
+  | {
+      key: string
+      label: string
+      placeholder: string
+      type: "text" | "password"
+      required?: boolean
+    }
+  | {
+      key: string
+      label: string
+      placeholder: string
+      type: "select"
+      required?: boolean
+      options: Array<{ value: string; label: string }>
+    }
+
+const inputFieldsByApp: Record<string, InputField[]> = {
   gmail: [
-    { key: "clientId", label: "Client ID", placeholder: "Enter Client ID", type: "text", required: true },
-    { key: "clientSecret", label: "Client Secret", placeholder: "Enter Client Secret", type: "password", required: true },
+    {
+      key: "clientId",
+      label: "Client ID",
+      placeholder: "Enter Client ID",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "clientSecret",
+      label: "Client Secret",
+      placeholder: "Enter Client Secret",
+      type: "password",
+      required: true,
+    },
   ],
   discord: [
-    { key: "client", label: "token id", placeholder: "Enter token ID", type: "text", required: true }
+    {
+      key: "client",
+      label: "Bot id",
+      placeholder: "Enter Bot ID",
+      type: "text",
+      required: true,
+    },
+  ],
+  RSS: [
+  {
+    key: "feedUrl",
+    label: "RSS Feed URL",
+    placeholder: "Enter the RSS feed URL",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "pollInterval",
+    label: "Poll Interval (in minutes)",
+    placeholder: "Enter how often to check for updates (e.g., 5)",
+    type: "text",
+    required: true,
+  }
+],
+  github: [
+    {
+      key: "clientId",
+      label: "Client ID",
+      placeholder: "Enter GitHub Client ID",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "clientSecret",
+      label: "Client Secret",
+      placeholder: "Enter GitHub Client Secret",
+      type: "password",
+      required: true,
+    },
   ],
   telegram: [
-  { key: "botToken", label: "Bot Token", placeholder: "Enter your Telegram Bot Token", type: "text", required: true },
-  { key: "chatId", label: "Chat ID", placeholder: "Enter Chat ID to listen for messages", type: "text", required: true }
+    {
+      key: "botToken",
+      label: "Bot Token",
+      placeholder: "Enter your Telegram Bot Token",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "chatId",
+      label: "Chat ID",
+      placeholder: "Enter Chat ID to listen for messages",
+      type: "text",
+      required: true,
+    },
   ],
   "wallet-tracking": [
-  { key: "walletAddress", label: "Wallet Address", placeholder: "Enter wallet address to track", type: "text", required: true },
-  { key: "network", label: "Network", placeholder: "e.g., Ethereum, Solana", type: "text", required: true }
+    {
+      key: "walletAddress",
+      label: "Wallet Address",
+      placeholder: "Enter wallet address to track",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "network",
+      label: "Network",
+      placeholder: "Select a network",
+      type: "select",
+      required: true,
+      options: [
+        { value: "Ethereum", label: "Ethereum" },
+        { value: "Solana", label: "Solana" },
+      ],
+    },
   ],
   "token-price": [
-  { key: "tokenSymbol", label: "Token Symbol", placeholder: "e.g., ETH, BTC", type: "text", required: true },
-  { key: "threshold", label: "Price Threshold", placeholder: "Enter price threshold (e.g., 2500)", type: "text", required: true },
-  { key: "direction", label: "Direction", placeholder: "above or below", type: "text", required: true }
-]
+    {
+      key: "threshold",
+      label: "Price Threshold",
+      placeholder: "Enter price threshold (e.g., 2500)",
+      type: "text",
+      required: true,
+    },
+    {
+  key: "direction",
+  label: "Direction",
+  placeholder: "Select direction",
+  type: "select",
+  required: true,
+  options: [
+    { value: "above", label: "Above" },
+    { value: "below", label: "Below" },
+    ],
+    }
+  ],
 }
-
 const triggerEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {
   gmail: [
     { value: "new-email", label: "New Email Received", icon: Mail },
@@ -56,6 +159,23 @@ const triggerEventsByApp: Record<string, Array<{ value: string; label: string; i
     { value: "new-message", label: "New Message in Channel", icon: MessageSquare },
     { value: "mention-received", label: "Bot Mentioned", icon: MessageSquare },
   ],
+  RSS: [
+  {
+    value: "new-feed-item",
+    label: "New Feed Item Published",
+    icon: Rss, 
+  },
+  {
+    value: "feed-updated",
+    label: "Feed Metadata Updated",
+    icon: Rss,
+  },
+  {
+    value: "item-matches-keyword",
+    label: "Feed Item Contains Keyword",
+    icon: Search, 
+  }
+],
   telegram: [
     { value: "new-message", label: "New Message Received", icon: Send },
     { value: "bot-command", label: "Bot Command Received", icon: Send },
@@ -228,7 +348,7 @@ export default function TriggerDropdown({
 }) {
   const [selectedEvent, setSelectedEvent] = useState("")
   const [selectedExport, setSelectedExport] = useState("")
-
+  const [thresholdAmount, setThresholdAmount] = useState("")
   const [credentials, setCredentials] = useState<Record<string, string>>({})
 
   const eventOptions = appType ? triggerEventsByApp[appType] || [] : []
@@ -260,27 +380,34 @@ export default function TriggerDropdown({
   }
 
   const isFormValid =
-    selectedEvent &&
-    credentialFields.every((field) => !field.required || credentials[field.key]?.trim()) &&
-    selectedExport
+  selectedEvent &&
+  credentialFields.every((field) => !field.required || credentials[field.key]?.trim()) &&
+  selectedExport &&
+  (!["balance-above-threshold", "balance-below-threshold"].includes(selectedEvent) || !!thresholdAmount.trim())
+
 
   const handleSave = () => {
-    if (isFormValid) {
-      onSave({ event: selectedEvent, ...credentials, export: selectedExport})
-      setSelectedEvent("")
-      setCredentials({})
-      setSelectedExport("")
-    }
-  }
-
-  const handleCancel = () => {
+  if (isFormValid) {
+    onSave({
+      event: selectedEvent,
+      ...credentials,
+      export: selectedExport,
+      ...(thresholdAmount && { thresholdAmount }) // only if threshold is present
+    })
     setSelectedEvent("")
     setCredentials({})
     setSelectedExport("")
-    onCancel()
+    setThresholdAmount("")
   }
+}
+
 
   if (!isOpen) return null
+
+  function handleCancel(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    onCancel();
+  }
 
   return (
     <div className="mt-3 p-4 bg-[#1b1f2a] border border-[#3a3f52] rounded-lg space-y-4">
@@ -319,23 +446,39 @@ export default function TriggerDropdown({
             </div>
           </div>
 
-          {credentialFields.map((field) => (
-            <div className="flex flex-col gap-2" key={field.key}>
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
-                {field.required && (
-                  <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-                )}
-              </div>
-              <input
-                type={field.type}
-                value={credentials[field.key] || ""}
-                onChange={(e) => handleCredentialChange(field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-              />
-            </div>
-          ))}
+{credentialFields.map((field) => (
+  <div className="flex flex-col gap-2" key={field.key}>
+    <div className="flex items-center gap-2">
+      <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+      {field.required && (
+        <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+      )}
+    </div>
+
+    {/* 🟨 Handle "select" fields */}
+    {"type" in field && field.type === "select" && "options" in field ? (
+      <select
+        value={credentials[field.key] || ""}
+        onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+      >
+        <option value="" disabled>{field.placeholder}</option>
+        {(field.options as Array<{ value: string; label: string }>).map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type={field.type}
+        value={credentials[field.key] || ""}
+        onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+        placeholder={field.placeholder}
+        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+      />
+    )}
+  </div>
+))}
+
 
           {/* Export options section - only show when event is selected */}
           <div className="space-y-3">
@@ -343,7 +486,22 @@ export default function TriggerDropdown({
               <label className="text-sm font-medium text-[#c5c5d2]">Export Options</label>
               <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
             </div>
-
+            {["balance-above-threshold", "balance-below-threshold"].includes(selectedEvent) && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-[#c5c5d2]">Threshold Amount</label>
+                  <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  value={thresholdAmount}
+                  onChange={(e) => setThresholdAmount(e.target.value)}
+                  placeholder="Enter threshold amount"
+                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+                />
+              </div>
+            )}
             {exportOptions.length > 0 ? (
               <CustomSelect
                 options={exportOptions}

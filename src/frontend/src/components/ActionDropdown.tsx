@@ -31,7 +31,21 @@ const inputFieldsByApp: Record<
   "webhook-post": [
     { key: "webhookUrl", label: "Webhook URL", placeholder: "Enter webhook URL", type: "text", required: true },
     { key: "payload", label: "Payload", placeholder: "Enter JSON payload", type: "text", required: true }
-  ]
+  ],
+  "twitter": [
+  { key: "apiKey", label: "API Key", placeholder: "Enter Twitter API Key", type: "text", required: true },
+  { key: "apiSecret", label: "API Secret", placeholder: "Enter Twitter API Secret", type: "password", required: true }
+],
+  "API": [
+  { key: "url", label: "API URL", placeholder: "Enter API endpoint URL", type: "text", required: true },
+  { key: "headers", label: "Headers", placeholder: "Enter headers (JSON format)", type: "text", required: false },
+  { key: "body", label: "Body", placeholder: "Enter request body (for POST/PUT)", type: "text", required: false }
+],
+  "AI": [
+  { key: "apiKey", label: "AI API Key", placeholder: "Enter your AI API key", type: "password", required: true },
+  { key: "prompt", label: "Prompt", placeholder: "Enter your prompt text", type: "text", required: true },
+]
+
 }
 
 // Add action options for each app
@@ -40,7 +54,10 @@ const actionDropdownOptions: Record<string, string[]> = {
   "discord-send": ["Send message", "Send alert", "Send notification"],
   "telegram-send": ["Send message", "Send alert", "Pin message"],
   "notion-create": ["Create page", "Log to database", "Create task"],
-  "webhook-post": ["Send custom payload", "Trigger external service", "Forward data"]
+  "webhook-post": ["Send custom payload", "Trigger external service", "Forward data"],
+  "twitter": ["Send Tweet","Reply to Tweet","Send Tweet with Hashtags"],
+  "AI": ["Generate text","Summarize input","Extract information"],
+  "API": ["Call external API","Send data to endpoint","Trigger webhook"]
 }
 
 export default function ActionDropdown({
