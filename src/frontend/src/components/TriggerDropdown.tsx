@@ -61,38 +61,89 @@ const triggerEventsByApp: Record<string, Array<{ value: string; label: string; i
     { value: "bot-command", label: "Bot Command Received", icon: Send },
   ],
   "wallet-tracking": [
-    { value: "balance-threshold", label: "Balance Above/Below Threshold", icon: TrendingUp },
+    { value: "balance-above-threshold", label: "Balance Above Threshold", icon: TrendingUp },
+    { value: "balance-below-threshold", label: "Balance Below Threshold", icon: TrendingUp },
     { value: "new-transaction", label: "New Transaction", icon: TrendingUp },
   ],
   "token-price": [{ value: "price-threshold", label: "Token value crosses a threshold", icon: Coins }],
 }
 
-const exportEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {
-  gmail: [
-    { value: "email-body", label: "Email body", icon: Mail },
-    { value: "email-sender", label: "Sender name", icon: Mail },
-    { value: "email-everything", label: "Everything", icon: Mail },
+// New structure: export options based on specific events
+const exportEventsByEvent: Record<string, Array<{ value: string; label: string; icon: any }>> = {
+  // Gmail events
+  "new-email": [
+    { value: "email-body", label: "Email Body", icon: Mail },
+    { value: "sender-name", label: "Sender Name", icon: Mail },
+    { value: "everything", label: "Everything", icon: Mail },
   ],
-  github: [
-    { value: "contributor-detail", label: "Contributor detail", icon: Github },
-    { value: "everything", label: "Everything", icon: Github },
-  ],
-  discord: [
-    { value: "user-detail", label: "User detail", icon: MessageSquare },
-    { value: "content", label: "Content", icon: MessageSquare },
+  
+  // Discord events
+  "new-message": [
+    { value: "messenger-detail", label: "Messenger Detail", icon: MessageSquare },
+    { value: "message-content", label: "Message Content", icon: MessageSquare },
     { value: "everything", label: "Everything", icon: MessageSquare },
   ],
-  telegram: [
-    { value: "user-detail", label: "User detail", icon: Send },
-    { value: "content", label: "Content", icon: Send },
+  "mention-received": [
+    { value: "messenger-detail", label: "Messenger Detail", icon: MessageSquare },
+    { value: "command", label: "Command", icon: MessageSquare },
+    { value: "everything", label: "Everything", icon: MessageSquare },
+  ],
+  
+  // Telegram events (reusing same event keys but with different context)
+  "new-message-telegram": [
+    { value: "messenger-detail", label: "Messenger Detail", icon: Send },
+    { value: "message-content", label: "Message Content", icon: Send },
     { value: "everything", label: "Everything", icon: Send },
   ],
-  "wallet-tracking": [
-    { value: "Current-balnce", label: "Current balance", icon: TrendingUp },
-    { value: "balance-change", label: " Chnage in balance", icon: TrendingUp },
-    { value: "transaction-detail", label: "Transaction detail", icon: TrendingUp },
+  "bot-command": [
+    { value: "messenger-detail", label: "Messenger Detail", icon: Send },
+    { value: "command", label: "Command", icon: Send },
+    { value: "everything", label: "Everything", icon: Send },
   ],
-  "token-price": [{ value: "curent-price", label: "Current token price", icon: Coins }],
+  
+  // GitHub events
+  "new-issue": [
+    { value: "contributor-detail", label: "Contributor Detail", icon: Github },
+    { value: "issue-content", label: "Issue Content", icon: Github },
+    { value: "everything", label: "Everything", icon: Github },
+  ],
+  "new-pr": [
+    { value: "contributor-detail", label: "Contributor Detail", icon: Github },
+    { value: "pr-content", label: "Pull Request Content", icon: Github },
+    { value: "everything", label: "Everything", icon: Github },
+  ],
+  "new-commit": [
+    { value: "contributor-detail", label: "Contributor Detail", icon: Github },
+    { value: "commit-content", label: "Commit Content", icon: Github },
+    { value: "everything", label: "Everything", icon: Github },
+  ],
+  "issue-closed": [
+    { value: "contributor-detail", label: "Contributor Detail", icon: Github },
+    { value: "issue-content", label: "Issue Content", icon: Github },
+    { value: "everything", label: "Everything", icon: Github },
+  ],
+  
+  // Wallet tracking events
+  "balance-above-threshold": [
+    { value: "current-balance", label: "Current Balance", icon: TrendingUp },
+    { value: "balance-change", label: "Change in Balance", icon: TrendingUp },
+    { value: "everything", label: "Everything", icon: TrendingUp },
+  ],
+  "balance-below-threshold": [
+    { value: "current-balance", label: "Current Balance", icon: TrendingUp },
+    { value: "balance-change", label: "Change in Balance", icon: TrendingUp },
+    { value: "everything", label: "Everything", icon: TrendingUp },
+  ],
+  "new-transaction": [
+    { value: "current-balance", label: "Current Balance", icon: TrendingUp },
+    { value: "transaction-detail", label: "Transaction Detail", icon: TrendingUp },
+    { value: "everything", label: "Everything", icon: TrendingUp },
+  ],
+  
+  // Token price events
+  "price-threshold": [
+    { value: "current-token-price", label: "Current Token Price", icon: Coins },
+  ],
 }
 
 function CustomSelect({
@@ -181,12 +232,31 @@ export default function TriggerDropdown({
   const [credentials, setCredentials] = useState<Record<string, string>>({})
 
   const eventOptions = appType ? triggerEventsByApp[appType] || [] : []
-  const exportOptions = appType ? exportEventsByApp[appType] || [] : []
+  
+  // Get export options based on selected event and app type
+  const getExportOptions = () => {
+    if (!selectedEvent) return []
+    
+    // Handle special case for telegram new-message to avoid conflict with discord
+    if (appType === "telegram" && selectedEvent === "new-message") {
+      return exportEventsByEvent["new-message-telegram"] || []
+    }
+    
+    return exportEventsByEvent[selectedEvent] || []
+  }
+  
+  const exportOptions = getExportOptions()
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
   const selectedEventOption = eventOptions.find((option) => option.value === selectedEvent)
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleEventChange = (eventValue: string) => {
+    setSelectedEvent(eventValue)
+    // Reset export selection when event changes
+    setSelectedExport("")
   }
 
   const isFormValid =
@@ -229,7 +299,7 @@ export default function TriggerDropdown({
           <CustomSelect
             options={eventOptions}
             value={selectedEvent}
-            onChange={setSelectedEvent}
+            onChange={handleEventChange}
             placeholder="Choose an event"
           />
         ) : (
@@ -266,28 +336,31 @@ export default function TriggerDropdown({
               />
             </div>
           ))}
+
+          {/* Export options section - only show when event is selected */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-[#c5c5d2]">Export Options</label>
+              <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+            </div>
+
+            {exportOptions.length > 0 ? (
+              <CustomSelect
+                options={exportOptions}
+                value={selectedExport}
+                onChange={setSelectedExport}
+                placeholder="Choose what to export"
+              />
+            ) : (
+              <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
+                No export options available for this event
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="flex justify-between gap-2 pt-2">
-        <div className="space-y-3">
-        
-
-        {exportOptions.length > 0 ? (
-          <CustomSelect
-            options={exportOptions}
-            value={selectedExport}
-            onChange={setSelectedExport}
-            placeholder="Export options"
-          />
-        ) : (
-          <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
-            No export for this app
-          </div>
-        )}
-      </div>
-      
-      <div className="flex justify-between gap-2 pt-2">
+      <div className="flex justify-end gap-2 pt-2">
         <button
           onClick={handleCancel}
           className="px-3 py-1 text-sm font-medium text-[#9b9bab] bg-[#2a2e3f] border border-[#3a3f52] rounded-md hover:bg-[#3a3f52]"
@@ -301,7 +374,6 @@ export default function TriggerDropdown({
         >
           Save Configuration
         </button>
-        </div>
       </div>
     </div>
   )

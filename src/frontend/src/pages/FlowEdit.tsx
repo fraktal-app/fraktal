@@ -79,13 +79,6 @@ export default function WorkflowBuilder() {
   const { workflowId } = useParams();
   console.log('Workflow ID:', workflowId);
   
-  const actionDropdownOptions: Record<string, string[]> = {
-    gmail: ["Send Gmail notification", "Archive Email", "Mark as Read"],
-    discord: ["Send message", "Send alert", "Create channel"],
-    telegram: ["Send message", "Pin message"],
-    notion: ["Create page", "Log database"],
-    webhook: ["Send custom payload", "Trigger external service", "Forward data"]
-  }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<"trigger" | "action">("trigger")
@@ -248,9 +241,6 @@ export default function WorkflowBuilder() {
   }
 
   const filteredApps = appBlocks.filter((app) => app.category === activeTab || app.category === "both")
-
-  // Find the trigger step with an app assigned
-  const trigger = workflowSteps.find((step) => step.type === "trigger" && step.app)
 
   // Loading state
   if (isLoading) {

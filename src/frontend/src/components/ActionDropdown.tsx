@@ -1,14 +1,5 @@
 // Enhanced ActionDropdown component
-import { useState, useRef, useEffect } from "react"
-import {
-  Mail,
-  ChevronDown,
-  MessageSquare,
-  Send,
-  Github,
-  TrendingUp,
-  Coins,
-} from "lucide-react"
+import { useState } from "react"
 
 const inputFieldsByApp: Record<
   string,
