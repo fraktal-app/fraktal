@@ -53,6 +53,7 @@ interface WorkflowStep {
     event: string
     clientId?: string
     clientPassword?: string
+    export: string
   }
   showDropdown?: boolean
 }
@@ -161,7 +162,7 @@ export default function WorkflowBuilder() {
 
   const handleSaveConfig = (
     stepId: string,
-    formData: { event: string; clientId?: string; clientPassword?: string },
+    formData: { event: string; clientId?: string; clientPassword?: string; export: string },
   ) => {
     setWorkflowSteps((prev) =>
       prev.map((step) => (step.id === stepId ? { ...step, configData: formData, showDropdown: false } : step)),
@@ -195,6 +196,7 @@ export default function WorkflowBuilder() {
             event: trigger.configData?.event || null,
             clientId: trigger.configData?.clientId || null,
             clientPassword: trigger.configData?.clientPassword || null,
+            export: trigger.configData?.export || null,
           }
         : null,
       actions: actions.map((action) => ({
@@ -203,6 +205,8 @@ export default function WorkflowBuilder() {
         appType: action.app!.type,
         label: action.app!.label,
         event: action.configData?.event || null,
+        export: action.configData?.export || null,
+
       })),
     }
 
@@ -211,6 +215,7 @@ export default function WorkflowBuilder() {
     console.log("client password:", workflowData.trigger?.clientPassword)
     console.log("trigger app:", workflowData.trigger?.label)
     console.log("trigger event:", workflowData.trigger?.event)
+    console.log("export:", workflowData.trigger?.export)
     console.log(
       "All Actions:",
       workflowData.actions.map((action) => action.label),
@@ -504,6 +509,7 @@ export default function WorkflowBuilder() {
                                 handleSaveConfig(step.id, {
                                   ...step.configData,
                                   event: e.target.value,
+                                  export: e.target.value,
                                 })
                               }
                               className="w-full bg-[#1b1f2a] border border-[#3a3f52] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6d3be4]"
@@ -533,7 +539,7 @@ export default function WorkflowBuilder() {
                       {step.showDropdown && step.type === "trigger" && (
                         <TriggerDropdown
                           isOpen={step.showDropdown as boolean}
-                          onSave={(formData: { event: string; clientId?: string; clientPassword?: string }) =>
+                          onSave={(formData: { event: string; clientId?: string; clientPassword?: string; export: string }) =>
                             handleSaveConfig(step.id, formData)
                           }
                           onCancel={() => handleCancelConfig(step.id)}

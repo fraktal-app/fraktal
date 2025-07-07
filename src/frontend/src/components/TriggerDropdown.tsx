@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from "react"
 import {
   Mail,
-  FileText,
   ChevronDown,
   MessageSquare,
   Send,
   Github,
-  Webhook,
   TrendingUp,
   Coins,
 } from "lucide-react"
@@ -50,13 +48,39 @@ const triggerEventsByApp: Record<string, Array<{ value: string; label: string; i
     { value: "new-message", label: "New Message Received", icon: Send },
     { value: "bot-command", label: "Bot Command Received", icon: Send },
   ],
-  forms: [{ value: "new-response", label: "New Response Received", icon: FileText }],
-  webhook: [{ value: "webhook-received", label: "Webhook Received", icon: Webhook }],
   "wallet-tracking": [
     { value: "balance-threshold", label: "Balance Above/Below Threshold", icon: TrendingUp },
     { value: "new-transaction", label: "New Transaction", icon: TrendingUp },
   ],
   "token-price": [{ value: "price-threshold", label: "Token value crosses a threshold", icon: Coins }],
+}
+
+const exportEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {
+  gmail: [
+    { value: "email-body", label: "Email body", icon: Mail },
+    { value: "email-sender", label: "Sender name", icon: Mail },
+    { value: "email-everything", label: "Everything", icon: Mail },
+  ],
+  github: [
+    { value: "contributor-detail", label: "Contributor detail", icon: Github },
+    { value: "everything", label: "Everything", icon: Github },
+  ],
+  discord: [
+    { value: "user-detail", label: "User detail", icon: MessageSquare },
+    { value: "content", label: "Content", icon: MessageSquare },
+    { value: "everything", label: "Everything", icon: MessageSquare },
+  ],
+  telegram: [
+    { value: "user-detail", label: "User detail", icon: Send },
+    { value: "content", label: "Content", icon: Send },
+    { value: "everything", label: "Everything", icon: Send },
+  ],
+  "wallet-tracking": [
+    { value: "Current-balnce", label: "Current balance", icon: TrendingUp },
+    { value: "balance-change", label: " Chnage in balance", icon: TrendingUp },
+    { value: "transaction-detail", label: "Transaction detail", icon: TrendingUp },
+  ],
+  "token-price": [{ value: "curent-price", label: "Current token price", icon: Coins }],
 }
 
 function CustomSelect({
@@ -135,14 +159,17 @@ export default function TriggerDropdown({
   appType,
 }: {
   isOpen: boolean
-  onSave: (formData: { event: string; [key: string]: string }) => void
+  onSave: (formData: { event: string; [key: string]: string; export: string }) => void
   onCancel: () => void
   appType?: string
 }) {
   const [selectedEvent, setSelectedEvent] = useState("")
+  const [selectedExport, setSelectedExport] = useState("")
+
   const [credentials, setCredentials] = useState<Record<string, string>>({})
 
   const eventOptions = appType ? triggerEventsByApp[appType] || [] : []
+  const exportOptions = appType ? exportEventsByApp[appType] || [] : []
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
   const selectedEventOption = eventOptions.find((option) => option.value === selectedEvent)
 
@@ -152,19 +179,22 @@ export default function TriggerDropdown({
 
   const isFormValid =
     selectedEvent &&
-    credentialFields.every((field) => !field.required || credentials[field.key]?.trim())
+    credentialFields.every((field) => !field.required || credentials[field.key]?.trim()) &&
+    selectedExport
 
   const handleSave = () => {
     if (isFormValid) {
-      onSave({ event: selectedEvent, ...credentials })
+      onSave({ event: selectedEvent, ...credentials, export: selectedExport})
       setSelectedEvent("")
       setCredentials({})
+      setSelectedExport("")
     }
   }
 
   const handleCancel = () => {
     setSelectedEvent("")
     setCredentials({})
+    setSelectedExport("")
     onCancel()
   }
 
@@ -227,20 +257,39 @@ export default function TriggerDropdown({
         </div>
       )}
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex justify-between gap-2 pt-2">
+        <div className="space-y-3">
+        
+
+        {exportOptions.length > 0 ? (
+          <CustomSelect
+            options={exportOptions}
+            value={selectedExport}
+            onChange={setSelectedExport}
+            placeholder="Export options"
+          />
+        ) : (
+          <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
+            No export for this app
+          </div>
+        )}
+      </div>
+      
+      <div className="flex justify-between gap-2 pt-2">
         <button
           onClick={handleCancel}
-          className="px-3 py-1.5 text-sm font-medium text-[#9b9bab] bg-[#2a2e3f] border border-[#3a3f52] rounded-md hover:bg-[#3a3f52]"
+          className="px-3 py-1 text-sm font-medium text-[#9b9bab] bg-[#2a2e3f] border border-[#3a3f52] rounded-md hover:bg-[#3a3f52]"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={!isFormValid}
-          className="px-3 py-1.5 text-sm font-medium text-white bg-[#6d3be4] border border-transparent rounded-md hover:bg-[#5a2fc7] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm font-medium text-white bg-[#6d3be4] border border-transparent rounded-md hover:bg-[#5a2fc7] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save Configuration
         </button>
+        </div>
       </div>
     </div>
   )

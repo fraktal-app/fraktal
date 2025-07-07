@@ -27,7 +27,7 @@ const Sidebar = ({ collapsed }: { collapsed: boolean }) => {
                 Profile
             </span>
         </Link>
-        <Link to="/dashboard/notifications" className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-gray-800 text-lg">
+        <Link to="/dashboard/executions" className="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-gray-800 text-lg">
           <RefreshCcw  className="w-6 h-6 shrink-0" />
            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 w-auto overflow-hidden' : 'opacity-100 w-auto'}`}>
                 Executions
