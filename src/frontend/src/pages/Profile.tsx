@@ -1,4 +1,5 @@
-import { Mail, User } from "lucide-react";
+import { IdCard, Mail, User } from "lucide-react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 
 type UserData = {
   id: string;
@@ -8,7 +9,7 @@ type UserData = {
     avatar_url: string;
   };
   app_metadata: {
-    providers: string;
+    providers: string[];
   };
 };
 
@@ -17,15 +18,11 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ userData }) => {
+
   return (
-    <div className="h-screen pt-20">
+    <div className="h-full pt-20">
       <div className="max-w-2xl mx-auto p-4 py-8">
         <div className="bg-base-300 rounded-xl p-6 space-y-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold">Profile</h1>
-            <p className="mt-2">Your profile information</p>
-          </div>
-
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
               <img
@@ -36,33 +33,41 @@ const Profile: React.FC<ProfileProps> = ({ userData }) => {
             </div>
           </div>
 
-         <div className="space-y-6">
-            <div className="space-y-1.5">
-              <div className="text-sm text-zinc-400 flex items-center gap-2">
-                <User className="w-4 h-4" />
-                  Full Name
-              </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{userData.user_metadata.full_name}</p>
-            </div>
-            <div className="space-y-1.5">
-              <div className="text-sm text-zinc-400 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email address
-              </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{userData.email}</p>
-            </div>
-          </div>
+         
           <div className="mt-6 bg-base-300 rounded-xl p-6">
             <h2 className="text-lg font-medium mb-4">Account Information</h2>
             <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between py-2 border-t border-zinc-700">
+                <div className="flex items-center justify-between py-2 gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Full Name</span>
+                </div>
+                <span>{userData.user_metadata.full_name}</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center justify-between py-2 gap-2">
+                  <Mail className="w-4 h-4" />
+                  <span>Mail address</span>
+                </div>
+                <span>{userData.email}</span>
+              </div>
               <div className="flex items-center justify-between py-2 border-b border-zinc-700">
-                <span>ID</span>
+                 <div className="flex items-center justify-between py-2 gap-2">
+                  <IdCard className="w-4 h-4" />
+                  <span>ID</span>
+                </div>
                 <span>{userData.id}</span>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span>Providers</span>
-                <span className="text-green-500">{userData.app_metadata.providers}</span>
-              </div>
+                  <span className="flex gap-2 items-center">
+                    {userData.app_metadata.providers.map((provider) => {
+                      if (provider === "google") return <FaGoogle key="google" size={20} />;
+                      if (provider === "github") return <FaGithub key="github" size={20} />;
+                      return null;
+                    })}
+                  </span>
+                </div>
             </div>
           </div>
         </div>
