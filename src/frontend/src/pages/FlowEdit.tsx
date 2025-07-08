@@ -239,10 +239,14 @@ export default function WorkflowBuilder() {
   console.log("trigger app:", workflowData.trigger?.label)
   console.log("trigger event:", workflowData.trigger?.event)
   console.log("export:", workflowData.trigger?.export)
-  console.log(
-    "All Actions:",
-    workflowData.actions.map((action) => action.label),
-  )
+console.log(
+  "All Actions with Exports:",
+  workflowData.actions.map((action) => ({
+    label: action.label,
+    event: action.event,
+    export: action.export,
+  }))
+)
   console.log("Full Workflow JSON:", workflowData)
   
   // Here you would typically send the workflow data to your backend

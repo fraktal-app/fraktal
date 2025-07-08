@@ -1,5 +1,6 @@
 // Enhanced ActionDropdown component
 import { useState } from "react"
+import { MessageSquare, Mail, FileText } from "lucide-react"
 
 const inputFieldsByApp: Record<
   string,
@@ -48,6 +49,27 @@ const inputFieldsByApp: Record<
 
 }
 
+const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>> = {
+  "Send Gmail notification": [
+    { value: "status", label: "Delivery Status", icon: Mail },
+    { value: "messageId", label: "Message ID", icon: Mail },
+  ],
+  "Send custom email": [
+    { value: "subject", label: "Subject Sent", icon: Mail },
+    { value: "timestamp", label: "Timestamp", icon: Mail },
+  ],
+  "Send message": [
+    { value: "messageId", label: "Message ID", icon: MessageSquare },
+    { value: "channel", label: "Channel Sent", icon: MessageSquare },
+  ],
+  "Create page": [
+    { value: "pageId", label: "Page ID", icon: FileText },
+    { value: "createdTime", label: "Creation Time", icon: FileText },
+  ],
+  // Add more for others like Telegram, Notion, Webhook, Twitter, etc.
+}
+
+
 // Add action options for each app
 const actionDropdownOptions: Record<string, string[]> = {
   "gmail-send": ["Send Gmail notification", "Send custom email", "Send alert email"],
@@ -73,15 +95,19 @@ export default function ActionDropdown({
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedAction, setSelectedAction] = useState<string>("")
+  const [selectedExport, setSelectedExport] = useState<string>("")
 
   // Use the full appType (e.g., "gmail-send", "discord-send") instead of splitting
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
   const actionOptions = appType ? actionDropdownOptions[appType] || [] : []
+  const exportOptions = selectedAction ? exportEventsByAction[selectedAction] || [] : []
 
   const isFormValid =
-    selectedAction && // Action must be selected
-    (credentialFields.length === 0 ||
+  selectedAction &&
+  selectedExport &&
+  (credentialFields.length === 0 ||
     credentialFields.every((field) => !field.required || credentials[field.key]?.trim()))
+
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
@@ -89,11 +115,11 @@ export default function ActionDropdown({
 
   const handleSave = () => {
     if (isFormValid) {
-      onSave({ 
-        ...credentials, 
-        event: selectedAction,
-        export: selectedAction
-      })
+      onSave({
+  ...credentials,
+  event: selectedAction,
+  export: selectedExport,
+})
     }
   }
 
@@ -118,7 +144,10 @@ export default function ActionDropdown({
           <label className="text-sm font-medium text-[#c5c5d2]">Select Action</label>
           <select
             value={selectedAction}
-            onChange={(e) => setSelectedAction(e.target.value)}
+            onChange={(e) => {
+                setSelectedAction(e.target.value)
+                setSelectedExport("") // Reset export when action changes
+                }}
             className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
           >
             <option value="" disabled>
@@ -150,6 +179,32 @@ export default function ActionDropdown({
             />
           </div>
         ))}
+        {/* Export Options Dropdown */}
+{selectedAction && (
+  <div className="flex flex-col gap-2 pt-3">
+    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
+    {exportOptions.length > 0 ? (
+      <select
+        value={selectedExport}
+        onChange={(e) => setSelectedExport(e.target.value)}
+        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+      >
+        <option value="" disabled>
+          Choose export value
+        </option>
+        {exportOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
+        No export options available for this action
+      </div>
+    )}
+  </div>
+)}
       </div>
 
       <div className="flex justify-between gap-2 pt-2">
