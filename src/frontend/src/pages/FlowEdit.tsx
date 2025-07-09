@@ -200,61 +200,71 @@ export default function WorkflowBuilder() {
       ),
     )
   }
-
-  const handleSaveWorkflow = () => {
+const handleSaveWorkflow = () => {
   const trigger = workflowSteps.find((step) => step.type === "trigger" && step.app)
   const actions = workflowSteps.filter((step) => step.type === "action" && step.app)
+
+  const triggerData = trigger
+    ? {
+        id: trigger.id,
+        type: trigger.type,
+        appType: trigger.app?.type,
+        label: trigger.app?.label,
+        event: trigger.configData?.event || null,
+        export: trigger.configData?.export || null,
+        ...(trigger.configData?.clientId?.trim()
+          ? { clientId: trigger.configData.clientId.trim() }
+          : {}),
+        ...(trigger.configData?.clientPassword?.trim()
+          ? { clientPassword: trigger.configData.clientPassword.trim() }
+          : {}),
+      }
+    : null
+
   const workflowData = {
     name: workflowName,
-    trigger: trigger
-      ? {
-          id: trigger.id,
-          type: trigger.type,
-          appType: trigger.app?.type,
-          label: trigger.app?.label,
-          event: trigger.configData?.event || null,
-          clientId: trigger.configData?.clientId || null,
-          clientPassword: trigger.configData?.clientPassword || null,
-          export: trigger.configData?.export || null,
-        }
-      : null,
-    actions: actions.map((action) => ({
-      id: action.id,
-      type: action.type,
-      appType: action.app?.type,
-      label: action.app?.label,
-      event: action.configData?.event || null,
-      export: action.configData?.export || null,
-      credentials: Object.fromEntries(
+    trigger: triggerData,
+    actions: actions.map((action) => {
+      const credentials = Object.fromEntries(
         Object.entries(action.configData || {}).filter(
-          ([key]) => !["event", "export"].includes(key)
+          ([key, value]) =>
+            !["event", "export"].includes(key) &&
+            value !== null &&
+            value !== ""
         )
-      ),
-    })),
+      )
+
+      return {
+        id: action.id,
+        type: action.type,
+        appType: action.app?.type,
+        label: action.app?.label,
+        event: action.configData?.event || null,
+        export: action.configData?.export || null,
+        ...(Object.keys(credentials).length > 0 && { credentials }),
+      }
+    }),
   }
-  
+
   console.log("Workflow Name:", workflowData.name)
-  console.log("client id:", workflowData.trigger?.clientId)
-  console.log("client password:", workflowData.trigger?.clientPassword)
-  console.log("trigger app:", workflowData.trigger?.label)
-  console.log("trigger event:", workflowData.trigger?.event)
-  console.log("export:", workflowData.trigger?.export)
-console.log(
-  "All Actions with Exports:",
-  workflowData.actions.map((action) => ({
-    label: action.label,
-    event: action.event,
-    export: action.export,
-  }))
-)
+  console.log("Trigger App:", workflowData.trigger?.label)
+  console.log("Trigger Event:", workflowData.trigger?.event)
+  console.log("Export:", workflowData.trigger?.export)
+
+if (workflowData.trigger && "clientId" in workflowData.trigger) {
+  console.log("Client ID:", workflowData.trigger.clientId)
+}
+if (workflowData.trigger && "clientPassword" in workflowData.trigger) {
+  console.log("Client Password:", workflowData.trigger.clientPassword)
+}
+
+
+  console.log("All Actions with Exports:", workflowData.actions)
   console.log("Full Workflow JSON:", workflowData)
-  
-  // Here you would typically send the workflow data to your backend
-  // For now, we'll just close the popup
+
   setShowSavePopup(false)
   setValidationError("")
-  
-  // Success toast notification (top-right position)
+
   toast.success(`Workflow "${workflowName}" saved successfully!`, {
     position: "top-right",
     autoClose: 3000,
@@ -262,8 +272,9 @@ console.log(
     closeOnClick: true,
     pauseOnHover: true,
     draggable: true,
-  });
+  })
 }
+
 
   const handleSaveButtonClick = () => {
     const error = validateWorkflow()
