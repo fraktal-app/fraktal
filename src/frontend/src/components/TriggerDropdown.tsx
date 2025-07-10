@@ -31,118 +31,156 @@ type InputField =
 
 const inputFieldsByApp: Record<string, InputField[]> = {
   gmail: [
-    {
-      key: "clientId",
-      label: "Client ID",
-      placeholder: "Enter Client ID",
-      type: "text",
-      required: true,
-    },
-    {
-      key: "clientSecret",
-      label: "Client Secret",
-      placeholder: "Enter Client Secret",
-      type: "password",
-      required: true,
-    },
-  ],
+  {
+    key: "clientId",
+    label: "Client ID",
+    placeholder: "Enter your Gmail OAuth Client ID",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "clientSecret",
+    label: "Client Secret",
+    placeholder: "Enter your Gmail OAuth Client Secret",
+    type: "password",
+    required: true,
+  }
+]
+,
   discord: [
-    {
-      key: "client",
-      label: "Bot id",
-      placeholder: "Enter Bot ID",
-      type: "text",
-      required: true,
-    },
-  ],
+  {
+    key: "botToken",
+    label: "Bot Token",
+    placeholder: "Enter your Discord Bot Token",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "applicationId",
+    label: "Application ID",
+    placeholder: "Enter your Discord Application ID",
+    type: "text",
+    required: false,
+  },
+  {
+    key: "guildId",
+    label: "Guild ID",
+    placeholder: "Enter your Discord Server (Guild) ID",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "channelIds",
+    label: "Channel IDs",
+    placeholder: "Comma-separated channel IDs or 'all'",
+    type: "text",
+    required: true,
+  }
+]
+,
   RSS: [
   {
     key: "feedUrl",
     label: "RSS Feed URL",
-    placeholder: "Enter the RSS feed URL",
+    placeholder: "Enter the full RSS or Atom feed URL",
     type: "text",
     required: true,
   },
   {
     key: "pollInterval",
     label: "Poll Interval (in minutes)",
-    placeholder: "Enter how often to check for updates (e.g., 5)",
+    placeholder: "Enter poll frequency in minutes (e.g., 15)",
     type: "text",
     required: true,
   }
-],
+]
+,
   github: [
-    {
-      key: "clientId",
-      label: "Client ID",
-      placeholder: "Enter GitHub Client ID",
-      type: "text",
-      required: true,
-    },
-    {
-      key: "clientSecret",
-      label: "Client Secret",
-      placeholder: "Enter GitHub Client Secret",
-      type: "password",
-      required: true,
-    },
-  ],
+  {
+    key: "personalAccessToken",
+    label: "Personal Access Token (PAT)",
+    placeholder: "Enter your GitHub PAT with repo scope",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "username",
+    label: "GitHub Username",
+    placeholder: "Enter your GitHub username",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "repository",
+    label: "Repository Name",
+    placeholder: "e.g., username/repo-name",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "branch",
+    label: "Branch",
+    placeholder: "e.g., main or master",
+    type: "text",
+    required: false,
+  }
+]
+,
   telegram: [
-    {
-      key: "botToken",
-      label: "Bot Token",
-      placeholder: "Enter your Telegram Bot Token",
-      type: "text",
-      required: true,
-    },
-    {
-      key: "chatId",
-      label: "Chat ID",
-      placeholder: "Enter Chat ID to listen for messages",
-      type: "text",
-      required: true,
-    },
-  ],
+  {
+    key: "botToken",
+    label: "Bot Token",
+    placeholder: "Enter your Telegram Bot Token",
+    type: "password",
+    required: true,
+  }
+]
+,
   "wallet-tracking": [
-    {
-      key: "walletAddress",
-      label: "Wallet Address",
-      placeholder: "Enter wallet address to track",
-      type: "text",
-      required: true,
-    },
-    {
-      key: "network",
-      label: "Network",
-      placeholder: "Select a network",
-      type: "select",
-      required: true,
-      options: [
-        { value: "Ethereum", label: "Ethereum" },
-        { value: "Solana", label: "Solana" },
-      ],
-    },
-  ],
-  "token-price": [
-    {
-      key: "threshold",
-      label: "Price Threshold",
-      placeholder: "Enter price threshold (e.g., 2500)",
-      type: "text",
-      required: true,
-    },
-    {
-  key: "direction",
-  label: "Direction",
-  placeholder: "Select direction",
-  type: "select",
-  required: true,
-  options: [
-    { value: "above", label: "Above" },
-    { value: "below", label: "Below" },
+  {
+    key: "walletAddress",
+    label: "Wallet Address",
+    placeholder: "Enter wallet address (e.g., 0x...)",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "network",
+    label: "Network",
+    placeholder: "Select a network",
+    type: "select",
+    required: true,
+    options: [
+      { value: "Ethereum", label: "Ethereum" },
+      { value: "Polygon", label: "Polygon" },
+      { value: "BSC", label: "Binance Smart Chain" },
+      { value: "Arbitrum", label: "Arbitrum" },
+      { value: "Other", label: "Other" }
     ],
-    }
-  ],
+  }
+]
+,
+  "token-price": [
+  {
+    key: "threshold",
+    label: "Price Threshold",
+    placeholder: "Enter price threshold (e.g., 2500)",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "direction",
+    label: "Direction",
+    placeholder: "Select direction",
+    type: "select",
+    required: true,
+    options: [
+      { value: "above", label: "Above" },
+      { value: "below", label: "Below" },
+    ],
+  }
+]
+,
 }
 const triggerEventsByApp: Record<string, Array<{ value: string; label: string; icon: any }>> = {
   gmail: [

@@ -13,40 +13,189 @@ const inputFieldsByApp: Record<
   }>
 > = {
   "gmail-send": [
-    { key: "clientId", label: "Client ID", placeholder: "Enter Client ID", type: "text", required: true },
-    { key: "clientSecret", label: "Client Secret", placeholder: "Enter Client Secret", type: "password", required: true },
-  ],
-  "discord-send": [
-    { key: "botToken", label: "Bot Token", placeholder: "Enter Discord Bot Token", type: "password", required: true },
-  ],
-  "telegram-send": [
-    { key: "botToken", label: "Bot Token", placeholder: "Enter your Telegram Bot Token", type: "password", required: true },
-    { key: "chatId", label: "Chat ID", placeholder: "Enter Chat ID to send message to", type: "text", required: true },
-  ],
-  "notion-create": [
-    { key: "apiKey", label: "API Key", placeholder: "Enter your Notion API Key", type: "password", required: true },
-    { key: "databaseId", label: "Database ID", placeholder: "Enter Database ID", type: "text", required: true },
-    { key: "title", label: "Page Title", placeholder: "Enter page title", type: "text", required: true },
-    { key: "content", label: "Page Content", placeholder: "Enter page content", type: "text", required: true }
-  ],
-  "webhook-post": [
-    { key: "webhookUrl", label: "Webhook URL", placeholder: "Enter webhook URL", type: "text", required: true },
-    { key: "payload", label: "Payload", placeholder: "Enter JSON payload", type: "text", required: true }
-  ],
-  "twitter": [
-  { key: "apiKey", label: "API Key", placeholder: "Enter Twitter API Key", type: "text", required: true },
-  { key: "apiSecret", label: "API Secret", placeholder: "Enter Twitter API Secret", type: "password", required: true }
-],
-  "API": [
-  { key: "url", label: "API URL", placeholder: "Enter API endpoint URL", type: "text", required: true },
-  { key: "headers", label: "Headers", placeholder: "Enter headers (JSON format)", type: "text", required: false },
-  { key: "body", label: "Body", placeholder: "Enter request body (for POST/PUT)", type: "text", required: false }
-],
-  "AI": [
-  { key: "apiKey", label: "AI API Key", placeholder: "Enter your AI API key", type: "password", required: true },
-  { key: "prompt", label: "Prompt", placeholder: "Enter your prompt text", type: "text", required: true },
+  {
+    key: "clientId",
+    label: "Client ID",
+    placeholder: "Enter your Gmail OAuth Client ID",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "clientSecret",
+    label: "Client Secret",
+    placeholder: "Enter your Gmail OAuth Client Secret",
+    type: "password",
+    required: true,
+  }
 ]
-
+,
+  "discord-send": [
+  {
+    key: "botToken",
+    label: "Bot Token",
+    placeholder: "Enter your Discord Bot Token",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "applicationId",
+    label: "Application ID",
+    placeholder: "Enter your Discord Application ID",
+    type: "text",
+    required: false,
+  },
+  {
+    key: "guildId",
+    label: "Guild ID",
+    placeholder: "Enter your Discord Server (Guild) ID",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "channelId",
+    label: "Channel ID",
+    placeholder: "Enter the Channel ID to send the message to",
+    type: "text",
+    required: true,
+  }
+]
+,
+  "telegram-send": [
+  {
+    key: "botToken",
+    label: "Bot Token",
+    placeholder: "Enter your Telegram Bot Token",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "chatId",
+    label: "Chat ID",
+    placeholder: "Enter the Chat ID to send the message to",
+    type: "text",
+    required: true,
+  }
+]
+,
+  "notion-create": [
+  {
+    key: "integrationToken",
+    label: "integrationToken",
+    placeholder: "Enter your Notion integrationToken",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "databaseId",
+    label: "Database ID",
+    placeholder: "Enter the Notion Database ID",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "pageID",
+    label: "Page ID",
+    placeholder: "Enter the ID for the new page",
+    type: "text",
+    required: true,
+  }
+]
+,
+  "webhook-post": [
+  {
+    key: "webhookUrl",
+    label: "Webhook URL",
+    placeholder: "Enter the destination webhook URL",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "payload",
+    label: "Payload",
+    placeholder: "Enter the JSON payload to send",
+    type: "text",
+    required: true,
+  }
+]
+,
+  twitter: [
+  {
+    key: "apiKey",
+    label: "API Key",
+    placeholder: "Enter your Twitter API Key",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "apiSecret",
+    label: "API Key Secret",
+    placeholder: "Enter your Twitter API Key Secret",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "accessToken",
+    label: "Access Token",
+    placeholder: "Enter your Twitter Access Token",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "accessTokenSecret",
+    label: "Access Token Secret",
+    placeholder: "Enter your Twitter Access Token Secret",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "bearerToken",
+    label: "Bearer Token",
+    placeholder: "Enter your Twitter Bearer Token (for API v2)",
+    type: "password",
+    required: false, 
+  }
+]
+,
+  "API": [
+  {
+    key: "url",
+    label: "API URL",
+    placeholder: "Enter the API endpoint URL",
+    type: "text",
+    required: true,
+  },
+  {
+    key: "headers",
+    label: "Headers",
+    placeholder: "Enter request headers in JSON format (optional)",
+    type: "text",
+    required: false,
+  },
+  {
+    key: "body",
+    label: "Body",
+    placeholder: "Enter request body for POST/PUT (optional)",
+    type: "text",
+    required: false,
+  }
+]
+,
+  "AI": [
+  {
+    key: "apiKey",
+    label: "AI API Key",
+    placeholder: "Enter your AI service API key (e.g., OpenAI)",
+    type: "password",
+    required: true,
+  },
+  {
+    key: "prompt",
+    label: "Prompt",
+    placeholder: "Enter your input prompt for the AI model",
+    type: "text",
+    required: true,
+  }
+]
 }
 
 const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>> = {
