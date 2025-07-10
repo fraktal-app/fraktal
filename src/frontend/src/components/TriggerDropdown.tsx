@@ -342,183 +342,97 @@ export default function TriggerDropdown({
   appType,
 }: {
   isOpen: boolean
-  onSave: (formData: { event: string; [key: string]: string; export: string }) => void
+  onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
   onCancel: () => void
   appType?: string
 }) {
-  const [selectedEvent, setSelectedEvent] = useState("")
-  const [selectedExport, setSelectedExport] = useState("")
-  const [thresholdAmount, setThresholdAmount] = useState("")
   const [credentials, setCredentials] = useState<Record<string, string>>({})
+  const [selectedTrigger, setSelectedTrigger] = useState<string>("")
+const [selectedExport, setSelectedExport] = useState<string>("")
+const availableTriggers = appType ? triggerEventsByApp[appType] || [] : []
+const availableExports = exportEventsByEvent[selectedTrigger] || []
 
-  const eventOptions = appType ? triggerEventsByApp[appType] || [] : []
-  
-  // Get export options based on selected event and app type
-  const getExportOptions = () => {
-    if (!selectedEvent) return []
-    
-    // Handle special case for telegram new-message to avoid conflict with discord
-    if (appType === "telegram" && selectedEvent === "new-message") {
-      return exportEventsByEvent["new-message-telegram"] || []
-    }
-    
-    return exportEventsByEvent[selectedEvent] || []
-  }
-  
-  const exportOptions = getExportOptions()
+
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
-  const selectedEventOption = eventOptions.find((option) => option.value === selectedEvent)
+
+
+  const isFormValid = credentialFields.every(
+    (field) => !field.required || credentials[field.key]?.trim()
+  )
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleEventChange = (eventValue: string) => {
-    setSelectedEvent(eventValue)
-    // Reset export selection when event changes
-    setSelectedExport("")
-  }
-
-  const isFormValid =
-  selectedEvent &&
-  credentialFields.every((field) => !field.required || credentials[field.key]?.trim()) &&
-  selectedExport &&
-  (!["balance-above-threshold", "balance-below-threshold"].includes(selectedEvent) || !!thresholdAmount.trim())
-
-
   const handleSave = () => {
-  if (isFormValid) {
-    onSave({
-      event: selectedEvent,
-      ...credentials,
-      export: selectedExport,
-      ...(thresholdAmount && { thresholdAmount }) // only if threshold is present
-    })
-    setSelectedEvent("")
-    setCredentials({})
-    setSelectedExport("")
-    setThresholdAmount("")
-  }
-}
+    if (isFormValid) {
+      onSave({
+  ...credentials,
+  event: selectedTrigger,
+  export: selectedExport,
+})
 
+    }
+  }
+
+  const handleCancel = () => {
+    setCredentials({})
+    onCancel()
+  }
 
   if (!isOpen) return null
-
-  function handleCancel(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    event.preventDefault();
-    onCancel();
-  }
 
   return (
     <div className="mt-3 p-4 bg-[#1b1f2a] border border-[#3a3f52] rounded-lg space-y-4">
       <div>
         <h3 className="text-sm font-medium text-white mb-2">Configure Trigger</h3>
-        <p className="text-xs text-[#9b9bab] mb-3">Configure when this {appType} trigger should activate</p>
+        <p className="text-xs text-[#9b9bab] mb-3">Enter the required credentials below</p>
       </div>
+
+      {/* Trigger selection dropdown */}
+<div className="space-y-2">
+  <label className="text-sm font-medium text-[#c5c5d2]">Select Trigger</label>
+  <CustomSelect
+    options={availableTriggers}
+    value={selectedTrigger}
+    onChange={setSelectedTrigger}
+    placeholder="Select a trigger"
+  />
+</div>
 
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-[#c5c5d2]">Trigger event</label>
-          <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-        </div>
-
-        {eventOptions.length > 0 ? (
-          <CustomSelect
-            options={eventOptions}
-            value={selectedEvent}
-            onChange={handleEventChange}
-            placeholder="Choose an event"
-          />
-        ) : (
-          <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
-            No trigger events available for this app
+        {credentialFields.map((field) => (
+          <div className="flex flex-col gap-2" key={field.key}>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+              {field.required && (
+                <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+              )}
+            </div>
+            <input
+              type={field.type}
+              value={credentials[field.key] || ""}
+              onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+            />
           </div>
-        )}
+        ))}
       </div>
 
-      {selectedEventOption && (
-        <div className="space-y-3">
-          <div className="bg-[#2a2e3f] rounded-lg p-3 space-y-2">
-            <h4 className="text-sm font-medium text-[#9b9bab]">Preview</h4>
-            <div className="flex items-center gap-2 text-sm text-[#c5c5d2]">
-              <selectedEventOption.icon className="h-4 w-4" />
-              <span>When: {selectedEventOption.label}</span>
-            </div>
-          </div>
-
-{credentialFields.map((field) => (
-  <div className="flex flex-col gap-2" key={field.key}>
-    <div className="flex items-center gap-2">
-      <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
-      {field.required && (
-        <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-      )}
-    </div>
-
-    {/* 🟨 Handle "select" fields */}
-    {"type" in field && field.type === "select" && "options" in field ? (
-      <select
-        value={credentials[field.key] || ""}
-        onChange={(e) => handleCredentialChange(field.key, e.target.value)}
-        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-      >
-        <option value="" disabled>{field.placeholder}</option>
-        {(field.options as Array<{ value: string; label: string }>).map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    ) : (
-      <input
-        type={field.type}
-        value={credentials[field.key] || ""}
-        onChange={(e) => handleCredentialChange(field.key, e.target.value)}
-        placeholder={field.placeholder}
-        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-      />
-    )}
+      {selectedTrigger && (
+  <div className="space-y-2">
+    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
+    <CustomSelect
+      options={availableExports}
+      value={selectedExport}
+      onChange={setSelectedExport}
+      placeholder="Select export data"
+    />
   </div>
-))}
+)}
 
-
-          {/* Export options section - only show when event is selected */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-[#c5c5d2]">Export Options</label>
-              <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-            </div>
-            {["balance-above-threshold", "balance-below-threshold"].includes(selectedEvent) && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-[#c5c5d2]">Threshold Amount</label>
-                  <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
-                </div>
-                <input
-                  type="number"
-                  min="0"
-                  value={thresholdAmount}
-                  onChange={(e) => setThresholdAmount(e.target.value)}
-                  placeholder="Enter threshold amount"
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-                />
-              </div>
-            )}
-            {exportOptions.length > 0 ? (
-              <CustomSelect
-                options={exportOptions}
-                value={selectedExport}
-                onChange={setSelectedExport}
-                placeholder="Choose what to export"
-              />
-            ) : (
-              <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
-                No export options available for this event
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex justify-between gap-2 pt-2">
         <button
           onClick={handleCancel}
           className="px-3 py-1 text-sm font-medium text-[#9b9bab] bg-[#2a2e3f] border border-[#3a3f52] rounded-md hover:bg-[#3a3f52]"
