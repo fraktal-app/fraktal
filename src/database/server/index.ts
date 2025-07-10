@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { Server as NodeServer } from 'http';
 
 import { getRouter as getRouterUsers } from '../entities/users/router';
+import { getRouter as getRouterWorkflow } from '../entities/workflow/router';
 import { db } from '..';
 
 export function initServer(): NodeServer {
@@ -10,6 +11,7 @@ export function initServer(): NodeServer {
     app.use(express.json());
 
     app.use('/users', getRouterUsers());
+    app.use('/workflows', getRouterWorkflow());
 
     app.get('/health', (req: Request, res: Response) => {
         try {

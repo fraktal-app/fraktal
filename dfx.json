@@ -23,9 +23,6 @@
             "main": "src/database/index.ts",
             "custom": {
                 "experimental": true,
-                "assets": [
-                    ["src/scripts", "scripts"]
-                ],
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
