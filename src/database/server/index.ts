@@ -3,6 +3,8 @@ import { Server as NodeServer } from 'http';
 
 import { getRouter as getRouterUsers } from '../entities/users/router';
 import { getRouter as getRouterWorkflow } from '../entities/workflow/router';
+import { getRouter as getRouterTrigger } from '../entities/triggers/router';
+
 import { db } from '..';
 
 export function initServer(): NodeServer {
@@ -12,6 +14,7 @@ export function initServer(): NodeServer {
 
     app.use('/users', getRouterUsers());
     app.use('/workflows', getRouterWorkflow());
+    app.use('/triggers', getRouterTrigger());
 
     app.get('/health', (req: Request, res: Response) => {
         try {
