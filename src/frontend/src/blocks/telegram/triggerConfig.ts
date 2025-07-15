@@ -13,19 +13,19 @@ export const telegramInputFields: Record<string, InputField[]> = {
   }
 ]
 }
-
+ 
+//TODO IMPLEMENT BOT COMMANG LATER
 export const telegramTriggerEvents = 
   [
     { value: "new-message-telegram", label: "New Message Received", icon: Send },
-    { value: "bot-command-telegram", label: "Bot Command Received", icon: Send },
+    //{ value: "bot-command-telegram", label: "Bot Command Received", icon: Send },
   ];
 
 
 export const telegramExportEvents = {
    "new-message-telegram": [
     { value: "messenger-detail", label: "Messenger Detail", icon: Send },
-    { value: "message-content", label: "Message Content", icon: Send },
-    { value: "everything", label: "Everything", icon: Send },
+    
   ],
   "bot-command-telegram": [
     { value: "messenger-detail", label: "Messenger Detail", icon: Send },
