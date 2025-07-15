@@ -64,7 +64,6 @@ interface WorkflowStep {
 }
 
 const appBlocks: AppBlock[] = [
-  { type: "gmail", label: "Gmail", icon: Mail, iconUrl: gmail, color: "white", category: "trigger" },
   { type: "discord", label: "Discord", icon: MessageSquare, iconUrl: discord, color: "white", category: "trigger" },
   { type: "telegram", label: "Telegram", icon: Send, iconUrl: telegram, color: "white", category: "trigger" },
   { type: "github", label: "GitHub", icon: Github, iconUrl: github, color: "white", category: "trigger" },

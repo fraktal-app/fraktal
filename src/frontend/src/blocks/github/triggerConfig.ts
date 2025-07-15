@@ -2,17 +2,38 @@ import { Github, MessageSquare } from "lucide-react";
 import type { InputField } from "../common/types"
 
 export const githubInputFields: Record<string, InputField[]> = {
-  
   github: [
-  {
-    key: "personalAccessToken",
-    label: "Personal Access Token (PAT)",
-    placeholder: "Enter your GitHub PAT with repo scope",
-    type: "password",
-    required: true,
-  }
-]
-}
+    {
+      key: "personalAccessToken",
+      label: "Personal Access Token (PAT)",
+      placeholder: "Enter your GitHub PAT with repo and issues scope",
+      type: "password",
+      required: true,
+    },
+    {
+      key: "username",
+      label: "GitHub Username",
+      placeholder: "Enter your GitHub username",
+      type: "text",
+      required: true,
+    },
+    {
+      key: "repository",
+      label: "Repository Name",
+      placeholder: 'e.g., "username/repo-name"',
+      type: "text",
+      required: true,
+    },
+    {
+      key: "branch",
+      label: "Branch",
+      placeholder: "Select branch to monitor(Main/Master/Dev)",
+      type: "text",
+      required: true,
+    }
+  ]
+};
+
 
 export const githubTriggerEvents = 
   [
