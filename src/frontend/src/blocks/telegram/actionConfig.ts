@@ -23,7 +23,7 @@ export const telegramActionInputFields: Record<string, InputField[]> = {
 
 export const telegramResponseDropdownOptions = 
    [  
-  //{ value: "send_message", label: "Send message" },
+  { value: "send_message", label: "Send message" },
   //{ value: "send_alert", label: "Send alert" },
   //{ value: "pin_message", label: "Pin message" },
 ];
