@@ -95,27 +95,7 @@ const Profile: React.FC<ProfileProps> = ({ userData }) => {
                 </span>
               </div>
             </div>
-
-            {/* 🔘 Trigger Config Button */}
-            <div className="mt-6">
-              <button
-                onClick={() => setIsTriggerOpen(true)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
-              >
-                Configure Trigger
-              </button>
-            </div>
-
-            {/* 🧩 TriggerDropdown Modal or Inline UI */}
             <div className="mt-4">
-              <TriggerDropdown
-                isOpen={isTriggerOpen}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                appType="telegram" // or dynamically based on selected app
-                userId={userData.id} // ✅ passed from profile
-                workflowId={workflowId} // ✅ can be replaced with real one
-              />
             </div>
           </div>
         </div>

@@ -2,6 +2,13 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { exportEventsByApp, inputFieldsByApp, triggerEventsByApp } from "./triggerEvents";
 
+type TriggerOption = {
+  value: string;
+  label: string;
+  icon: any;
+  requiresLinkName?: boolean;
+};
+
 function CustomSelect({
   options,
   value,
@@ -9,7 +16,7 @@ function CustomSelect({
   placeholder,
   className = "",
 }: {
-  options: Array<{ value: string; label: string; icon: any }>
+  options: TriggerOption[]
   value: string
   onChange: (value: string) => void
   placeholder: string
@@ -90,17 +97,13 @@ export default function TriggerDropdown({
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
   const [linkName, setLinkName] = useState<string>("")
-  const resolvedWorkflowId = workflowId || localStorage.getItem("workflowId") || "<unknown>";
-const resolvedUserId = userId || localStorage.getItem("userId") || "<unknown>";
 
-console.log("✅ TriggerDropdown Props:");
-console.log("   userId:", resolvedUserId);
-console.log("   workflowId:", resolvedWorkflowId);
-console.log("   appType:", appType);
+  const resolvedWorkflowId = workflowId || localStorage.getItem("workflowId") || "<unknown>"
+  const resolvedUserId = userId || localStorage.getItem("userId") || "<unknown>"
 
+  const availableTriggers: TriggerOption[] = appType ? triggerEventsByApp[appType] || [] : []
+  const selectedTriggerObj = availableTriggers.find(t => t.value === selectedTrigger)
 
-
-  const availableTriggers = appType ? triggerEventsByApp[appType] || [] : []
   const availableExports = exportEventsByApp[selectedTrigger] || []
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
 
@@ -110,19 +113,24 @@ console.log("   appType:", appType);
 
   const generatedCommand = `/link ${linkName || "<name>"} ${resolvedUserId}/${resolvedWorkflowId}`
 
-
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSave = () => {
     if (isFormValid) {
-      onSave({
+      const formData: { event: string; export: string; [key: string]: string } = {
         ...credentials,
         event: selectedTrigger,
         export: selectedExport,
-        command: generatedCommand,
-      })
+      };
+
+      if (selectedTriggerObj?.requiresLinkName) {
+        formData.linkName = linkName;
+        formData.command = generatedCommand;
+      }
+
+      onSave(formData);
     }
   }
 
@@ -170,27 +178,22 @@ console.log("   appType:", appType);
         ))}
       </div>
 
-      {/* 🆕 Show link command builder only if new-message-telegram is selected */}
-      {selectedTrigger === "new-message-telegram" && (
+      {selectedTriggerObj?.requiresLinkName && (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-[#c5c5d2]">Link Command Generator</label>
-          <input
-            type="text"
-            placeholder="Enter a name for this link"
-            value={linkName}
-            onChange={(e) => setLinkName(e.target.value)}
-            className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-          />
-          <div className="mt-1 px-3 py-2 bg-[#1f2330] text-sm text-[#9b9bab] border border-[#3a3f52] rounded-md flex justify-between items-center">
-            <span>{generatedCommand}</span>
-            <button
-              onClick={() => navigator.clipboard.writeText(generatedCommand)}
-              className="ml-2 px-2 py-1 text-xs bg-[#2f3244] text-white rounded hover:bg-[#3f4357]"
-            >
-              Copy
-            </button>
-          </div>
-        </div>
+  <label className="text-sm font-medium text-[#c5c5d2]">Link Name</label>
+  <input
+    type="text"
+    value={linkName}
+    onChange={(e) => setLinkName(e.target.value)}
+    placeholder="Enter link name"
+    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+  />
+
+  <div className="w-full px-3 py-2 bg-[#1e1e2d] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-auto">
+    {generatedCommand}
+  </div>
+</div>
+
       )}
 
       {selectedTrigger && (
