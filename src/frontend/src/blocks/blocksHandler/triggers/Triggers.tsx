@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { exportEventsByApp, inputFieldsByApp, triggerEventsByApp } from "./triggerEvents";
+import { outputLinkConfigByApp } from "./outputLinks";
 
 type TriggerOption = {
   value: string;
@@ -111,12 +112,11 @@ export default function TriggerDropdown({
     (field) => !field.required || credentials[field.key]?.trim()
   )
 
-  const generatedCommand = `/link ${linkName || "<name>"} ${resolvedUserId}/${resolvedWorkflowId}`
-
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
   }
 
+  
   const handleSave = () => {
     if (isFormValid) {
       const formData: { event: string; export: string; [key: string]: string } = {
@@ -124,20 +124,27 @@ export default function TriggerDropdown({
         event: selectedTrigger,
         export: selectedExport,
       };
-
-      if (selectedTriggerObj?.requiresLinkName) {
-        formData.linkName = linkName;
-        formData.command = generatedCommand;
+      
+      if (appOutputLinkConfig && selectedTriggerObj?.requiresLinkName) {
+        const extraData = appOutputLinkConfig.getSaveData({
+          linkName,
+          userId: resolvedUserId,
+          workflowId: resolvedWorkflowId,
+        });
+        Object.assign(formData, extraData);
       }
-
+      
       onSave(formData);
     }
-  }
-
+  };
+  
   const handleCancel = () => {
     setCredentials({})
     onCancel()
   }
+  
+  const appOutputLinkConfig = appType ? outputLinkConfigByApp[appType] : undefined;
+  const AppSpecificComponent = appOutputLinkConfig?.Component;
 
   if (!isOpen) return null
 
@@ -178,22 +185,15 @@ export default function TriggerDropdown({
         ))}
       </div>
 
-      {selectedTriggerObj?.requiresLinkName && (
-        <div className="space-y-2">
-  <label className="text-sm font-medium text-[#c5c5d2]">Link Name</label>
-  <input
-    type="text"
-    value={linkName}
-    onChange={(e) => setLinkName(e.target.value)}
-    placeholder="Enter link name"
-    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-  />
-
-  <div className="w-full px-3 py-2 bg-[#1e1e2d] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-auto">
-    {generatedCommand}
-  </div>
-</div>
-
+       {AppSpecificComponent && selectedTriggerObj?.requiresLinkName && (
+        <AppSpecificComponent
+          {...appOutputLinkConfig.propBuilder({
+            linkName,
+            onLinkNameChange: setLinkName,
+            userId: resolvedUserId,
+            workflowId: resolvedWorkflowId,
+          })}
+        />
       )}
 
       {selectedTrigger && (

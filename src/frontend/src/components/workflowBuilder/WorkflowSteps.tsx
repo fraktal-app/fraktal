@@ -15,6 +15,8 @@ interface WorkflowStepProps {
   onSaveConfig: (stepId: string, formData: any) => void
   onCancelConfig: (stepId: string) => void
   onShowDropdown: (stepId: string) => void
+  userId: string
+  workflowId: string
 }
 
 export function WorkflowStep({
@@ -29,6 +31,8 @@ export function WorkflowStep({
   onSaveConfig,
   onCancelConfig,
   onShowDropdown,
+  userId,
+  workflowId,
 }: WorkflowStepProps) {
   return (
     <div className="relative">
@@ -134,6 +138,8 @@ export function WorkflowStep({
             }
             onCancel={() => onCancelConfig(step.id)}
             appType={step.app?.type}
+            userId={userId}
+            workflowId={workflowId}
           />
         )}
         {step.showDropdown && step.type === "action" && (

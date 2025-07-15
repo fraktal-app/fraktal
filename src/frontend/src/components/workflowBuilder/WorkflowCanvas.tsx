@@ -14,6 +14,8 @@ interface WorkflowCanvasProps {
   onSaveConfig: (stepId: string, formData: any) => void
   onCancelConfig: (stepId: string) => void
   onShowDropdown: (stepId: string) => void
+  userId: string
+  workflowId: string
 }
 
 export function WorkflowCanvas({
@@ -27,6 +29,8 @@ export function WorkflowCanvas({
   onSaveConfig,
   onCancelConfig,
   onShowDropdown,
+  userId,
+  workflowId,
 }: WorkflowCanvasProps) {
   return (
     <main
@@ -53,6 +57,8 @@ export function WorkflowCanvas({
                 onSaveConfig={onSaveConfig}
                 onCancelConfig={onCancelConfig}
                 onShowDropdown={onShowDropdown}
+                userId={userId}
+                workflowId={workflowId}
               />
             ))}
 

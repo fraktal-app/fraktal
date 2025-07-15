@@ -24,9 +24,9 @@ export default function WorkflowBuilder() {
     localStorage.setItem("workflowId", workflowId);
   }
 }, [workflowId]);
-  const workID=workflowId;
   console.log('Workflow ID:', workflowId);
-  
+  const [userId, setUserId] = useState<string>("");
+  console.log('User ID:', userId);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [workflowName, setWorkflowName] = useState("Untitled")
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([
@@ -52,6 +52,7 @@ export default function WorkflowBuilder() {
   async function manageUserSession() {
     const currentUserData = await getUserData()
     if (currentUserData) {
+      setUserId(currentUserData.id); 
       setIsLoading(false)
     } else {
       navigate('/login')
@@ -142,6 +143,8 @@ export default function WorkflowBuilder() {
           onSaveConfig={handleSaveConfig}
           onCancelConfig={handleCancelConfig}
           onShowDropdown={handleShowDropdown}
+          userId={userId}
+          workflowId={workflowId || ""}
         />
       </div>
       
