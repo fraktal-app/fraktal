@@ -212,12 +212,20 @@ const handleSaveWorkflow = () => {
         label: trigger.app?.label,
         event: trigger.configData?.event || null,
         export: trigger.configData?.export || null,
-        ...(trigger.configData?.clientId?.trim()
+                ...(trigger.configData?.clientId?.trim()
           ? { clientId: trigger.configData.clientId.trim() }
           : {}),
         ...(trigger.configData?.clientPassword?.trim()
           ? { clientPassword: trigger.configData.clientPassword.trim() }
           : {}),
+        credentials: Object.fromEntries(
+          Object.entries(trigger.configData || {}).filter(
+            ([key, value]) =>
+              !["event", "export", "clientId", "clientPassword"].includes(key) &&
+              value !== null &&
+              value !== ""
+          )
+        )
       }
     : null
 
@@ -260,6 +268,20 @@ if (workflowData.trigger && "clientPassword" in workflowData.trigger) {
 
 
   console.log("All Actions with Exports:", workflowData.actions)
+  workflowData.actions.forEach((action, index) => {
+  console.log(`--- Action ${index + 1} (${action.label}) ---`)
+  console.log("Event:", action.event)
+  console.log("Export:", action.export)
+
+  if (action.credentials) {
+    Object.entries(action.credentials).forEach(([key, value]) => {
+      console.log(`${key}:`, value)
+    })
+  } else {
+    console.log("No credentials provided.")
+  }
+})
+
   console.log("Full Workflow JSON:", workflowData)
 
   setShowSavePopup(false)
