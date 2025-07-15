@@ -76,23 +76,40 @@ export default function TriggerDropdown({
   onSave,
   onCancel,
   appType,
+  userId,
+  workflowId,
 }: {
   isOpen: boolean
   onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
   onCancel: () => void
   appType?: string
+  userId: string
+  workflowId: string
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
+  const [linkName, setLinkName] = useState<string>("")
+  const resolvedWorkflowId = workflowId || localStorage.getItem("workflowId") || "<unknown>";
+const resolvedUserId = userId || localStorage.getItem("userId") || "<unknown>";
+
+console.log("✅ TriggerDropdown Props:");
+console.log("   userId:", resolvedUserId);
+console.log("   workflowId:", resolvedWorkflowId);
+console.log("   appType:", appType);
+
+
+
   const availableTriggers = appType ? triggerEventsByApp[appType] || [] : []
   const availableExports = exportEventsByApp[selectedTrigger] || []
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
 
-
   const isFormValid = credentialFields.every(
     (field) => !field.required || credentials[field.key]?.trim()
   )
+
+  const generatedCommand = `/link ${linkName || "<name>"} ${resolvedUserId}/${resolvedWorkflowId}`
+
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
@@ -101,11 +118,11 @@ export default function TriggerDropdown({
   const handleSave = () => {
     if (isFormValid) {
       onSave({
-  ...credentials,
-  event: selectedTrigger,
-  export: selectedExport,
-})
-
+        ...credentials,
+        event: selectedTrigger,
+        export: selectedExport,
+        command: generatedCommand,
+      })
     }
   }
 
@@ -123,16 +140,15 @@ export default function TriggerDropdown({
         <p className="text-xs text-[#9b9bab] mb-3">Enter the required credentials below</p>
       </div>
 
-      {/* Trigger selection dropdown */}
-<div className="space-y-2">
-  <label className="text-sm font-medium text-[#c5c5d2]">Select Trigger</label>
-  <CustomSelect
-    options={availableTriggers}
-    value={selectedTrigger}
-    onChange={setSelectedTrigger}
-    placeholder="Select a trigger"
-  />
-</div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-[#c5c5d2]">Select Trigger</label>
+        <CustomSelect
+          options={availableTriggers}
+          value={selectedTrigger}
+          onChange={setSelectedTrigger}
+          placeholder="Select a trigger"
+        />
+      </div>
 
       <div className="space-y-3">
         {credentialFields.map((field) => (
@@ -154,17 +170,40 @@ export default function TriggerDropdown({
         ))}
       </div>
 
+      {/* 🆕 Show link command builder only if new-message-telegram is selected */}
+      {selectedTrigger === "new-message-telegram" && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#c5c5d2]">Link Command Generator</label>
+          <input
+            type="text"
+            placeholder="Enter a name for this link"
+            value={linkName}
+            onChange={(e) => setLinkName(e.target.value)}
+            className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+          />
+          <div className="mt-1 px-3 py-2 bg-[#1f2330] text-sm text-[#9b9bab] border border-[#3a3f52] rounded-md flex justify-between items-center">
+            <span>{generatedCommand}</span>
+            <button
+              onClick={() => navigator.clipboard.writeText(generatedCommand)}
+              className="ml-2 px-2 py-1 text-xs bg-[#2f3244] text-white rounded hover:bg-[#3f4357]"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      )}
+
       {selectedTrigger && (
-  <div className="space-y-2">
-    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
-    <CustomSelect
-      options={availableExports}
-      value={selectedExport}
-      onChange={setSelectedExport}
-      placeholder="Select export data"
-    />
-  </div>
-)}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
+          <CustomSelect
+            options={availableExports}
+            value={selectedExport}
+            onChange={setSelectedExport}
+            placeholder="Select export data"
+          />
+        </div>
+      )}
 
       <div className="flex justify-between gap-2 pt-2">
         <button

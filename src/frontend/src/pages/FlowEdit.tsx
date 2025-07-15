@@ -19,6 +19,12 @@ export default function WorkflowBuilder() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const navigate = useNavigate()
   const { workflowId } = useParams();
+  useEffect(() => {
+  if (workflowId) {
+    localStorage.setItem("workflowId", workflowId);
+  }
+}, [workflowId]);
+  const workID=workflowId;
   console.log('Workflow ID:', workflowId);
   
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)

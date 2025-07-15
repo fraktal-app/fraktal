@@ -34,6 +34,10 @@ function Dashboard() {
     manageUserSession();
   }, [])
 
+  useEffect(() => {
+  console.log("👤 Dashboard userData:", userData);
+  }, [userData]);
+
   return (
     <div>
         {isLoading ? 
@@ -49,7 +53,7 @@ function Dashboard() {
         <main className="pt-16 p-4">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="profile" element={<Profile userData={userData} />} />
+            <Route path="profile" element={userData ? <Profile userData={userData} /> : <div>Loading Profile...</div>} />
             <Route path="executions" element={<Executions />} />
             <Route path="settings" element={<Settings />} />
           </Routes>
