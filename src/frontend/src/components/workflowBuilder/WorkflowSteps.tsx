@@ -94,24 +94,13 @@ export function WorkflowStep({
               </button>
             </div>
             
-            {step.type === "trigger" && !step.showDropdown && step.configData?.event && (
+            {!step.showDropdown && (
               <div className="mt-2 p-2 bg-[#2a2e3f] rounded-lg">
                 <button
                   onClick={() => onShowDropdown(step.id)}
                   className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] no-underline"
                 >
-                  Edit Configuration
-                </button>
-              </div>
-            )}
-
-            {step.type === "action" && !step.showDropdown && step.configData?.event && (
-              <div className="mt-2 p-2 bg-[#2a2e3f] rounded-lg">
-                <button
-                  onClick={() => onShowDropdown(step.id)}
-                  className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] no-underline"
-                >
-                  Edit Configuration
+                  {step.configData?.event ? "Edit Configuration" : "Add Configuration"}
                 </button>
               </div>
             )}
