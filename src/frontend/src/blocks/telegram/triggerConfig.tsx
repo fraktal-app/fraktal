@@ -1,4 +1,5 @@
-import { Send } from "lucide-react";
+import { Send, Copy, Check } from "lucide-react";
+import { useState } from "react";
 import type { InputField } from "../common/types";
 
 export function generateTelegramCommand(
@@ -20,63 +21,84 @@ export function TelegramLinkCommand({
   userId: string;
   workflowId: string;
 }) {
+  const [isCopied, setIsCopied] = useState(false);
 
-    const generatedCommand = generateTelegramCommand(linkName, userId, workflowId);
+  const generatedCommand = generateTelegramCommand(linkName, userId, workflowId);
+
+  const handleCopy = () => {
+    const textArea = document.createElement("textarea");
+    textArea.value = generatedCommand;
+
+    textArea.style.position = "absolute";
+    textArea.style.left = "-9999px";
+    
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      setIsCopied(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-[#c5c5d2]">Link Name</label>
-      <p className="text-xs text-[#9b9bab]">
-        Create a unique name to link this workflow to your Telegram bot.
-      </p>
-      <input
-        type="text"
-        value={linkName}
-        onChange={(e) => onLinkNameChange(e.target.value)}
-        placeholder="Enter link name (e.g., new_lead_form)"
-        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-      />
-      <label className="text-sm font-medium text-[#c5c5d2]">Generated Command</label>
-      <p className="text-xs text-[#9b9bab]">
-        Send this command to your bot in Telegram to connect it.
-      </p>
-      <div className="w-full px-3 py-2 bg-[#1e1e2d] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-auto">
-        {generatedCommand}
+    <div>
+      <div className="flex flex-col">
+        <label className="block text-sm font-medium text-[#c5c5d2]">Trigger Name</label>
+        <p className="text-xs text-[#9b9bab] mt-2">
+          Create a unique name to link this workflow to your Telegram bot.
+        </p>
+        <input
+          type="text"
+          value={linkName}
+          onChange={(e) => onLinkNameChange(e.target.value)}
+          placeholder="Enter Trigger name (e.g., new_lead_form)"
+          className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] mt-2"
+        />
+        <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Generated Command</label>
+        <p className="text-xs text-[#9b9bab] mt-2">
+          Send this command to <a href="https://t.me/fraktalapp_bot" className="text-[#6d3be4] hover:underline" target="_blank" rel="noopener noreferrer">@fraktalapp_bot</a> on Telegram to connect it.
+        </p>
+        <div className="relative w-full mt-2">
+          <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
+            {generatedCommand}
+          </div>
+          <button
+            onClick={handleCopy}
+            className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
+            aria-label="Copy command"
+          >
+            {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// Telegram credentials input
 export const telegramInputFields: Record<string, InputField[]> = {
   telegram: [
-    {
-      key: "botToken",
-      label: "Bot Token",
-      placeholder: "Enter your Telegram Bot Token",
-      type: "password",
-      required: true,
-    }
+    
   ]
 };
 
-// Telegram trigger events with `requiresLinkName` flag
 export const telegramTriggerEvents = [
   {
     value: "new-message-telegram",
     label: "New Message Received",
     icon: Send,
-    requiresLinkName: true, // This enables the command input box in TriggerDropdown
+    requiresLinkName: true,
   },
-  // {
-  //   value: "bot-command-telegram",
-  //   label: "Bot Command Received",
-  //   icon: Send,
-  //   requiresLinkName: true,
-  // },
 ];
 
-// Export event options based on selected trigger
 export const telegramExportEvents = {
   "new-message-telegram": [
     { value: "messenger-detail", label: "Messenger Detail", icon: Send },
@@ -87,3 +109,5 @@ export const telegramExportEvents = {
     { value: "everything", label: "Everything", icon: Send },
   ],
 };
+
+export default TelegramLinkCommand;
