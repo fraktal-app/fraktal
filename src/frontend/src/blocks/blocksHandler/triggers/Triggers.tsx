@@ -116,7 +116,7 @@ export default function TriggerDropdown({
       setCredentials(creds);
     }
   }, [initialData]);
-  
+
   const resolvedWorkflowId = workflowId || localStorage.getItem("workflowId") || "<unknown>"
   const resolvedUserId = userId || localStorage.getItem("userId") || "<unknown>"
 
@@ -126,9 +126,14 @@ export default function TriggerDropdown({
   const availableExports = exportEventsByApp[selectedTrigger] || []
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
 
-  const isFormValid = credentialFields.every(
-    (field) => !field.required || credentials[field.key]?.trim()
-  )
+  const isFormValid =
+    selectedTrigger &&
+    selectedExport &&
+    (!selectedTriggerObj?.requiresLinkName || linkName.trim() !== "") &&
+    (credentialFields.length === 0 ||
+      credentialFields.every(
+        (field) => !field.required || credentials[field.key]?.trim()
+      ));
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
@@ -170,11 +175,11 @@ export default function TriggerDropdown({
     <div className="mt-3 p-4 bg-[#1b1f2a] border border-[#3a3f52] rounded-lg space-y-4">
       <div>
         <h3 className="text-sm font-medium text-white mb-2">Configure Trigger</h3>
-        <p className="text-xs text-[#9b9bab] mb-3">Enter the required credentials below</p>
+        <p className="text-xs text-[#9b9bab] mb-3">Select a trigger event and enter required credentials below</p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-[#c5c5d2]">Select Trigger</label>
+        <label className="text-sm font-medium text-[#c5c5d2]">Select Event</label>
         <CustomSelect
           options={availableTriggers}
           value={selectedTrigger}

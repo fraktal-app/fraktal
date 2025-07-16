@@ -84,7 +84,7 @@ const credentialFields = appType
             value={selectedAction}
             onChange={(e) => {
                 setSelectedAction(e.target.value)
-                setSelectedExport("") // Reset export when action changes
+                setSelectedExport("") 
                 }}
             className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
           >

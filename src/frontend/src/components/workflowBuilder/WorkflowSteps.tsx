@@ -82,8 +82,7 @@ export function WorkflowStep({
                   {step.configData?.event
                     ? `Configured: ${step.configData.event}`
                     : step.type === "trigger"
-                    ? "When this happens..."
-                    : "Do this..."}
+                    }
                 </p>
               </div>
 
@@ -95,30 +94,28 @@ export function WorkflowStep({
               </button>
             </div>
             
-            {step.type === "action" && !step.showDropdown && step.configData?.event && (
+            {step.type === "trigger" && !step.showDropdown && step.configData?.event && (
               <div className="mt-2 p-2 bg-[#2a2e3f] rounded-lg">
-                <p className="text-sm text-[#9b9bab]">
-                  Action: <span className="text-[#ffffff]">{step.configData.event}</span>
-                </p>
                 <button
                   onClick={() => onShowDropdown(step.id)}
-                  className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] underline"
+                  className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] no-underline"
                 >
                   Edit Configuration
                 </button>
               </div>
             )}
 
-            {step.type === "action" && !step.configData?.event && (
-              <div className="mt-2">
+            {step.type === "action" && !step.showDropdown && step.configData?.event && (
+              <div className="mt-2 p-2 bg-[#2a2e3f] rounded-lg">
                 <button
                   onClick={() => onShowDropdown(step.id)}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] text-[#9b9bab] rounded-lg hover:bg-[#3a3f52] text-sm"
+                  className="mt-2 text-xs text-[#6d3be4] hover:text-[#5a2fc7] no-underline"
                 >
-                  Configure Action
+                  Edit Configuration
                 </button>
               </div>
             )}
+            
           </div>
         ) : (
           <div className="text-center py-4">
