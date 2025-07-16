@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction } from "./actionResponse"
 
 export default function ActionDropdown({
@@ -6,16 +6,29 @@ export default function ActionDropdown({
   onSave,
   onCancel,
   appType,
+  initialData,
 }: {
   isOpen: boolean
   onSave: (formData: { [key: string]: string }) => void
   onCancel: () => void
   appType?: string
+  initialData?: { [key: string]: any }
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedAction, setSelectedAction] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
-
+ 
+  useEffect(() => {
+        if (initialData) {
+            setSelectedAction(initialData.event || "")
+            setSelectedExport(initialData.export || "")
+            const creds = { ...initialData }
+            delete creds.event
+            delete creds.export
+            setCredentials(creds)
+        }
+    }, [initialData])
+  
   // Use the full appType (e.g., "gmail-send", "discord-send") instead of splitting
 const credentialFields = appType
   ? actionInputFieldsByApp[appType] || []

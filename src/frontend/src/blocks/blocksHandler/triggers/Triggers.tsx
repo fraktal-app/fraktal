@@ -86,6 +86,7 @@ export default function TriggerDropdown({
   appType,
   userId,
   workflowId,
+  initialData,
 }: {
   isOpen: boolean
   onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
@@ -93,12 +94,29 @@ export default function TriggerDropdown({
   appType?: string
   userId: string
   workflowId: string
+  initialData?: { [key: string]: any }; 
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
   const [linkName, setLinkName] = useState<string>("")
 
+   useEffect(() => {
+    if (initialData) {
+      setSelectedTrigger(initialData.event || "");
+      setSelectedExport(initialData.export || "");
+      setLinkName(initialData.linkName || ""); // For Telegram trigger
+
+      const creds = { ...initialData };
+      // Clean known fields from credentials object
+      delete creds.event;
+      delete creds.export;
+      delete creds.linkName;
+      delete creds.command;
+      setCredentials(creds);
+    }
+  }, [initialData]);
+  
   const resolvedWorkflowId = workflowId || localStorage.getItem("workflowId") || "<unknown>"
   const resolvedUserId = userId || localStorage.getItem("userId") || "<unknown>"
 

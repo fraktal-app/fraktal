@@ -14,11 +14,10 @@ export interface WorkflowStep {
   type: "trigger" | "action"
   app?: AppBlock
   stepNumber: number
-  configData?: {
+   configData?: {
     event: string
-    clientId?: string
-    clientPassword?: string
     export: string
+    [key: string]: any
   }
   showDropdown?: boolean
 }

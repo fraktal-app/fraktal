@@ -140,6 +140,7 @@ export function WorkflowStep({
             appType={step.app?.type}
             userId={userId}
             workflowId={workflowId}
+            initialData={step.configData}
           />
         )}
         {step.showDropdown && step.type === "action" && (
@@ -155,6 +156,7 @@ export function WorkflowStep({
             }
             onCancel={() => onCancelConfig(step.id)}
             appType={step.app?.type}
+            initialData={step.configData}
           />
         )}
       </div>
