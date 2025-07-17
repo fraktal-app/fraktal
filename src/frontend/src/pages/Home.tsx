@@ -35,7 +35,13 @@ const Home = ({
       catch(e){
         alert(e)
       }
-      _setWorkflows(data);
+
+      if(!data.error){
+        _setWorkflows(data);
+      }
+      else{
+        _setWorkflows([]);
+      }
     }
 
     getWorkflows();
