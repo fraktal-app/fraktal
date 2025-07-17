@@ -52,7 +52,7 @@ function Dashboard() {
         
         <main className="pt-16 p-4">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home user_id={userData.id}/>} />
             <Route path="profile" element={userData ? <Profile userData={userData} /> : <div>Loading Profile...</div>} />
             <Route path="executions" element={<Executions />} />
             <Route path="settings" element={<Settings />} />

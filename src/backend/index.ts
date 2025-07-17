@@ -43,6 +43,14 @@ const userSchema = z.object({
     avatar_url: z.string().nonempty()                    // URL to avatar image
 });
 
+// Zod schema for validating Workflow objects
+const workflowSchema = z.object({
+    id: z.string().length(36).nonempty(),                      // UUID of workflow
+    user_id: z.string().length(36).nonempty(),                 // User UUID
+    title: z.string().nonempty(),                              // Title of the workflow
+    json: z.string()                                           // Serialized workflow JSON
+});
+
 /**
  * GET /canister-ids
  * Returns the current canister IDs - helpful for debugging
@@ -101,6 +109,138 @@ app.post("/create-user", async (req, res) => {
     }
 })
 
+/**
+ * POST /save-workflow
+ * Saves a user-defined workflow to the database canister.
+ */
+app.post("/save-workflow", async (req, res) => {
+
+    try{
+        const { id, user_id, title, json } = req.body;
+        const workflowObj = { id, user_id, title, json };
+
+        const validation = workflowSchema.safeParse(workflowObj);
+
+        if (!validation.success) {
+            return res.status(400).json({ 
+                error: validation.error.format() 
+            });
+        }
+
+        //req.body does not work, so we'll put req info in query by encoding into the URL
+        const params = toUrlEncoded(workflowObj);
+
+        const response = await fetch(dbURL + "/http_request_update", {
+            body: serialize({
+                candidPath: '/scripts/http_canister.did',
+                args: [{
+                    url : "/workflows/save-workflow?" + params,
+                    method : "POST",
+                    body : [],
+                    headers : [
+                         ["Content-Type", "application/json"]
+                    ]
+                }]
+            })
+        });
+    
+        const responseJson = await response.json();
+        const result = parseEncodedResponse(responseJson.body)
+        res.json(result);
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({"error": "Internal Server Error"})
+    }
+})
+
+/**
+ * POST /get-workflow
+ * Fetches a single workflow by ID from the canister.
+ */
+app.post("/get-workflow", async (req, res) => {
+
+    try{
+        const { workflow_id } = req.body;
+        
+        if (!workflow_id) {
+            return res.status(400).json({ 
+                error: "No workflow ID found." 
+            });
+        }
+
+        //req.body does not work, so we'll put req info in query by encoding into the URL
+        const params = toUrlEncoded({
+            workflow_id
+        });
+
+        const response = await fetch(dbURL + "/http_request_update", {
+            body: serialize({
+                candidPath: '/scripts/http_canister.did',
+                args: [{
+                    url : "/workflows/get-workflow?" + params,
+                    method : "GET",
+                    body : [],
+                    headers : [
+                         ["Content-Type", "application/json"]
+                    ]
+                }]
+            })
+        });
+    
+        const responseJson = await response.json();
+        const result = parseEncodedResponse(responseJson.body)
+        res.json(result);
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({"error": "Internal Server Error"})
+    }
+})
+
+/**
+ * POST /get-workflows-by-user-id
+ * Returns all workflows associated with a specific user.
+ */
+app.post("/get-workflows-by-user-id", async (req, res) => {
+
+    try{
+        const { user_id } = req.body;
+        
+        if (!user_id) {
+            return res.status(400).json({ 
+                error: "No user ID found." 
+            });
+        }
+
+        //req.body does not work, so we'll put req info in query by encoding into the URL
+        const params = toUrlEncoded({
+            user_id
+        });
+
+        const response = await fetch(dbURL + "/http_request_update", {
+            body: serialize({
+                candidPath: '/scripts/http_canister.did',
+                args: [{
+                    url : "/workflows/get-workflows-by-user-id?" + params,
+                    method : "GET",
+                    body : [],
+                    headers : [
+                         ["Content-Type", "application/json"]
+                    ]
+                }]
+            })
+        });
+    
+        const responseJson = await response.json();
+        const result = parseEncodedResponse(responseJson.body)
+        res.json(result);
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({"error": "Internal Server Error"})
+    }
+})
 // Serve static frontend files from /dist
 app.use(express.static('/dist'));
 

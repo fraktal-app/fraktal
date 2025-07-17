@@ -55,7 +55,6 @@ console.log('User ID:', userId);
     const currentUserData = await getUserData()
     if (currentUserData) {
       setUserId(currentUserData.id); 
-      setIsLoading(false)
     } else {
       navigate('/login')
     }
@@ -77,16 +76,47 @@ console.log('User ID:', userId);
             setUserId(currentUserData.id)
 
             // If a workflowId exists, load its data
-            if (workflowId === 'a1b2c3d4-e5f6-7890-1234-567890abcdef') {
+            if (workflowId) {
                 localStorage.setItem("workflowId", workflowId);
-                const data = {
-                    "name": "My Telegram Workflow",
-                    "trigger": { "id": "trigger-1", "type": "trigger", "appType": "telegram", "label": "Telegram", "event": "new-message-telegram", "export": "messenger-detail", "credentials": { "linkName": "cdcede", "command": "/link cdcede 6923565a-8143-4376-a3e5-d24e38a43f75/ebb0c255-4f64-44a9-8b2f-61cac4769ba7" } },
-                    "actions": [ { "id": "action-1", "type": "action", "appType": "telegram", "label": "Telegram", "event": "send_message", "export": "messageId", "credentials": { "botToken": "cecsaw", "chatId": "cdewvdw" } } ]
-                };
+                //Get workflow from workflowID and put it in data
+                try{
+                  const baseURL = `${window.location.protocol}//${window.location.host}`;
 
+                  const res = await fetch(baseURL + "/get-workflow", {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      workflow_id: workflowId
+                    })
+                  });
+
+                  var data = await res.json();
+
+                }
+                catch(e){
+                  alert(e)
+                }
+
+                
+                console.log(data);
+                try{
+                  data = JSON.parse(data.json);
+                }
+                catch(e){
+                  // Otherwise, set up a new, blank workflow
+                  setWorkflowName("Untitled")
+                  setWorkflowSteps([
+                      { id: "trigger-1", type: "trigger", stepNumber: 1 },
+                      { id: "action-1", type: "action", stepNumber: 2 },
+                  ])
+                  setIsLoading(false)
+                  return;
+                }
+                
                 setWorkflowName(data.name)
-
+                
                 const steps: WorkflowStep[] = []
                 let stepCounter = 1
 
@@ -111,7 +141,7 @@ console.log('User ID:', userId);
 
                 // Parse actions
                 if (data.actions) {
-                    data.actions.forEach(action => {
+                    data.actions.forEach((action: any) => {
                         const app = appBlocks.find(b => b.type === action.appType && (b.category === 'action' || b.category === 'both'))
                         if (app) {
                             steps.push({
@@ -132,7 +162,6 @@ console.log('User ID:', userId);
                 setWorkflowSteps(steps)
             } else {
                 // Otherwise, set up a new, blank workflow
-                localStorage.removeItem("workflowId")
                 setWorkflowName("Untitled")
                 setWorkflowSteps([
                     { id: "trigger-1", type: "trigger", stepNumber: 1 },
@@ -163,7 +192,7 @@ console.log('User ID:', userId);
       setValidationError(error)
       return
     }
-    handleSaveWorkflow()
+    handleSaveWorkflow(userId, workflowId!)
   }
 
   const handlePopupCancel = () => {

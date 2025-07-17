@@ -3,6 +3,28 @@ import { useState } from "react"
 import { toast } from "react-toastify"
 import type { WorkflowStep } from "../types"
 
+async function saveWorkflowToDB(workflowData: any, userId: string, workflowId: string){
+  try{
+    const baseURL = `${window.location.protocol}//${window.location.host}`;
+
+    await fetch(baseURL + "/save-workflow", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        id: workflowId,
+        user_id: userId,
+        title: workflowData.name,
+        json: JSON.stringify(workflowData)
+      })
+    });
+
+  }
+  catch(e){
+    alert(e)
+  }
+}
 
 export function useWorkflowHandlers(
   workflowSteps: WorkflowStep[],
@@ -53,7 +75,7 @@ export function useWorkflowHandlers(
     )
   }
 
-  const handleSaveWorkflow = () => {
+  const handleSaveWorkflow = (userId: string, workflowId: string) => {
     const trigger = workflowSteps.find((step) => step.type === "trigger" && step.app)
     const actions = workflowSteps.filter((step) => step.type === "action" && step.app)
 
@@ -135,6 +157,8 @@ export function useWorkflowHandlers(
     })
 
     console.log("Full Workflow JSON:", workflowData)
+
+    saveWorkflowToDB(workflowData, userId, workflowId);
 
     setShowSavePopup(false)
     setValidationError("")
