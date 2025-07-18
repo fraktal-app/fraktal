@@ -12,7 +12,7 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine"
                 ],
                 "build_assets": "npm run build"
             }
@@ -26,14 +26,14 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine"
                 ]
             }
         },
 
-        "trigger-engine": {
+        "execution-engine": {
             "type": "azle",
-            "main": "src/trigger-engine/index.ts",
+            "main": "src/execution-engine/index.ts",
             "custom": {
                 "experimental": true,
                 "assets": [
@@ -42,7 +42,7 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine"
                 ]
             }
         }
