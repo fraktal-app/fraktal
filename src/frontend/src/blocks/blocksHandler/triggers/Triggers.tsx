@@ -99,13 +99,13 @@ export default function TriggerDropdown({
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
-  const [linkName, setLinkName] = useState<string>("")
+  const [  botToken, setBotToken] = useState<string>("")
 
    useEffect(() => {
     if (initialData) {
       setSelectedTrigger(initialData.event || "");
       setSelectedExport(initialData.export || "");
-      setLinkName(initialData.linkName || ""); // For Telegram trigger
+      setBotToken(initialData.botToken || ""); // For Telegram trigger
 
       const creds = { ...initialData };
       // Clean known fields from credentials object
@@ -129,7 +129,7 @@ export default function TriggerDropdown({
   const isFormValid =
     selectedTrigger &&
     selectedExport &&
-    (!selectedTriggerObj?.requiresLinkName || linkName.trim() !== "") &&
+    (!selectedTriggerObj?.requiresLinkName || botToken.trim() !== "") &&
     (credentialFields.length === 0 ||
       credentialFields.every(
         (field) => !field.required || credentials[field.key]?.trim()
@@ -150,7 +150,7 @@ export default function TriggerDropdown({
       
       if (appOutputLinkConfig && selectedTriggerObj?.requiresLinkName) {
         const extraData = appOutputLinkConfig.getSaveData({
-          linkName,
+          botToken,
           userId: resolvedUserId,
           workflowId: resolvedWorkflowId,
         });
@@ -211,8 +211,8 @@ export default function TriggerDropdown({
        {AppSpecificComponent && selectedTriggerObj?.requiresLinkName && (
         <AppSpecificComponent
           {...appOutputLinkConfig.propBuilder({
-            linkName,
-            onLinkNameChange: setLinkName,
+            botToken,
+            onBotTokenChange: setBotToken,
             userId: resolvedUserId,
             workflowId: resolvedWorkflowId,
           })}

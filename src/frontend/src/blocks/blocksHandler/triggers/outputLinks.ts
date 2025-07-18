@@ -1,15 +1,15 @@
 import React from "react";
-import { generateTelegramCommand, TelegramLinkCommand } from "../../telegram/triggerConfig";
+import { generateTelegramWebhookLink, TelegramLinkCommand } from "../../telegram/triggerConfig";
 
 interface AllAvailableProps {
-  linkName: string;
-  onLinkNameChange: React.Dispatch<React.SetStateAction<string>>;
+  botToken: string;
+  onBotTokenChange: React.Dispatch<React.SetStateAction<string>>;
   userId: string;
   workflowId: string;
 }
 
 type SaveDataHandler = (data: {
-  linkName: string;
+  botToken: string;
   userId: string;
   workflowId: string;
 }) => Record<string, any>;
@@ -25,14 +25,14 @@ interface OutputLinkConfig {
 export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
   telegram: {
     Component: TelegramLinkCommand,
-    getSaveData: ({ linkName, userId, workflowId }) => ({
-      linkName: linkName,
-      command: generateTelegramCommand(linkName, userId, workflowId),
+    getSaveData: ({ botToken, userId, workflowId }) => ({
+      botToken: botToken,
+      command: generateTelegramWebhookLink(botToken, userId, workflowId),
     }),
     // The propBuilder for Telegram provides all the props its component needs.
     propBuilder: (props) => ({
-      linkName: props.linkName,
-      onLinkNameChange: props.onLinkNameChange,
+      botToken: props.botToken,
+      onBotTokenChange: props.onBotTokenChange,
       userId: props.userId,
       workflowId: props.workflowId,
     }),

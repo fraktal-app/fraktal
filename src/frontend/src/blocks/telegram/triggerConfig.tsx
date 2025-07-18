@@ -1,82 +1,66 @@
-import { Send, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { Send, SquareArrowOutUpRight, } from "lucide-react";
 import type { InputField } from "../common/types";
 
-export function generateTelegramCommand(
-  linkName: string,
+export function generateTelegramWebhookLink(
+  botToken: string,
   userId: string,
-  workflowId: string
+  workflowId: string,
+
 ): string {
-  return `/link ${linkName || "<name>"} ${userId}/${workflowId}`;
+  //TODO change this to exec engine url
+  const publicUrl = "https://15909c542afa.ngrok-free.app";
+
+  return `https://api.telegram.org/bot${botToken}/setWebhook?url=${publicUrl}/webhook/telegram/${userId}/${workflowId}/`; 
 }
 
 export function TelegramLinkCommand({
-  linkName,
-  onLinkNameChange,
+  botToken,
+  onBotTokenChange,
   userId,
   workflowId,
 }: {
-  linkName: string;
-  onLinkNameChange: (value: string) => void;
+  botToken: string;
+  onBotTokenChange: (value: string) => void;
   userId: string;
   workflowId: string;
 }) {
-  const [isCopied, setIsCopied] = useState(false);
 
-  const generatedCommand = generateTelegramCommand(linkName, userId, workflowId);
+  const webhookUrl = generateTelegramWebhookLink(botToken, userId,  workflowId,);
 
-  const handleCopy = () => {
-    const textArea = document.createElement("textarea");
-    textArea.value = generatedCommand;
-
-    textArea.style.position = "absolute";
-    textArea.style.left = "-9999px";
-    
-    document.body.appendChild(textArea);
-    textArea.select();
-
-    try {
-      document.execCommand('copy');
-      setIsCopied(true);
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-    } finally {
-      document.body.removeChild(textArea);
-    }
+  const handleClick = () => {
+    window.open(webhookUrl, '_blank');
   };
 
 
   return (
     <div>
       <div className="flex flex-col">
-        <label className="block text-sm font-medium text-[#c5c5d2]">Trigger Name</label>
+        <label className="block text-sm font-medium text-[#c5c5d2]">Bot Token</label>
         <p className="text-xs text-[#9b9bab] mt-2">
-          Create a unique name to link this workflow to your Telegram bot.
+          Enter your Telegram Bot Token
         </p>
         <input
           type="text"
-          value={linkName}
-          onChange={(e) => onLinkNameChange(e.target.value)}
+          value={botToken}
+          onChange={(e) => onBotTokenChange(e.target.value)}
           placeholder="Enter Trigger name (e.g., new_lead_form)"
           className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] mt-2"
         />
-        <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Generated Command</label>
+        <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Generated Link</label>
         <p className="text-xs text-[#9b9bab] mt-2">
-          Send this command to <a href="https://t.me/fraktalapp_bot" className="text-[#6d3be4] hover:underline" target="_blank" rel="noopener noreferrer">@fraktalapp_bot</a> on Telegram to connect it.
+          Open this Link to Set Webhook 
         </p>
         <div className="relative w-full mt-2">
           <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
-            {generatedCommand}
+            {webhookUrl}
           </div>
           <button
-            onClick={handleCopy}
+            onClick={handleClick}
             className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
             aria-label="Copy command"
+            
           >
-            {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+            <SquareArrowOutUpRight />
           </button>
         </div>
       </div>

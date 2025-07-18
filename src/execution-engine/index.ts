@@ -27,24 +27,10 @@ app.post("/webhook/telegram/:userId/:workflowId/", async (req, res) => {
         console.log(`Request Recieved for userID: ${userId} & workflowID: ${workflowId}`);
         const res = await fetchWorkflowFromDB(userId, workflowId);
 
-        try{
-            var workflow = JSON.parse(res);
-            
-            if(workflow.error){
-                throw new Error("Workflow not found");
-            }
+        
 
-            workflow = workflow
-        }   
-        catch(e){
-            console.error(e);
-            return res.sendStatus(404)
-        }
-
-        const workflowJSON = JSON.stringify(workflow)
-
-        console.log(workflowJSON);
-        ExecutionQueue.add(workflowJSON)
+        console.log(res);
+        //ExecutionQueue.add(res)
         console.log(msg);
 
     }
