@@ -25,6 +25,13 @@ export const DiscordBotLink = () => {
   );
 }
 
+export const discordResponseDropdownOptions= 
+  [
+  { value: "send_message", label: "Send Exported Data",  icon: MessageSquare ,requiresLinkName: true },
+  { value: "send_custom_message", label: "Send Custom Message", icon: MessageSquare },
+  // { value: "send_notification", label: "Send notification" },
+  ];
+  
 export const discordActionInputFields: Record<string, InputField[]> = {
  
     discord: [
@@ -45,12 +52,6 @@ export const discordActionInputFields: Record<string, InputField[]> = {
 ]
 }
 
-export const discordResponseDropdownOptions= 
-  [
-  { value: "send_message", label: "Send message",  icon: MessageSquare ,requiresLinkName: true },
-  // { value: "send_alert", label: "Send alert" },
-  // { value: "send_notification", label: "Send notification" },
-  ];
 
 
 export const discordExportEvents = {

@@ -104,14 +104,14 @@ export default function ActionDropdown({
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedAction, setSelectedAction] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
-
+  const [customMessage, setCustomMessage] = useState<string>("")
 
 
   useEffect(() => {
     if (initialData) {
       setSelectedAction(initialData.event || "");
       setSelectedExport(initialData.export || "");
-   
+      setCustomMessage(initialData.customMessage || "");
 
 
       const creds = { ...initialData };
@@ -119,6 +119,7 @@ export default function ActionDropdown({
       delete creds.export;
       delete creds.linkName;
       delete creds.command;
+      delete creds.customMessage;
       setCredentials(creds);
     }
   }, [initialData]);
@@ -127,16 +128,19 @@ export default function ActionDropdown({
   const selectedActionObj = availableActions.find(a => a.value === selectedAction)
 
 
-    const exportOptions = 
+  const exportOptions = 
     selectedAction ? exportEventsByAction[selectedAction] || [] 
     : [];  
-    const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : []
+  const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : []
 
+  const isCustomMessageRequired = selectedAction === "send_custom_message";
+  const isCustomMessageValid = !isCustomMessageRequired || customMessage.trim() !== "";
 
   const isFormValid = Boolean(
     selectedAction &&
     (exportOptions.length === 0 || selectedExport) && 
-    credentialFields.every(field => !field.required || credentials[field.key]?.trim())
+    credentialFields.every(field => !field.required || credentials[field.key]?.trim()) &&
+    isCustomMessageValid
   );
 
 
@@ -153,6 +157,10 @@ export default function ActionDropdown({
         export: selectedExport,
       };
       
+      if (selectedAction === "send_custom_message") {
+        formData.customMessage = customMessage;
+      }
+      
       if (appOutputLinkConfig && selectedActionObj?.requiresLinkName) {
         const extraData = appOutputLinkConfig.getSaveData({
           
@@ -168,6 +176,7 @@ export default function ActionDropdown({
 
   const handleCancel = () => {
     setCredentials({})
+    setCustomMessage("")
     onCancel()
   }
 
@@ -195,6 +204,7 @@ export default function ActionDropdown({
           onChange={(value) => {
             setSelectedAction(value)
             setSelectedExport("") 
+            setCustomMessage("")
           }}
           placeholder="Select an action"
         />
@@ -232,6 +242,25 @@ export default function ActionDropdown({
         ))}
       </div>
 
+      {selectedAction === "send_custom_message" && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-[#c5c5d2]">Custom Message</label>
+            <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
+          </div>
+          <textarea
+            value={customMessage}
+            onChange={(e) => setCustomMessage(e.target.value)}
+            placeholder="Enter your custom message here..."
+            rows={4}
+            className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] resize-none"
+          />
+          <p className="text-xs text-[#9b9bab]">
+            This message will be sent to the specified Discord channel.
+          </p>
+        </div>
+      )}
+
 
       {AppSpecificComponent && selectedActionObj?.requiresLinkName && (
         <AppSpecificComponent
@@ -242,29 +271,29 @@ export default function ActionDropdown({
 
 
       {selectedAction && (
-  <div className="flex flex-col gap-2 pt-3">
-    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
-    {exportOptions.length > 0 ? (
-      <select
-        value={selectedExport}
-        onChange={(e) => setSelectedExport(e.target.value)}
-        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-      >
-        <option value="" disabled>
-          Choose export value
-        </option>
-        {exportOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    ) : (
-      <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
-        No export options available for this action
-      </div>
-    )}
-  </div>
+        <div className="flex flex-col gap-2 pt-3">
+          <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
+          {exportOptions.length > 0 ? (
+            <select
+              value={selectedExport}
+              onChange={(e) => setSelectedExport(e.target.value)}
+              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+            >
+              <option value="" disabled>
+                Choose export value
+              </option>
+              {exportOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
+              No export options available for this action
+            </div>
+          )}
+        </div>
       )}
 
 
