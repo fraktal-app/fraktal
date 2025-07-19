@@ -2,9 +2,9 @@ import { Send, SquareArrowOutUpRight, } from "lucide-react";
 import type { InputField } from "../common/types";
 
 export function generateTelegramWebhookLink(
-  botToken: string,
-  userId: string,
-  workflowId: string,
+  botToken?: string,
+  userId?: string,
+  workflowId?: string,
 
 ): string {
   //TODO change this to exec engine url

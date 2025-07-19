@@ -6,6 +6,7 @@ import { telegramActionInputFields, telegramExportEvents, telegramResponseDropdo
 import { twitterActionInputFields, twitterExportEvents, twitterResponseDropdownOptions } from "../../twitter/actionConfig";
 import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownOptions } from "../../webhook/actionConfig";
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
+import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../gmail/actionConfig";
 
 export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; }>>   = {
   telegram: telegramResponseDropdownOptions,
@@ -15,6 +16,7 @@ export const actionDropdownOptions: Record<string, Array<{ value: string; label:
   twitter: twitterResponseDropdownOptions,
   ai: aiResponseDropdownOptions,
   api: apiResponseDropdownOptions,
+  email: emailResponseDropdownOptions
 };
 
 export const actionInputFieldsByApp: Record<string, InputField[]> = {
@@ -25,6 +27,7 @@ export const actionInputFieldsByApp: Record<string, InputField[]> = {
   twitter: twitterActionInputFields.twitter,
   ai: aiActionInputFields.ai,
   api: apiActionInputFields.api,
+  email: emailActionInputFields.email
 };
 
 export const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>>= {
@@ -35,5 +38,6 @@ export const exportEventsByAction: Record<string, Array<{ value: string; label: 
   ...twitterExportEvents,
   ...aiExportEvents,
   ...apiExportEvents,
+  ...emailExportEvents
 };
 

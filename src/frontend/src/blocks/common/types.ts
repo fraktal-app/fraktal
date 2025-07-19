@@ -3,8 +3,9 @@ export type InputField =
       key: string
       label: string
       placeholder: string
-      type: "text" | "password"
+      type: "text" | "password" | "textarea"
       required?: boolean
+      maxLength?: number
     }
   | {
       key: string

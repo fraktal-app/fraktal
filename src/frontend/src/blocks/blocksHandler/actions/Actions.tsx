@@ -29,7 +29,6 @@ export default function ActionDropdown({
         }
     }, [initialData])
   
-  // Use the full appType (e.g., "gmail-send", "discord-send") instead of splitting
 const credentialFields = appType
   ? actionInputFieldsByApp[appType] || []
   : []
@@ -108,13 +107,23 @@ const credentialFields = appType
                 <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
               )}
             </div>
-            <input
-              type={field.type}
-              value={credentials[field.key] || ""}
-              onChange={(e) => handleCredentialChange(field.key, e.target.value)}
-              placeholder={field.placeholder}
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-            />
+            {field.type === "textarea" ? (
+              <textarea
+                value={credentials[field.key] || ""}
+                onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                maxLength={field.maxLength}
+                className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+              />
+            ) : (
+              <input
+                type={field.type}
+                value={credentials[field.key] || ""}
+                onChange={(e) => handleCredentialChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+              />
+            )}
           </div>
         ))}
         {/* Export Options Dropdown */}

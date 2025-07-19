@@ -1,17 +1,24 @@
 import React from "react";
 import { TelegramLinkCommand } from "../../telegram/triggerConfig";
+import discordLinkCommand from "../../discord/triggerConfig";
 
 interface AllAvailableProps {
   botToken: string;
   onBotTokenChange: React.Dispatch<React.SetStateAction<string>>;
   userId: string;
   workflowId: string;
+  guildId: string;
+  channelId: string;
+  onGuildChange: React.Dispatch<React.SetStateAction<string>>;
+  onChannelChange: React.Dispatch<React.SetStateAction<string>>;
 }
 
 type SaveDataHandler = (data: {
-  botToken: string;
-  userId: string;
-  workflowId: string;
+  botToken?: string;
+  userId?: string;
+  workflowId?: string;
+  guildId?: string;
+  channelId?: string;
 }) => Record<string, any>;
 
 interface OutputLinkConfig {
@@ -28,7 +35,6 @@ export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
     getSaveData: ({ botToken }) => ({
       botToken: botToken,
     }),
-    // The propBuilder for Telegram provides all the props its component needs.
     propBuilder: (props) => ({
       botToken: props.botToken,
       onBotTokenChange: props.onBotTokenChange,
@@ -36,14 +42,20 @@ export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
       workflowId: props.workflowId,
     }),
   },
-  // Example for a future app that DOES NOT need user/workflow IDs:
-  // discord: {
-  //   Component: DiscordComponent,
-  //   getSaveData: ({ linkName }) => ({ webhookName: linkName }),
-  //   // The propBuilder for Discord only provides the props it needs.
-  //   propBuilder: (props) => ({
-  //     linkName: props.linkName,
-  //     onLinkNameChange: props.onLinkNameChange,
-  //   }),
-  // },
+
+  discord: {
+     Component: discordLinkCommand,
+    getSaveData: ({guildId, channelId}) => ({
+      guildId: guildId,
+      channelId: channelId,
+    }),
+    propBuilder: (props) => ({
+      onGuildChange: props.onGuildChange,
+      onChannelChange: props.onChannelChange,
+      userId: props.userId,
+      workflowId: props.workflowId,
+      guildId: props.guildId,
+      channelId: props.channelId,
+    }),
+  },
 };

@@ -100,12 +100,16 @@ export default function TriggerDropdown({
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
   const [  botToken, setBotToken] = useState<string>("")
+  const [  guildId, setGuildId] = useState<string>("")
+  const [  channelId, setChannelId] = useState<string>("")
 
    useEffect(() => {
     if (initialData) {
       setSelectedTrigger(initialData.event || "");
       setSelectedExport(initialData.export || "");
-      setBotToken(initialData.botToken || ""); // For Telegram trigger
+      setBotToken(initialData.botToken || "");
+      setGuildId(initialData.guildId || ""); 
+      setChannelId(initialData.channelId || ""); 
 
       const creds = { ...initialData };
       // Clean known fields from credentials object
@@ -113,6 +117,9 @@ export default function TriggerDropdown({
       delete creds.export;
       delete creds.linkName;
       delete creds.command;
+      delete creds.guildId;
+      delete creds.channelId;
+      delete creds.botToken;
       setCredentials(creds);
     }
   }, [initialData]);
@@ -126,14 +133,15 @@ export default function TriggerDropdown({
   const availableExports = exportEventsByApp[selectedTrigger] || []
   const credentialFields = appType ? inputFieldsByApp[appType] || [] : []
 
-  const isFormValid =
-    selectedTrigger &&
-    selectedExport &&
-    (!selectedTriggerObj?.requiresLinkName || botToken.trim() !== "") &&
-    (credentialFields.length === 0 ||
-      credentialFields.every(
-        (field) => !field.required || credentials[field.key]?.trim()
-      ));
+  const isFormValid = Boolean(
+  selectedTrigger &&
+  selectedExport &&
+  (appType !== "telegram" || botToken.trim() !== "") &&
+  (appType !== "discord" || (guildId.trim() !== "" && channelId.trim() !== "")) &&
+  credentialFields.every(field => !field.required || credentials[field.key]?.trim())
+);
+
+
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
@@ -151,6 +159,8 @@ export default function TriggerDropdown({
       if (appOutputLinkConfig && selectedTriggerObj?.requiresLinkName) {
         const extraData = appOutputLinkConfig.getSaveData({
           botToken,
+          guildId,
+          channelId,
           userId: resolvedUserId,
           workflowId: resolvedWorkflowId,
         });
@@ -215,6 +225,10 @@ export default function TriggerDropdown({
             onBotTokenChange: setBotToken,
             userId: resolvedUserId,
             workflowId: resolvedWorkflowId,
+            guildId, 
+            channelId,
+            onGuildChange: setGuildId,
+            onChannelChange: setChannelId,
           })}
         />
       )}
