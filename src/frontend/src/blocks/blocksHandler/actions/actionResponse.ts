@@ -6,7 +6,7 @@ import { telegramActionInputFields, telegramExportEvents, telegramResponseDropdo
 import { twitterActionInputFields, twitterExportEvents, twitterResponseDropdownOptions } from "../../twitter/actionConfig";
 import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownOptions } from "../../webhook/actionConfig";
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
-import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../gmail/actionConfig";
+import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../email/actionConfig";
 
 export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; }>>   = {
   telegram: telegramResponseDropdownOptions,

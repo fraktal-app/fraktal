@@ -19,7 +19,7 @@ export const appBlocks: AppBlock[] = [
   // { type: "wallet", label: "Wallet Tracking", icon: TrendingUp, iconUrl: metamask, color: "white", category: "trigger"},
   // { type: "token", label: "Token Price", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
   // { type: "rss", label: "RSS Feed", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
-  // { type: "discord",label: "Discord",icon: MessageSquare,iconUrl: discord,color: "white",category: "action"},
+  { type: "discord",label: "Discord",icon: MessageSquare,iconUrl: discord,color: "white",category: "action"},
   // { type: "notion",label: "Notion",icon: FileText,iconUrl: notion,color: "white",category: "action"},
   { type: "telegram",label: "Telegram",icon: Send,iconUrl: telegram,color: "white",category: "action",},
   // { type: "webhook", label: "Post to Webhook", icon: Webhook, color: "white", category: "action" },
