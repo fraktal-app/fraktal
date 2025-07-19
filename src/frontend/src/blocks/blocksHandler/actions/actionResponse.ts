@@ -8,7 +8,7 @@ import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownO
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
 import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../email/actionConfig";
 
-export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; }>>   = {
+export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; icon: any  }>>   = {
   telegram: telegramResponseDropdownOptions,
   discord: discordResponseDropdownOptions,
   notion: notionResponseDropdownOptions,

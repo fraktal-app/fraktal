@@ -29,9 +29,9 @@ export const notionActionInputFields: Record<string, InputField[]> = {
 
 export const notionResponseDropdownOptions= 
  [
-  { value: "create_page", label: "Create page" },
-  { value: "log_to_database", label: "Log to database" },
-  { value: "create_task", label: "Create task" },   
+  // { value: "create_page", label: "Create page",icon: FileText  },
+  // { value: "log_to_database", label: "Log to database" },
+  // { value: "create_task", label: "Create task" },   
 ];
 
 

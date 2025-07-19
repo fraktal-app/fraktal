@@ -1,3 +1,4 @@
+import { Mail } from "lucide-react";
 import type { InputField } from "../common/types";
 
 export const emailActionInputFields: Record<string, InputField[]> = {
@@ -28,7 +29,7 @@ export const emailActionInputFields: Record<string, InputField[]> = {
 };
 
 export const emailResponseDropdownOptions = [
-  { value: "send_email", label: "Send Email" }
+  { value: "send_email", label: "Send Email", icon: Mail }
 ];
 
 export const emailExportEvents = {

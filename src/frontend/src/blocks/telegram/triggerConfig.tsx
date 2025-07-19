@@ -87,13 +87,21 @@ export const telegramTriggerEvents = [
     icon: Send,
     requiresLinkName: true,
   },
+  {
+    value: "command-received-telegram",
+    label: "Command Received",
+    icon: Send,
+    requiresLinkName: true,
+  }
 ];
 
 export const telegramExportEvents = {
   "new-message-telegram": [
     { value: "messenger-detail", label: "Messenger Detail", icon: Send },
+    { value: "message", label: "Message Detail", icon: Send },
+    { value: "everything", label: "Everything", icon: Send },
   ],
-  "bot-command-telegram": [
+  "command-received-telegram": [
     { value: "messenger-detail", label: "Messenger Detail", icon: Send },
     { value: "command", label: "Command", icon: Send },
     { value: "everything", label: "Everything", icon: Send },

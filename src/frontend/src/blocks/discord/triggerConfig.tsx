@@ -7,10 +7,9 @@ export function generatediscordExternalLink(
   userId?: string,
   workflowId?: string,
 
-): string {
-  //TODO change this to exec engine url
 
-  return `https://api.discord.org/bot${guildId}/setWebhook?url=${channelId}/webhook/telegram/${userId}/${workflowId}/`; 
+): string {
+  return `https://c59bd4266d43.ngrok-free.app/configure?guild_id=${guildId}&channel_id=${channelId}&workflow_id=${workflowId}&user_id=${userId}`; 
 }
 
 export function discordLinkCommand({
@@ -31,10 +30,14 @@ export function discordLinkCommand({
 
   const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68608&integration_type=0&scope=bot";
   const extLink = generatediscordExternalLink(guildId, channelId, userId, workflowId);
-  const handleClick = () => {
+  
+  const handleDiscordBotLinkClick = () => {
     window.open(discordUrl, '_blank');
   };
 
+  const handleExtLinkClick = () => {
+    window.open(extLink, '_blank');
+  };
 
   return (
     <div>
@@ -48,9 +51,9 @@ export function discordLinkCommand({
             {discordUrl}
           </div>
           <button
-            onClick={handleClick}
+            onClick={handleDiscordBotLinkClick}
             className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-            aria-label="Copy command"
+            aria-label="Open Discord Bot Link"
           >
             <SquareArrowOutUpRight />
           </button>
@@ -86,9 +89,9 @@ export function discordLinkCommand({
             {extLink}
           </div>
           <button
-            onClick={handleClick}
+            onClick={handleExtLinkClick}
             className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-            aria-label="Copy command"
+            aria-label="Open Webhook Link"
           >
             <SquareArrowOutUpRight />
           </button>
@@ -99,12 +102,15 @@ export function discordLinkCommand({
   );
 }
 
+
 export const discordInputFields: Record<string, InputField[]> = {
   
   discord: [
 
+
 ]
 }
+
 
 export const discordTriggerEvents = 
   [
@@ -112,6 +118,7 @@ export const discordTriggerEvents =
     { value: "mention-received", label: "Bot Mentioned", icon: MessageSquare , requiresLinkName: true,
 },
   ];
+
 
   export const discordExportEvents = {
   //  "new-message": [
@@ -125,5 +132,6 @@ export const discordTriggerEvents =
     { value: "everything", label: "Everything", icon: MessageSquare },
   ],
 }
+
 
 export default discordLinkCommand;

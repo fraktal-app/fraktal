@@ -132,16 +132,13 @@ export function WorkflowStep({
         {step.showDropdown && step.type === "action" && (
           <ActionDropdown
             isOpen={step.showDropdown as boolean}
-            onSave={(formData: { [key: string]: string }) =>
-              onSaveConfig(step.id, { 
-                ...step.configData, 
-                ...formData, 
-                event: formData.event ?? "", 
-                export: formData.export ?? "" 
-              })
+            onSave={(formData: { event: string; clientId?: string; clientPassword?: string; export: string }) =>
+              onSaveConfig(step.id, formData)
             }
             onCancel={() => onCancelConfig(step.id)}
             appType={step.app?.type}
+            userId={userId}
+            workflowId={workflowId}
             initialData={step.configData}
           />
         )}

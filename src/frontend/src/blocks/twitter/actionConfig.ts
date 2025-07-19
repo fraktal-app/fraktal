@@ -43,10 +43,10 @@ export const twitterActionInputFields: Record<string, InputField[]> = {
 
 export const twitterResponseDropdownOptions = 
     [
-  { value: "send_tweet", label: "Send Tweet" },
-  { value: "reply_to_tweet", label: "Reply to Tweet" },
-  { value: "send_tweet_with_hashtags", label: "Send Tweet with Hashtags" },
-];
+//   { value: "send_tweet", label: "Send Tweet" },
+//   { value: "reply_to_tweet", label: "Reply to Tweet" },
+//   { value: "send_tweet_with_hashtags", label: "Send Tweet with Hashtags" },
+ ];
 
 
 export const twitterExportEvents: Record<string, Array<{ value: string; label: string; icon: any }>> = {

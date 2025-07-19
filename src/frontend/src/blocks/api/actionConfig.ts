@@ -29,9 +29,9 @@ export const apiActionInputFields: Record<string, InputField[]> = {
 
 export const apiResponseDropdownOptions = 
      [
-  { value: "call_external_api", label: "Call external API" },
-  { value: "send_data", label: "Send data to endpoint" },
-  { value: "trigger_webhook", label: "Trigger webhook" },
+  // { value: "call_external_api", label: "Call external API" },
+  // { value: "send_data", label: "Send data to endpoint" },
+  // { value: "trigger_webhook", label: "Trigger webhook" },
 ];
 
 

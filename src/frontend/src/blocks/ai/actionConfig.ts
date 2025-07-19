@@ -22,9 +22,9 @@ export const aiActionInputFields: Record<string, InputField[]> = {
 
 export const aiResponseDropdownOptions = 
     [
-  { value: "generate_text", label: "Generate text" },
-  { value: "summarize_input", label: "Summarize input" },
-  { value: "extract_information", label: "Extract information" },
+  // { value: "generate_text", label: "Generate text" },
+  // { value: "summarize_input", label: "Summarize input" },
+  // { value: "extract_information", label: "Extract information" },
 ];
 
 

@@ -1,5 +1,90 @@
-import { useEffect, useState } from "react"
-import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction } from "./actionResponse"
+import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction } from "./actionResponse";
+import { outputLinkConfigByApp } from "./outputLinks";
+
+
+type ActionOption = {
+  value: string;
+  label: string;
+  icon: any;
+  requiresLinkName?: boolean;
+};
+
+
+function CustomSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  className = "",
+}: {
+  options: ActionOption[]
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  className?: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const selectRef = useRef<HTMLDivElement>(null)
+
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+
+  const selectedOption = options.find((option) => option.value === value)
+
+
+  return (
+    <div className={`relative ${className}`} ref={selectRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-10 px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg text-left flex items-center justify-between hover:border-[#4a4f62] text-white"
+      >
+        <div className="flex items-center gap-2">
+          {selectedOption ? (
+            <>
+              <selectedOption.icon className="h-4 w-4 text-[#9b9bab]" />
+              <span>{selectedOption.label}</span>
+            </>
+          ) : (
+            <span className="text-[#9b9bab]">{placeholder}</span>
+          )}
+        </div>
+        <ChevronDown className={`h-4 w-4 text-[#9b9bab] transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg shadow-lg max-h-60 overflow-auto">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                onChange(option.value)
+                setIsOpen(false)
+              }}
+              className="w-full px-3 py-2 text-left hover:bg-[#3a3f52] flex items-center gap-2 text-white"
+            >
+              <option.icon className="h-4 w-4 text-[#9b9bab]" />
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 export default function ActionDropdown({
   isOpen,
@@ -9,96 +94,113 @@ export default function ActionDropdown({
   initialData,
 }: {
   isOpen: boolean
-  onSave: (formData: { [key: string]: string }) => void
+  onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
   onCancel: () => void
   appType?: string
-  initialData?: { [key: string]: any }
+  userId: string
+  workflowId: string
+  initialData?: { [key: string]: any };
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedAction, setSelectedAction] = useState<string>("")
   const [selectedExport, setSelectedExport] = useState<string>("")
- 
+
+
+
   useEffect(() => {
-        if (initialData) {
-            setSelectedAction(initialData.event || "")
-            setSelectedExport(initialData.export || "")
-            const creds = { ...initialData }
-            delete creds.event
-            delete creds.export
-            setCredentials(creds)
-        }
-    }, [initialData])
-  
-const credentialFields = appType
-  ? actionInputFieldsByApp[appType] || []
-  : []
+    if (initialData) {
+      setSelectedAction(initialData.event || "");
+      setSelectedExport(initialData.export || "");
+   
 
-  const actionOptions = appType ? actionDropdownOptions[appType] || [] : [];
 
-  const exportOptions = 
-  selectedAction ? exportEventsByAction[selectedAction] || [] 
-  : [];
+      const creds = { ...initialData };
+      // Clean known fields from credentials object
+      delete creds.event;
+      delete creds.export;
+      delete creds.linkName;
+      delete creds.command;
+      setCredentials(creds);
+    }
+  }, [initialData]);
 
-  const isFormValid =
-  selectedAction &&
-  selectedExport &&
-  (credentialFields.length === 0 ||
-    credentialFields.every((field) => !field.required || credentials[field.key]?.trim()))
+  const availableActions: ActionOption[] = appType ? actionDropdownOptions[appType] || [] : []
+  const selectedActionObj = availableActions.find(a => a.value === selectedAction)
+
+
+  const availableExports = exportEventsByAction[selectedAction] || []
+  const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : []
+
+
+  const isFormValid = Boolean(
+    selectedAction &&
+    selectedExport &&
+    credentialFields.every(field => !field.required || credentials[field.key]?.trim())
+  );
 
 
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
   }
 
+
   const handleSave = () => {
     if (isFormValid) {
-      onSave({
-  ...credentials,
-  event: selectedAction,
-  export: selectedExport,
-})
+      const formData: { event: string; export: string; [key: string]: string } = {
+        ...credentials,
+        event: selectedAction,
+        export: selectedExport,
+      };
+      
+      if (appOutputLinkConfig && selectedActionObj?.requiresLinkName) {
+        const extraData = appOutputLinkConfig.getSaveData({
+          
+         
+        });
+        Object.assign(formData, extraData);
+      }
+      
+      onSave(formData);
     }
-  }
+  };
+
 
   const handleCancel = () => {
     setCredentials({})
-    setSelectedAction("")
     onCancel()
   }
 
+
+  const appOutputLinkConfig = appType ? outputLinkConfigByApp[appType] : undefined;
+  const AppSpecificComponent = appOutputLinkConfig?.Component;
+
+
   if (!isOpen) return null
+
 
   return (
     <div className="mt-3 p-4 bg-[#1b1f2a] border border-[#3a3f52] rounded-lg space-y-4">
       <div>
         <h3 className="text-sm font-medium text-white mb-2">Configure Action</h3>
-        <p className="text-xs text-[#9b9bab] mb-3">Select an action and enter required credentials</p>
+        <p className="text-xs text-[#9b9bab] mb-3">Select an action and enter required credentials below</p>
       </div>
 
-      <div className="space-y-3">
-        {/* Action Selection */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-[#c5c5d2]">Select Action</label>
-          <select
-            value={selectedAction}
-            onChange={(e) => {
-                setSelectedAction(e.target.value)
-                setSelectedExport("") 
-                }}
-            className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-          >
-            <option value="" disabled>
-              Choose an action
-            </option>
-            {actionOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-          </select>
-        </div>
 
-        {/* Credential Fields */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-[#c5c5d2]">Select Action</label>
+        <CustomSelect
+          options={availableActions}
+          value={selectedAction}
+          onChange={(value) => {
+            setSelectedAction(value)
+            setSelectedExport("") // Reset export when action changes
+          }}
+          placeholder="Select an action"
+        />
+      </div>
+
+
+      <div className="space-y-3">
         {credentialFields.map((field) => (
           <div className="flex flex-col gap-2" key={field.key}>
             <div className="flex items-center gap-2">
@@ -107,6 +209,7 @@ const credentialFields = appType
                 <span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>
               )}
             </div>
+            
             {field.type === "textarea" ? (
               <textarea
                 value={credentials[field.key] || ""}
@@ -126,33 +229,29 @@ const credentialFields = appType
             )}
           </div>
         ))}
-        {/* Export Options Dropdown */}
-{selectedAction && (
-  <div className="flex flex-col gap-2 pt-3">
-    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
-    {exportOptions.length > 0 ? (
-      <select
-        value={selectedExport}
-        onChange={(e) => setSelectedExport(e.target.value)}
-        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-      >
-        <option value="" disabled>
-          Choose export value
-        </option>
-        {exportOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    ) : (
-      <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
-        No export options available for this action
       </div>
-    )}
-  </div>
-)}
-      </div>
+
+
+      {AppSpecificComponent && selectedActionObj?.requiresLinkName && (
+        <AppSpecificComponent
+          {...appOutputLinkConfig.propBuilder({
+          })}
+        />
+      )}
+
+
+      {selectedAction && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
+          <CustomSelect
+            options={availableExports}
+            value={selectedExport}
+            onChange={setSelectedExport}
+            placeholder="Select export data"
+          />
+        </div>
+      )}
+
 
       <div className="flex justify-between gap-2 pt-2">
         <button
