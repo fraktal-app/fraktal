@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 import type { WorkflowStep } from "../types"
+import DOMPurify from "dompurify";
 
 async function saveWorkflowToDB(workflowData: any, userId: string, workflowId: string){
   try{
@@ -108,14 +109,22 @@ export function useWorkflowHandlers(
       name: workflowName,
       trigger: triggerData,
       actions: actions.map((action) => {
-        const credentials = Object.fromEntries(
+        let credentials = Object.fromEntries(
           Object.entries(action.configData || {}).filter(
             ([key, value]) =>
               !["event", "export"].includes(key) &&
               value !== null &&
               value !== ""
           )
-        )
+        );
+
+        // Sanitize the html field, if present
+        if (typeof credentials.html === "string") {
+          credentials = {
+            ...credentials,
+            html: DOMPurify.sanitize(credentials.html)
+          };
+        }
 
         return {
           id: action.id,
@@ -125,8 +134,9 @@ export function useWorkflowHandlers(
           event: action.configData?.event || null,
           export: action.configData?.export || null,
           ...(Object.keys(credentials).length > 0 && { credentials }),
-        }
-      }),
+        };
+}),
+
     }
 
     console.log("Workflow Name:", workflowData.name)
