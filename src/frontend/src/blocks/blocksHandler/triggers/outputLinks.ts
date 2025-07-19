@@ -1,5 +1,5 @@
 import React from "react";
-import { generateTelegramWebhookLink, TelegramLinkCommand } from "../../telegram/triggerConfig";
+import { TelegramLinkCommand } from "../../telegram/triggerConfig";
 
 interface AllAvailableProps {
   botToken: string;
@@ -25,9 +25,8 @@ interface OutputLinkConfig {
 export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
   telegram: {
     Component: TelegramLinkCommand,
-    getSaveData: ({ botToken, userId, workflowId }) => ({
+    getSaveData: ({ botToken }) => ({
       botToken: botToken,
-      command: generateTelegramWebhookLink(botToken, userId, workflowId),
     }),
     // The propBuilder for Telegram provides all the props its component needs.
     propBuilder: (props) => ({

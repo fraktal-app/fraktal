@@ -8,7 +8,8 @@ export function generateTelegramWebhookLink(
 
 ): string {
   //TODO change this to exec engine url
-  const publicUrl = "https://15909c542afa.ngrok-free.app";
+  //TODO Remove webhookURL from workflow JSON
+  const publicUrl = "https://8f1b6315c65f.ngrok-free.app";
 
   return `https://api.telegram.org/bot${botToken}/setWebhook?url=${publicUrl}/webhook/telegram/${userId}/${workflowId}/`; 
 }
@@ -43,26 +44,31 @@ export function TelegramLinkCommand({
           type="text"
           value={botToken}
           onChange={(e) => onBotTokenChange(e.target.value)}
-          placeholder="Enter Trigger name (e.g., new_lead_form)"
+          placeholder="Enter Bot Token"
           className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] mt-2"
         />
-        <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Generated Link</label>
-        <p className="text-xs text-[#9b9bab] mt-2">
-          Open this Link to Set Webhook 
-        </p>
-        <div className="relative w-full mt-2">
-          <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
-            {webhookUrl}
-          </div>
-          <button
-            onClick={handleClick}
-            className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-            aria-label="Copy command"
-            
-          >
-            <SquareArrowOutUpRight />
-          </button>
-        </div>
+        {botToken.length > 0 && (
+          <>
+            <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Generated Link</label>
+            <p className="text-xs text-[#9b9bab] mt-2">
+              Open this Link to Set Webhook 
+            </p>
+            <div className="relative w-full mt-2">
+              <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
+                {webhookUrl}
+              </div>
+              <button
+                onClick={handleClick}
+                className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
+                aria-label="Copy command"
+                
+              >
+                <SquareArrowOutUpRight />
+              </button>
+            </div>
+          </>          
+        )}
+
       </div>
     </div>
   );

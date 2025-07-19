@@ -3,6 +3,7 @@
         "fraktal-main": {
             "type": "azle",
             "main": "src/backend/index.ts",
+            "specified_id": "br5f7-7uaaa-aaaaa-qaaca-cai",
             "custom": {
                 "experimental": true,
                 "assets": [
@@ -21,6 +22,7 @@
         "database": {
             "type": "azle",
             "main": "src/database/index.ts",
+            "specified_id": "be2us-64aaa-aaaaa-qaabq-cai",
             "custom": {
                 "experimental": true,
                 "env": [
@@ -34,6 +36,7 @@
         "execution-engine": {
             "type": "azle",
             "main": "src/execution-engine/index.ts",
+            "specified_id": "bkyz2-fmaaa-aaaaa-qaaaq-cai",
             "custom": {
                 "experimental": true,
                 "assets": [

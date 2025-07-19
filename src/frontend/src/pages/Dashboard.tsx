@@ -8,6 +8,7 @@ import Home from "./Home";
 import Settings from "./Settings";
 import Executions from "./Executions";
 import Profile from "./Profile";
+import LoadingScreen from "../components/LoadingScreen";
 
 function Dashboard() {
   
@@ -41,7 +42,7 @@ function Dashboard() {
   return (
     <div>
         {isLoading ? 
-            (<h1>Loading.....</h1>) :
+            (<LoadingScreen/>) :
             (
 
 
@@ -53,7 +54,7 @@ function Dashboard() {
         <main className="pt-16 p-4">
           <Routes>
             <Route path="/" element={<Home user_id={userData.id}/>} />
-            <Route path="profile" element={userData ? <Profile userData={userData} /> : <div>Loading Profile...</div>} />
+            <Route path="profile" element={userData ? <Profile userData={userData} /> : <LoadingScreen/>} />
             <Route path="executions" element={<Executions />} />
             <Route path="settings" element={<Settings />} />
           </Routes>

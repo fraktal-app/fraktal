@@ -1,46 +1,76 @@
-class ExecutionQueue{
-    
-    private queue: any[] = [];
-    private isRunning = false;
-    
-    constructor(){
+import { telegramActionsHandler } from "./blocks/telegram/telegram";
+
+// A class that manages execution of queued async tasks
+class ExecutionQueue {
+    private queue: any[] = [];         // Queue to store tasks
+    private isRunning = false;         // Flag to prevent concurrent runs
+
+    constructor() {
         this.queue = [];
         this.isRunning = false;
     }
 
-    public showQueue(){
-        return this.queue
+    // Debug method to view current queue
+    public showQueue() {
+        return this.queue;
     }
 
-    public add(task) {
-        // Push task and maybe run
+    // Adds a new task to the queue and starts processing if idle
+    public add(task: any) {
         this.queue.push(task);
 
-        if(!this.isRunning){
-            this.runNext();
+        if (!this.isRunning) {
+            this.runNext(); // Fire off the processing loop
         }
     }
 
+    // Processes one task at a time from the queue
     public async runNext() {
-        // Process next task
-        if(this.queue.length === 0){
+        if (this.queue.length === 0) {
             this.isRunning = false;
             return;
         }
 
         this.isRunning = true;
+        const task = this.queue.shift(); // Take the next task
 
-        const task = this.queue.shift();
+        try {
+            // Ensure the task has actions to execute
+            if (task.json.actions && task.json.actions.length > 0) {
+                const action = task.json.actions.shift(); // Take the first action
 
-        try{
-            //execute task
-        } catch(e){
-            console.error(e);
+                await handleAction(action); // Handle the action asynchronously
+
+                // If there are more actions left, clone and requeue the task
+                if (task.json.actions.length > 0) {
+                    const clonedTask = JSON.parse(JSON.stringify(task));
+                    this.add(clonedTask); // Re-queue for further processing
+                }
+            }
+
+        } catch (e) {
+            console.error("Error while processing task:", e); // Catch any task-level errors
         }
 
-        this.runNext();
+        // Process the next task (awaited to avoid call stack overflow)
+        await this.runNext();
     }
 }
 
+// Singleton instance of the ExecutionQueue
 const instance = new ExecutionQueue();
 export default instance;
+
+// Handles an individual action based on its app type
+async function handleAction(action: any): Promise<void> {
+    switch (action.appType) {
+        case "telegram":
+            console.log(`Handling Action: ${action.appType} & ${action.event}`);
+            await telegramActionsHandler(action);
+            break;
+
+        default:
+            console.error(`Unknown action type: ${action.appType}`);
+            break;
+    }
+}

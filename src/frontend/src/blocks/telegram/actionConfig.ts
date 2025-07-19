@@ -8,13 +8,20 @@ export const telegramActionInputFields: Record<string, InputField[]> = {
         key: "botToken",
         label: "Bot Token",
         placeholder: "Enter your Telegram Bot Token",
-        type: "password",
+        type: "text",
         required: true,
     },
     {
         key: "chatId",
         label: "Chat ID",
         placeholder: "Enter the Chat ID to send the message to",
+        type: "text",
+        required: true,
+    },
+    {
+        key: "message",
+        label: "Message",
+        placeholder: "Enter the message you want to send.",
         type: "text",
         required: true,
     }
