@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import { getURL, supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import { Loader } from 'lucide-react';
@@ -85,7 +85,8 @@ export default function Login() {
     const { data, error } = await supabase.auth.signInWithOAuth({ 
       provider,
       options: {    
-        skipBrowserRedirect: true 
+        skipBrowserRedirect: true, 
+        redirectTo: getURL()
       },
     })
     

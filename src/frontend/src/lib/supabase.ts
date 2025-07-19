@@ -9,7 +9,7 @@ export const supabase = createClient(
 )
 
 export const getURL = () => {  
-  let url = import.meta.env.VITE_CANISTER_ORIGIN 
+  let url = window.location.origin
   
   url = url.startsWith('http') ? url : `https://${url}`  
   url = url.endsWith('/') ? url : `${url}/`  

@@ -1,6 +1,6 @@
-import { Send } from "lucide-react"
+import { MessageSquare, Send } from "lucide-react"
 
-// import discord from "../../assets/discord.png"
+import discord from "../../assets/discord.png"
 // import github from "../../assets/github.png"
 // import gmail from "../../assets/gmail.png"
 // import metamask from "../../assets/metamask.png"
@@ -12,7 +12,7 @@ import type { AppBlock } from "./types"
 
 
 export const appBlocks: AppBlock[] = [
-  //{ type: "discord", label: "Discord", icon: MessageSquare, iconUrl: discord, color: "white", category: "trigger" },
+  { type: "discord", label: "Discord", icon: MessageSquare, iconUrl: discord, color: "white", category: "trigger" },
   { type: "telegram", label: "Telegram", icon: Send, iconUrl: telegram, color: "white", category: "trigger" },
   // { type: "github", label: "GitHub", icon: Github, iconUrl: github, color: "white", category: "trigger" },
   // { type: "wallet", label: "Wallet Tracking", icon: TrendingUp, iconUrl: metamask, color: "white", category: "trigger"},

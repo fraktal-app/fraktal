@@ -59,7 +59,7 @@ app.get("/canister-ids", (req, res) => {
     res.json({
         "fraktail-main": process.env.CANISTER_ID_fraktal_main,
         "database": process.env.CANISTER_ID_database,
-        "trigger-engine": process.env.CANISTER_ID_trigger_engine
+        "execution-engine": process.env.CANISTER_ID_execution_engine
     })
 })
 
