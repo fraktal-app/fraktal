@@ -1,4 +1,4 @@
-import { Send, SquareArrowOutUpRight, } from "lucide-react";
+import { Send, } from "lucide-react";
 import type { InputField } from "../common/types";
 
 export function generateTelegramWebhookLink(
@@ -28,9 +28,6 @@ export function TelegramLinkCommand({
 
   const webhookUrl = generateTelegramWebhookLink(botToken, userId,  workflowId,);
 
-  const handleClick = () => {
-    window.open(webhookUrl, '_blank');
-  };
 
 
   return (
@@ -53,19 +50,14 @@ export function TelegramLinkCommand({
             <p className="text-xs text-[#9b9bab] mt-2">
               Open this Link to Set Webhook 
             </p>
-            <div className="relative w-full mt-2">
-              <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
-                {webhookUrl}
-              </div>
-              <button
-                onClick={handleClick}
-                className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-                aria-label="Copy command"
-                
-              >
-                <SquareArrowOutUpRight />
-              </button>
-            </div>
+            <div className="relative w-full mt-2 flex justify-center">
+            <button
+              onClick={() => window.open(webhookUrl, '_blank')}
+              className="w-full px-4 py-2 border border-gray-400 text-white hover:bg-white hover:text-black rounded-lg font-medium transition-colors"
+            >
+              Open Webhook Link
+            </button>
+          </div>
           </>          
         )}
 

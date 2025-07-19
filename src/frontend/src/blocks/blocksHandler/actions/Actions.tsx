@@ -115,7 +115,6 @@ export default function ActionDropdown({
 
 
       const creds = { ...initialData };
-      // Clean known fields from credentials object
       delete creds.event;
       delete creds.export;
       delete creds.linkName;
@@ -128,13 +127,15 @@ export default function ActionDropdown({
   const selectedActionObj = availableActions.find(a => a.value === selectedAction)
 
 
-  const availableExports = exportEventsByAction[selectedAction] || []
-  const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : []
+    const exportOptions = 
+    selectedAction ? exportEventsByAction[selectedAction] || [] 
+    : [];  
+    const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : []
 
 
   const isFormValid = Boolean(
     selectedAction &&
-    selectedExport &&
+    (exportOptions.length === 0 || selectedExport) && 
     credentialFields.every(field => !field.required || credentials[field.key]?.trim())
   );
 
@@ -193,7 +194,7 @@ export default function ActionDropdown({
           value={selectedAction}
           onChange={(value) => {
             setSelectedAction(value)
-            setSelectedExport("") // Reset export when action changes
+            setSelectedExport("") 
           }}
           placeholder="Select an action"
         />
@@ -241,15 +242,29 @@ export default function ActionDropdown({
 
 
       {selectedAction && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
-          <CustomSelect
-            options={availableExports}
-            value={selectedExport}
-            onChange={setSelectedExport}
-            placeholder="Select export data"
-          />
-        </div>
+  <div className="flex flex-col gap-2 pt-3">
+    <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
+    {exportOptions.length > 0 ? (
+      <select
+        value={selectedExport}
+        onChange={(e) => setSelectedExport(e.target.value)}
+        className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+      >
+        <option value="" disabled>
+          Choose export value
+        </option>
+        {exportOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">
+        No export options available for this action
+      </div>
+    )}
+  </div>
       )}
 
 

@@ -1,4 +1,4 @@
-import { MessageSquare, SquareArrowOutUpRight } from "lucide-react";
+import { MessageSquare,} from "lucide-react";
 import type { InputField } from "../common/types"
 
 export function generatediscordExternalLink(
@@ -30,14 +30,6 @@ export function discordLinkCommand({
 
   const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68608&integration_type=0&scope=bot";
   const extLink = generatediscordExternalLink(guildId, channelId, userId, workflowId);
-  
-  const handleDiscordBotLinkClick = () => {
-    window.open(discordUrl, '_blank');
-  };
-
-  const handleExtLinkClick = () => {
-    window.open(extLink, '_blank');
-  };
 
   return (
     <div>
@@ -46,18 +38,14 @@ export function discordLinkCommand({
         <p className="text-xs text-[#9b9bab] mt-2">
           Open this Link to Deploy Fraktal Bot in your Discord Server
         </p>
-        <div className="relative w-full mt-2">
-          <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
-            {discordUrl}
+        <div className="relative w-full mt-2 flex justify-center">
+            <button
+              onClick={() => window.open(discordUrl, '_blank')}
+              className="w-full px-4 py-2 border border-gray-400 text-white hover:bg-white hover:text-black rounded-lg font-medium transition-colors"
+            >
+              Deploy Fraktal Bot
+            </button>
           </div>
-          <button
-            onClick={handleDiscordBotLinkClick}
-            className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-            aria-label="Open Discord Bot Link"
-          >
-            <SquareArrowOutUpRight />
-          </button>
-        </div>
         <label className="block text-sm font-medium text-[#c5c5d2] mt-3">Guild Id</label>
         <p className="text-xs text-[#9b9bab] mt-2">
           Enter your guild Id
@@ -80,22 +68,23 @@ export function discordLinkCommand({
           placeholder="Enter Channel Id"
           className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] mt-2"
         />
+       {guildId.length > 0 &&
+        channelId.length > 0 &&(
+        <>
         <label className="block text-sm font-medium text-[#c5c5d2] mt-4">Discord Webhook</label>
         <p className="text-xs text-[#9b9bab] mt-2">
           Open this Link to Set Webhook
         </p>
-        <div className="relative w-full mt-2">
-          <div className="w-full pr-12 pl-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white text-sm font-mono overflow-x-auto">
-            {extLink}
+        <div className="relative w-full mt-2 flex justify-center">
+            <button
+              onClick={() => window.open(extLink, '_blank')}
+              className="w-full px-4 py-2 border border-gray-400 text-white hover:bg-white hover:text-black rounded-lg font-medium transition-colors"
+            >
+              Open Webhook Link
+            </button>
           </div>
-          <button
-            onClick={handleExtLinkClick}
-            className="absolute inset-y-0 right-0 flex items-center justify-center w-10 h-full text-[#9b9bab] hover:text-white transition-colors duration-200"
-            aria-label="Open Webhook Link"
-          >
-            <SquareArrowOutUpRight />
-          </button>
-        </div>
+        </>
+        )}
       </div>
     </div>
     
