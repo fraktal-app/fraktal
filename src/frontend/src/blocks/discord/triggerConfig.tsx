@@ -9,7 +9,7 @@ export function generatediscordExternalLink(
 
 
 ): string {
-  return `https://c59bd4266d43.ngrok-free.app/configure?guild_id=${guildId}&channel_id=${channelId}&workflow_id=${workflowId}&user_id=${userId}`; 
+  return `https://fraktal-external-server-production.up.railway.app/configure?guild_id=${guildId}&channel_id=${channelId}&workflow_id=${workflowId}&user_id=${userId}`; 
 }
 
 export function discordLinkCommand({
