@@ -28,7 +28,7 @@ export function discordLinkCommand({
   workflowId: string;
 }) {
 
-  const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68608&integration_type=0&scope=bot";
+  const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68736&integration_type=0&scope=bot";
   const extLink = generatediscordExternalLink(guildId, channelId, userId, workflowId);
 
   return (

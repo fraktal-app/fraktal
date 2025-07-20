@@ -2,7 +2,7 @@ import { MessageSquare, } from "lucide-react";
 import type { InputField } from "../common/types";
 
 export const DiscordBotLink = () => {
-  const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68608&integration_type=0&scope=bot";
+  const discordUrl = "https://discord.com/oauth2/authorize?client_id=1395353699592704040&permissions=68736&integration_type=0&scope=bot";
   
   return (
     <div>
