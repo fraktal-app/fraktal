@@ -1,8 +1,13 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 
-// Utility functions (stringToHtmlWithPills, htmlToString, setCursorAfterNode) remain the same
-const stringToHtmlWithPills = (str: string): string => {
-  const escapeHtml = (unsafe: string) => 
+// The component receives this type from its parent, so no local definition is needed.
+import type { AvailableDataSource } from '../../../components/workflowBuilder/types';
+
+
+// --- UTILITY FUNCTIONS ---
+
+const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string }): string => {
+  const escapeHtml = (unsafe: string) =>
     unsafe
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -10,11 +15,16 @@ const stringToHtmlWithPills = (str: string): string => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
 
-  const parts = str.split(/(\{step_[^}]+\})/g);
+  // ✅ Use a more generic regex to support the new "{1.telegram.messenger-detail}" format.
+  const pillRegex = /(\{[^}]+\})/g;
+  const parts = str.split(pillRegex);
 
-  return parts.map(part => {
-    if (/^\{step_[^}]+\}$/.test(part)) {
-      const label = part.slice(1, -1);
+  const filteredParts = parts.filter(part => part && part.length > 0);
+
+  return filteredParts.map(part => {
+    // ✅ Update the test to match the new generic format.
+    if (/^\{[^}]+\}$/.test(part)) {
+      const label = labelMap[part] || part.slice(1, -1);
       return `<span
         contentEditable="false"
         style="display: inline-block; background-color: #2a2e3f; border: 1px solid #4a4f62; border-radius: 4px; padding: 1px 6px; margin: 0 2px; font-size: 0.875rem; color: #c5c5d2; user-select: none; vertical-align: middle;"
@@ -38,7 +48,9 @@ const htmlToString = (html: string): string => {
     }
   });
 
-  return tempDiv.textContent || '';
+  const rawText = tempDiv.textContent || '';
+  
+  return rawText.replace(/\u00A0/g, ' ');
 };
 
 const setCursorAfterNode = (node: Node) => {
@@ -52,6 +64,9 @@ const setCursorAfterNode = (node: Node) => {
     }
 };
 
+
+// --- COMPONENT DEFINITION ---
+
 type ContentEditableWithPillsInputProps = {
   value: string;
   onChange: (newValue: string) => void;
@@ -60,6 +75,7 @@ type ContentEditableWithPillsInputProps = {
   className?: string;
   placeholder?: string;
   rows?: number;
+  availableDataSources?: AvailableDataSource[];
 };
 
 const ContentEditableWithPillsInput = ({
@@ -70,34 +86,44 @@ const ContentEditableWithPillsInput = ({
   className = "",
   placeholder = "",
   rows = 1,
+  availableDataSources = [],
 }: ContentEditableWithPillsInputProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const lastValueString = useRef(value);
 
-  useEffect(() => {
-    if (value === lastValueString.current) {
-        return;
-    }
-    
-    if (editorRef.current) {
-        editorRef.current.innerHTML = stringToHtmlWithPills(value);
-        lastValueString.current = value;
-        
-        if (lastInsertedPill) {
-            const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill}"]`);
-            const lastPillNode = pillNodes[pillNodes.length - 1];
-            if (lastPillNode) {
-                setCursorAfterNode(lastPillNode);
-            }
+  const pillLabelMap = useMemo(() => {
+    const map: { [key: string]: string } = {};
+    for (const source of availableDataSources) {
+        for (const key in source.data) {
+            // ✅ Generate the map key using the new "{number.appType.key}" format.
+            const pillString = `{${source.stepNumber}.${source.appType}.${key}}`;
+            map[pillString] = source.data[key].label;
         }
     }
-  }, [value, lastInsertedPill]);
+    return map;
+  }, [availableDataSources]);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const currentDomString = htmlToString(editorRef.current.innerHTML);
+
+      if (value !== currentDomString) {
+        editorRef.current.innerHTML = stringToHtmlWithPills(value, pillLabelMap);
+      }
+      
+      if (lastInsertedPill) {
+        const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill}"]`);
+        const lastPillNode = pillNodes[pillNodes.length - 1];
+        if (lastPillNode) {
+            setCursorAfterNode(lastPillNode);
+        }
+      }
+    }
+  }, [value, lastInsertedPill, pillLabelMap]);
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const currentTarget = e.currentTarget;
     const newStringValue = htmlToString(currentTarget.innerHTML);
     
-    lastValueString.current = newStringValue;
     onChange(newStringValue);
     
     const selection = window.getSelection();
@@ -108,7 +134,6 @@ const ContentEditableWithPillsInput = ({
         if (textNode.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
             const textContent = textNode.textContent || '';
             if (textContent[range.startOffset - 1] === '$') {
-                // ✅ FIXED: Robustly calculate the absolute cursor position
                 const editor = editorRef.current;
                 let absolutePosition = 0;
                 if (editor) {

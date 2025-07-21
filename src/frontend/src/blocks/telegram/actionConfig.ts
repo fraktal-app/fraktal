@@ -8,30 +8,36 @@ export const telegramResponseDropdownOptions =
   //{ value: "pin_message", label: "Pin message" },
 ];
 
+
 export const telegramActionInputFields: Record<string, InputField[]> = {
   
     telegram: [
-    {
-        key: "telegram_botToken",
-        label: "Bot Token",
-        placeholder: "Enter your Telegram Bot Token",
-        type: "text",
-        required: true,
-    },
-    {
-        key: "telegram_chatId",
-        label: "Chat ID",
-        placeholder: "Enter the Chat ID to send the message to",
-        type: "text",
-        required: true,
-    },
+        {
+            key: "telegram_botToken",
+            label: "Bot Token",
+            placeholder: "Enter your Telegram Bot Token",
+            type: "text",
+            required: true,
+        },
+        {
+            key: "telegram_chatId",
+            label: "Chat ID",
+            placeholder: "Enter the Custom Chat ID to send the message to",
+            type: "text",
+            required: true,
+            conditional: {
+                basedOn: 'triggerApp',
+                appType: 'telegram',
+                pill: '{step_1.chat.id}',
+                pillLabel: 'Reply to trigger chat id'
+            }
+        },
     ]
-}
-
+};
 export const telegramCustomMessage: Record<string, InputField[]> = {
   "send_telegram_message": [
     {
-      key: "telegram_message",
+      key: "Message",
       label: "Message",
       placeholder: "Enter your message here...",
       type: "textarea",

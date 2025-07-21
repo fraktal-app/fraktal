@@ -121,7 +121,6 @@ export function WorkflowStep({
         {step.showDropdown && step.type === "trigger" && (
           <TriggerDropdown
             isOpen={step.showDropdown as boolean}
-            // ✅ FIXED: Used a more generic type to allow all form data to pass through.
             onSave={(formData: { [key: string]: any }) =>
               onSaveConfig(step.id, formData)
             }
@@ -135,10 +134,9 @@ export function WorkflowStep({
         {step.showDropdown && step.type === "action" && (
           <ActionDropdown
             isOpen={step.showDropdown as boolean}
-            // ✅ FIXED: Used a more generic type to allow all form data, including custom messages.
-            onSave={(formData: { [key: string]: any }) =>
-              onSaveConfig(step.id, formData)
-            }
+            onSave={(formData: { [key: string]: any }) => {
+              onSaveConfig(step.id, formData);
+            }}
             onCancel={() => onCancelConfig(step.id)}
             appType={step.app?.type}
             userId={userId}

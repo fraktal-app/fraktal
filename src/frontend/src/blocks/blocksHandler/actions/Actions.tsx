@@ -14,7 +14,7 @@ type ActionOption = {
 
 type ActionDropdownProps = {
   isOpen: boolean;
-  onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
+  onSave: (formData: { [key: string]: any }) => void;
   onCancel: () => void;
   appType?: string;
   initialData?: { [key: string]: any };
@@ -23,7 +23,6 @@ type ActionDropdownProps = {
   workflowId: string;
 };
 
-// DataPillSelector and CustomSelect components remain the same
 function DataPillSelector({
   sources,
   onSelect,
@@ -66,7 +65,8 @@ function DataPillSelector({
             {Object.entries(source.data).map(([key, valueInfo]) => (
               <li key={key}>
                 <button
-                  onClick={() => onSelect(`{step_${source.stepNumber}.${key}}`)}
+                  // ✅ Generate the pill with the new "{number.appType.key}" format.
+                  onClick={() => onSelect(`{${source.stepNumber}.${source.appType}.${key}}`)}
                   className="w-full px-3 py-2 text-left text-sm text-white hover:bg-[#3a3f52]"
                   >
                   {(valueInfo as any).label || key}
@@ -167,6 +167,7 @@ export default function ActionDropdown({
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [dollarTriggerPosition, setDollarTriggerPosition] = useState<number | null>(null);
   const [lastInsertedPill, setLastInsertedPill] = useState<string | null>(null);
+  const [chatIdSource, setChatIdSource] = useState<'custom' | 'trigger'>('custom');
 
   const closePillSelector = () => {
     setActivePillSelector(null);
@@ -177,31 +178,40 @@ export default function ActionDropdown({
     if (initialData) {
       setSelectedAction(initialData.event || "");
       setSelectedExport(initialData.export || "");
-      const customMsgData: Record<string, string> = {};
-      Object.keys(initialData).forEach(key => {
-        if (key.startsWith('customMessage_')) {
-          customMsgData[key] = initialData[key];
-        }
-      });
-      setCustomMessages(customMsgData);
+      
+      const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
+      const telegramChatIdField = credentialFields.find(f => f.key === 'telegram_chatId');
+      
+      // Note: This logic for telegram_chatId still uses the old format.
+      // It can be updated separately if needed.
+      if (telegramChatIdField?.conditional && initialData.telegram_chatId === telegramChatIdField.conditional.pill) {
+        setChatIdSource('trigger');
+      } else {
+        setChatIdSource('custom');
+      }
+
+      if (initialData.Message) {
+        setCustomMessages({ 'Message': initialData.Message });
+      } else {
+        setCustomMessages({});
+      }
+
       const creds = { ...initialData };
       delete creds.event;
       delete creds.export;
       delete creds.linkName;
       delete creds.command;
-      Object.keys(creds).forEach(key => {
-        if (key.startsWith('customMessage_')) {
-          delete creds[key];
-        }
-      });
+      delete creds.Message; 
       setCredentials(creds);
+
     } else {
         setCredentials({});
         setSelectedAction("");
         setSelectedExport("");
         setCustomMessages({});
+        setChatIdSource('custom');
     }
-  }, [initialData, isOpen]);
+}, [initialData, isOpen, appType]);
 
   useEffect(() => {
     if (lastInsertedPill) {
@@ -214,7 +224,7 @@ export default function ActionDropdown({
   const exportOptions = selectedAction ? exportEventsByAction[selectedAction] || [] : [];
   const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
   const customMessageFields = selectedAction ? customMessageFieldsByAction[selectedAction] || [] : [];
-  const isCustomMessagesValid = customMessageFields.every(field => !field.required || customMessages[`customMessage_${selectedAction}_${field.key}`]?.trim());
+  const isCustomMessagesValid = customMessageFields.every(field => !field.required || customMessages[`Message`]?.trim());
 
   const isFormValid = Boolean(
     selectedAction &&
@@ -224,7 +234,6 @@ export default function ActionDropdown({
   );
 
   const handleDataMappingChange = (key: string, value: string) => {
-    // ✅ UPDATED: Logic to close the dropdown if the '$' is removed or typed after.
     if (activePillSelector === key && dollarTriggerPosition !== null) {
       const typedAfter = value.length > dollarTriggerPosition + 1 && value[dollarTriggerPosition + 1] !== '{';
       const dollarRemoved = value[dollarTriggerPosition] !== '$';
@@ -234,8 +243,8 @@ export default function ActionDropdown({
       }
     }
 
-    if (key.startsWith('customMessage_')) {
-      setCustomMessages(prev => ({ ...prev, [key]: value }));
+    if (key === 'Message') {
+      setCustomMessages({ 'Message': value });    
     } else {
       setCredentials(prev => ({ ...prev, [key]: value }));
     }
@@ -255,7 +264,8 @@ export default function ActionDropdown({
   
   const handlePillSelect = (pill: string) => {
     if (activePillSelector && dollarTriggerPosition !== null) {
-      const currentValue = activePillSelector.startsWith('customMessage_') 
+      const isCustomMessageField = activePillSelector === 'Message';
+      const currentValue = isCustomMessageField
         ? customMessages[activePillSelector] || ''
         : credentials[activePillSelector] || '';
       
@@ -264,16 +274,17 @@ export default function ActionDropdown({
         pill + 
         currentValue.slice(dollarTriggerPosition + 1);
       
-        newValue = newValue.replace(/\$/g, '');
-      if (activePillSelector.startsWith('customMessage_')) {
-        setCustomMessages(prev => ({ ...prev, [activePillSelector]: newValue }));
+      newValue = newValue.replace(/\$/g, '');
+      
+      if (isCustomMessageField) {
+        setCustomMessages({ 'Message': newValue });
       } else {
         setCredentials(prev => ({ ...prev, [activePillSelector]: newValue }));
       }
       setLastInsertedPill(pill);
     }
     closePillSelector();
-  };
+};
 
   const handleSave = () => {
     if (isFormValid) {
@@ -320,66 +331,115 @@ export default function ActionDropdown({
       </div>
 
       <div className="space-y-3">
-        {credentialFields.map((field) => (
-          <div className="flex flex-col gap-2" key={field.key}>
+        {credentialFields.map((field) => {
+          const trigger = availableDataSources.find(source => source.stepNumber === 1);
+          const isTriggerTelegram = trigger?.appType === field.conditional?.appType;
+
+          if (field.key === 'telegram_chatId' && field.conditional && isTriggerTelegram) {
+            const isTriggerMode = chatIdSource === 'trigger';
+
+            return (
+              <div className="flex flex-col gap-2" key={field.key}>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+                  {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
+                </div>
+                <select
+                  value={chatIdSource}
+                  onChange={(e) => {
+                    const source = e.target.value as 'custom' | 'trigger';
+                    setChatIdSource(source);
+                    if (source === 'trigger' && field.conditional?.pill) {
+                      handleDataMappingChange(field.key, field.conditional.pill);
+                    } else {
+                      handleDataMappingChange(field.key, '');
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+                >
+                  <option value="custom">Custom Chat ID</option>
+                  <option value="trigger">{field.conditional.pillLabel}</option>
+                </select>
+                
+                <div className="relative">
+                  <input
+                    type={field.type}
+                    value={isTriggerMode ? field.conditional.pillLabel : (credentials[field.key] || "")}
+                    onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    disabled={isTriggerMode}
+                    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10 disabled:bg-[#2a2e3f]/60 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  />
+                </div>
+              </div>
+            );
+          }
+          
+          return (
+            <div className="flex flex-col gap-2" key={field.key}>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+                {field.allowDataMapping && (<span className="text-xs font-mono text-[#a37ff0] bg-[#6d3be4]/20 px-1.5 py-0.5 rounded-md" title="Data mapping available">$</span>)}
+                {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
+              </div>
+              <div className="relative">
+                {field.allowDataMapping ? (
+                    <ContentEditableWithPillsInput
+                    value={credentials[field.key] || ""}
+                    onChange={(newValue) => handleDataMappingChange(field.key, newValue)}
+                    onPillTrigger={(el, val, pos) => handlePillTrigger(field.key, el, val, pos)}
+                    placeholder={field.placeholder}
+                    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
+                    lastInsertedPill={lastInsertedPill}
+                    availableDataSources={availableDataSources}
+                  />
+                ) : field.type === "textarea" ? (
+                  <textarea
+                    value={credentials[field.key] || ""}
+                    onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    maxLength={field.maxLength}
+                    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
+                  />
+                ) : (
+                  <input
+                    type={field.type}
+                    value={credentials[field.key] || ""}
+                    onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
+                  />
+                )}
+                {field.allowDataMapping && (<button type="button" className="absolute top-1/2 right-3 -translate-y-1/2 text-[#9b9bab] hover:text-white cursor-help" title="Type $ to insert data from a previous step."><Info className="h-4 w-4"/></button>)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {customMessageFields.map((field) => {
+        const messageStateKey = 'Message'; 
+        const uniqueReactKey = `customMessage_${selectedAction}_${field.key}`; 
+
+        return (
+          <div className="flex flex-col gap-2" key={uniqueReactKey}>
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
               {field.allowDataMapping && (<span className="text-xs font-mono text-[#a37ff0] bg-[#6d3be4]/20 px-1.5 py-0.5 rounded-md" title="Data mapping available">$</span>)}
               {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
             </div>
             <div className="relative">
-              {field.allowDataMapping ? (
-                 <ContentEditableWithPillsInput
-                  value={credentials[field.key] || ""}
-                  onChange={(newValue) => handleDataMappingChange(field.key, newValue)}
-                  onPillTrigger={(el, val, pos) => handlePillTrigger(field.key, el, val, pos)}
-                  placeholder={field.placeholder}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
-                  lastInsertedPill={lastInsertedPill}
-                />
-              ) : field.type === "textarea" ? (
-                <textarea
-                  value={credentials[field.key] || ""}
-                  onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  maxLength={field.maxLength}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
-                />
-              ) : (
-                <input
-                  type={field.type}
-                  value={credentials[field.key] || ""}
-                  onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
-                />
-              )}
-              {field.allowDataMapping && (<button type="button" className="absolute top-1/2 right-3 -translate-y-1/2 text-[#9b9bab] hover:text-white cursor-help" title="Type $ to insert data from a previous step."><Info className="h-4 w-4"/></button>)}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {customMessageFields.map((field) => {
-        const fieldKey = `customMessage_${selectedAction}_${field.key}`;
-        return (
-          <div className="flex flex-col gap-2" key={fieldKey}>
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
-               {field.allowDataMapping && (<span className="text-xs font-mono text-[#a37ff0] bg-[#6d3be4]/20 px-1.5 py-0.5 rounded-md" title="Data mapping available">$</span>)}
-              {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
-            </div>
-            <div className="relative">
               <ContentEditableWithPillsInput
-                value={customMessages[fieldKey] || ""}
-                onChange={(newValue) => handleDataMappingChange(fieldKey, newValue)}
-                onPillTrigger={(el, val, pos) => handlePillTrigger(fieldKey, el, val, pos)}
+                value={customMessages[messageStateKey] || ""}
+                onChange={(newValue) => handleDataMappingChange(messageStateKey, newValue)}
+                onPillTrigger={(el, val, pos) => handlePillTrigger(messageStateKey, el, val, pos)}
                 placeholder={field.placeholder}
                 rows={4}
                 className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] resize-none pr-10"
                 lastInsertedPill={lastInsertedPill}
+                availableDataSources={availableDataSources}
               />
-               {field.allowDataMapping && (<button type="button" className="absolute top-2.5 right-3 text-[#9b9bab] hover:text-white cursor-help" title="Type $ to insert datafrom a previous step."><Info className="h-4 w-4"/></button>)}
+              {field.allowDataMapping && (<button type="button" className="absolute top-2.5 right-3 text-[#9b9bab] hover:text-white cursor-help" title="Type $ to insert datafrom a previous step."><Info className="h-4 w-4"/></button>)}
             </div>
             {field.description && (<p className="text-xs text-[#9b9bab]">{field.description}</p>)}
           </div>
@@ -394,7 +454,7 @@ export default function ActionDropdown({
             <select
               value={selectedExport}
               onChange={(e) => setSelectedExport(e.target.value)}
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[rgb(109,59,228)]"
             >
               <option value="" disabled>Choose export value</option>
               {exportOptions.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}

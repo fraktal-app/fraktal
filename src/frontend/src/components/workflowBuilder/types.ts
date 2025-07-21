@@ -50,7 +50,8 @@ export interface ActionData {
   credentials?: Record<string, any>
 }
 export interface AvailableDataSource {
-  stepNumber: number
-  stepLabel: string
-  data: any
+  stepNumber: number;
+  stepLabel: string;
+  data: any;
+  appType: string;
 }

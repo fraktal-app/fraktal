@@ -6,8 +6,6 @@ import { WorkflowStep } from "./WorkflowSteps"
 // We now import the event maps to find the labels for selected exports.
 import { exportEventsByAction } from "../../blocks/blocksHandler/actions/actionResponse" 
 import { exportEventsByApp } from "../../blocks/blocksHandler/triggers/triggerEvents"
-
-
 interface WorkflowCanvasProps {
   workflowSteps: WorkflowStepType[]
   draggedApp: any
@@ -33,7 +31,7 @@ interface ConfiguredWorkflowStep extends WorkflowStepType {
 }
 
 function isStepConfigured(step: WorkflowStepType): step is ConfiguredWorkflowStep {
-    return !!(step.app && step.configData && step.configData.event && step.configData.export);
+   return !!(step.app && step.configData && step.configData.event && step.configData.export);
 }
 
 const triggerExportEvents = {
@@ -96,6 +94,7 @@ export function WorkflowCanvas({
                     stepNumber: prevStep.stepNumber,
                     stepLabel: prevStep.app.label,
                     data: exportData,
+                    appType: prevStep.app.type,
                   }
                 })
 
