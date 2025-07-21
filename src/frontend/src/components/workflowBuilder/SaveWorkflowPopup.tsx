@@ -25,7 +25,6 @@ export function SaveWorkflowPopup({
       <div className="bg-[#1b1f2a] border border-[#2a2e3f] rounded-lg p-6 w-96 max-w-md">
         <h2 className="text-lg font-bold text-[#ffffff] mb-4">Save Workflow</h2>
         
-        {/* Show validation error in popup if any */}
         {validationError && (
           <div className="mb-4 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-400" />

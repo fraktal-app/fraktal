@@ -300,19 +300,16 @@ export default function ActionDropdown({
     if (isFormValid) {
       const finalCredentials: Record<string, any> = { ...credentials };
       
-      // ✅ Always format telegram_chatId as an object if the action is Telegram.
       if (appType === 'telegram' && 'telegram_chatId' in finalCredentials) {
         const trigger = availableDataSources.find(source => source.stepNumber === 1);
         const isTriggerTelegram = trigger?.appType === 'telegram';
 
         if (isTriggerTelegram) {
-          // If trigger is Telegram, respect the user's choice from the dropdown
           finalCredentials.telegram_chatId = {
             isCustom: chatIdSource === 'custom',
             text: credentials.telegram_chatId || ''
           };
         } else {
-          // If trigger is NOT Telegram, the Chat ID is always considered custom.
           finalCredentials.telegram_chatId = {
             isCustom: true,
             text: credentials.telegram_chatId || ''

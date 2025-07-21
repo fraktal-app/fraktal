@@ -24,18 +24,11 @@ export default function WorkflowBuilder() {
   const [userId, setUserId] = useState<string>("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [workflowName, setWorkflowName] = useState("Untitled")
-//   useEffect(() => {
-//   if (workflowId) {
-//     localStorage.setItem("workflowId", workflowId);
-//   }
-// }, [workflowId]);
-console.log('Workflow ID:', workflowId);
-console.log('User ID:', userId);
-// const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([
-//     { id: "trigger-1", type: "trigger", stepNumber: 1 },
-//     { id: "action-1", type: "action", stepNumber: 2 },
-//   ])
- const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([])
+
+  console.log('Workflow ID:', workflowId);
+  console.log('User ID:', userId);
+
+  const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([])
   const { draggedApp, onDragStart, onDragOver, onDrop } = useWorkflowDragDrop(workflowSteps, setWorkflowSteps) 
   const { validateWorkflow } = useWorkflowValidation()
   const {
@@ -64,8 +57,8 @@ console.log('User ID:', userId);
   useEffect(() => {
     manageUserSession()
   }, [])
-//
-   useEffect(() => {
+
+  useEffect(() => {
         const initializeWorkflow = async () => {
             setIsLoading(true)
 
@@ -76,10 +69,8 @@ console.log('User ID:', userId);
             }
             setUserId(currentUserData.id)
 
-            // If a workflowId exists, load its data
             if (workflowId) {
                 localStorage.setItem("workflowId", workflowId);
-                //Get workflow from workflowID and put it in data
                 try{
                   const baseURL = `${window.location.protocol}//${window.location.host}`;
 

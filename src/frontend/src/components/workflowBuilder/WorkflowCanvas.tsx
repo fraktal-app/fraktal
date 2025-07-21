@@ -68,15 +68,13 @@ export function WorkflowCanvas({
                 .filter(isStepConfigured)
                 .map(prevStep => {
                   const eventKey = prevStep.configData.event;
-                  const exportKey = prevStep.configData.export; // This is the selected value, e.g., "messageId"
-                  let exportLabel = exportKey; // Use the key as a fallback label
+                  const exportKey = prevStep.configData.export; 
+                  let exportLabel = exportKey; 
 
-                  // Determine whether to look in the trigger or action export maps
                   const exportOptions = prevStep.type === 'trigger'
                     ? triggerExportEvents[eventKey as keyof typeof triggerExportEvents]
                     : exportEventsByAction[eventKey as keyof typeof exportEventsByAction];
 
-                  // Find the full option object to get its human-readable label
                   if (exportOptions && Array.isArray(exportOptions)) {
                     const selectedOption = exportOptions.find(opt => opt.value === exportKey);
                     if (selectedOption) {
@@ -84,8 +82,6 @@ export function WorkflowCanvas({
                     }
                   }
                   
-                  // The data object for the pill selector now only contains the single field
-                  // that the user explicitly chose to export from the previous step.
                   const exportData = {
                     [exportKey]: { label: exportLabel }
                   };

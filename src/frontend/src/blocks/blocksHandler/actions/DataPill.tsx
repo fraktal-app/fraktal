@@ -1,8 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import type { AvailableDataSource } from '../../../components/workflowBuilder/types';
 
-// --- UTILITY FUNCTIONS ---
-
 const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string }): string => {
   const escapeHtml = (unsafe: string) =>
     unsafe
@@ -58,13 +56,10 @@ const setCursorAfterNode = (node: Node) => {
     }
 };
 
-// --- COMPONENT DEFINITION ---
-
 type ContentEditableWithPillsInputProps = {
   value: string;
   onChange: (newValue: string) => void;
   onPillTrigger: (element: HTMLDivElement, currentValue: string, cursorPosition: number) => void; 
-  // ✅ The prop now expects an object with the pill's value and its instance index.
   lastInsertedPill: { value: string; instanceIndex: number } | null;
   className?: string;
   placeholder?: string;

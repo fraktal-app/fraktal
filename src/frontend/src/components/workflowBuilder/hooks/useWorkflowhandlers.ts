@@ -148,7 +148,6 @@ export function useWorkflowHandlers(
       };
     });
 
-    // ✅ Logic to find and collect all used variables/pills
     const variables: string[] = [];
     const pillRegex = /\$\?\{[^}]+\}/g;
     const allStepsData = [triggerData, ...actionsData].filter(Boolean);
@@ -160,7 +159,6 @@ export function useWorkflowHandlers(
           if (typeof value === 'string') {
             textToScan = value;
           } else if (typeof value === 'object' && value !== null && (value as any).text) {
-            // Handle the special {isCustom, text} object for telegram_chatId
             textToScan = (value as any).text;
           }
 
@@ -176,7 +174,7 @@ export function useWorkflowHandlers(
       name: workflowName,
       trigger: triggerData,
       actions: actionsData,
-      variables: variables, // Add the new array to the final JSON
+      variables: variables, 
     };
 
     console.log("Full Workflow JSON:", workflowData);
