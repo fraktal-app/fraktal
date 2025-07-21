@@ -1,4 +1,3 @@
-// hooks/useWorkflowHandlers.ts
 import { useState } from "react"
 import { toast } from "react-toastify"
 import type { WorkflowStep } from "../types"
@@ -36,13 +35,29 @@ export function useWorkflowHandlers(
   const [validationError, setValidationError] = useState<string>("")
 
   const addActionStep = () => {
-    const newStep: WorkflowStep = {
-      id: `action-${Date.now()}`,
-      type: "action",
-      stepNumber: workflowSteps.length + 1,
-    }
-    setWorkflowSteps((prev) => [...prev, newStep])
-  }
+    setWorkflowSteps((prevSteps) => {
+      const actionSteps = prevSteps.filter(step => step.type === 'action');
+      
+      const maxActionIndex = actionSteps.reduce((maxIndex, step) => {
+        const parts = step.id.split('-');
+        const index = parseInt(parts[parts.length - 1], 10);
+        
+        if (!isNaN(index) && index > maxIndex) {
+          return index;
+        }
+        return maxIndex;
+      }, 0);
+
+      const newId = `action-${maxActionIndex + 1}`;
+
+      const newStep: WorkflowStep = {
+        id: newId,
+        type: "action",
+        stepNumber: prevSteps.length + 1,
+      };
+      return [...prevSteps, newStep];
+    });
+  };
 
   const removeStep = (stepId: string) => {
     if (workflowSteps.length <= 2) return
@@ -105,68 +120,66 @@ export function useWorkflowHandlers(
         }
       : null
 
+    const actionsData = actions.map((action) => {
+      let credentials = Object.fromEntries(
+        Object.entries(action.configData || {}).filter(
+          ([key, value]) =>
+            !["event", "export"].includes(key) &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      if (typeof credentials.html === "string") {
+        credentials = {
+          ...credentials,
+          html: DOMPurify.sanitize(credentials.html)
+        };
+      }
+
+      return {
+        id: action.id,
+        type: action.type,
+        appType: action.app?.type,
+        label: action.app?.label,
+        event: action.configData?.event || null,
+        export: action.configData?.export || null,
+        ...(Object.keys(credentials).length > 0 && { credentials }),
+      };
+    });
+
+    // ✅ Logic to find and collect all used variables/pills
+    const variables: string[] = [];
+    const pillRegex = /\$\?\{[^}]+\}/g;
+    const allStepsData = [triggerData, ...actionsData].filter(Boolean);
+
+    allStepsData.forEach(step => {
+      if (step && step.credentials) {
+        Object.values(step.credentials).forEach(value => {
+          let textToScan = '';
+          if (typeof value === 'string') {
+            textToScan = value;
+          } else if (typeof value === 'object' && value !== null && (value as any).text) {
+            // Handle the special {isCustom, text} object for telegram_chatId
+            textToScan = (value as any).text;
+          }
+
+          const matches = textToScan.match(pillRegex);
+          if (matches) {
+            variables.push(...matches);
+          }
+        });
+      }
+    });
+    
     const workflowData = {
       name: workflowName,
       trigger: triggerData,
-      actions: actions.map((action) => {
-        let credentials = Object.fromEntries(
-          Object.entries(action.configData || {}).filter(
-            ([key, value]) =>
-              !["event", "export"].includes(key) &&
-              value !== null &&
-              value !== ""
-          )
-        );
+      actions: actionsData,
+      variables: variables, // Add the new array to the final JSON
+    };
 
-        // Sanitize the html field, if present
-        if (typeof credentials.html === "string") {
-          credentials = {
-            ...credentials,
-            html: DOMPurify.sanitize(credentials.html)
-          };
-        }
-
-        return {
-          id: action.id,
-          type: action.type,
-          appType: action.app?.type,
-          label: action.app?.label,
-          event: action.configData?.event || null,
-          export: action.configData?.export || null,
-          ...(Object.keys(credentials).length > 0 && { credentials }),
-        };
-}),
-
-    }
-
-    console.log("Workflow Name:", workflowData.name)
-    console.log("Trigger App:", workflowData.trigger?.label)
-    console.log("Trigger Event:", workflowData.trigger?.event)
-    console.log("Export:", workflowData.trigger?.export)
-
-    if (workflowData.trigger && "clientId" in workflowData.trigger) {
-      console.log("Client ID:", workflowData.trigger.clientId)
-    }
-    if (workflowData.trigger && "clientPassword" in workflowData.trigger) {
-      console.log("Client Password:", workflowData.trigger.clientPassword)
-    }
-
-    console.log("All Actions with Exports:", workflowData.actions)
-    workflowData.actions.forEach((action, index) => {
-      console.log(`--- Action ${index + 1} (${action.label}) ---`)
-      console.log("Event:", action.event)
-      console.log("Export:", action.export)
-
-      if (action.credentials) {
-        Object.entries(action.credentials).forEach(([key, value]) => {
-          console.log(`${key}:`, value)
-        })
-      } else {
-        console.log("No credentials provided.")
-      }
-    })
-
-    console.log("Full Workflow JSON:", workflowData)
+    console.log("Full Workflow JSON:", workflowData);
 
     saveWorkflowToDB(workflowData, userId, workflowId);
 

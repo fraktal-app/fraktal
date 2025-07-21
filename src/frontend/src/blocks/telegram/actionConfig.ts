@@ -28,7 +28,7 @@ export const telegramActionInputFields: Record<string, InputField[]> = {
             conditional: {
                 basedOn: 'triggerApp',
                 appType: 'telegram',
-                pill: '{step_1.chat.id}',
+                pill: '$?{telegram.chatId}',
                 pillLabel: 'Reply to trigger chat id'
             }
         },

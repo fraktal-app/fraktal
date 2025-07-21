@@ -65,8 +65,7 @@ function DataPillSelector({
             {Object.entries(source.data).map(([key, valueInfo]) => (
               <li key={key}>
                 <button
-                  // ✅ Generate the pill with the new "{number.appType.key}" format.
-                  onClick={() => onSelect(`{${source.stepNumber}.${source.appType}.${key}}`)}
+                  onClick={() => onSelect(`$?{${source.stepNumber}.${source.appType}.${key}}`)}
                   className="w-full px-3 py-2 text-left text-sm text-white hover:bg-[#3a3f52]"
                   >
                   {(valueInfo as any).label || key}
@@ -166,7 +165,7 @@ export default function ActionDropdown({
   const [activePillSelector, setActivePillSelector] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [dollarTriggerPosition, setDollarTriggerPosition] = useState<number | null>(null);
-  const [lastInsertedPill, setLastInsertedPill] = useState<string | null>(null);
+  const [lastInsertedPill, setLastInsertedPill] = useState<{ value: string; instanceIndex: number } | null>(null);
   const [chatIdSource, setChatIdSource] = useState<'custom' | 'trigger'>('custom');
 
   const closePillSelector = () => {
@@ -179,15 +178,17 @@ export default function ActionDropdown({
       setSelectedAction(initialData.event || "");
       setSelectedExport(initialData.export || "");
       
-      const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
-      const telegramChatIdField = credentialFields.find(f => f.key === 'telegram_chatId');
-      
-      // Note: This logic for telegram_chatId still uses the old format.
-      // It can be updated separately if needed.
-      if (telegramChatIdField?.conditional && initialData.telegram_chatId === telegramChatIdField.conditional.pill) {
-        setChatIdSource('trigger');
-      } else {
-        setChatIdSource('custom');
+      const chatIdData = initialData.telegram_chatId;
+      if (typeof chatIdData === 'object' && chatIdData !== null && 'isCustom' in chatIdData) {
+        setChatIdSource(chatIdData.isCustom ? 'custom' : 'trigger');
+      } else if (typeof chatIdData === 'string') {
+        const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
+        const telegramChatIdField = credentialFields.find(f => f.key === 'telegram_chatId');
+        if (telegramChatIdField?.conditional && chatIdData === telegramChatIdField.conditional.pill) {
+          setChatIdSource('trigger');
+        } else {
+          setChatIdSource('custom');
+        }
       }
 
       if (initialData.Message) {
@@ -197,6 +198,10 @@ export default function ActionDropdown({
       }
 
       const creds = { ...initialData };
+      if (typeof creds.telegram_chatId === 'object' && creds.telegram_chatId !== null) {
+        creds.telegram_chatId = creds.telegram_chatId.text || '';
+      }
+      
       delete creds.event;
       delete creds.export;
       delete creds.linkName;
@@ -269,27 +274,54 @@ export default function ActionDropdown({
         ? customMessages[activePillSelector] || ''
         : credentials[activePillSelector] || '';
       
+      const textBeforeInsertion = currentValue.substring(0, dollarTriggerPosition);
+      const escapedPill = pill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const instanceIndex = (textBeforeInsertion.match(new RegExp(escapedPill, 'g')) || []).length;
+
       let newValue = 
         currentValue.slice(0, dollarTriggerPosition) + 
         pill + 
-        currentValue.slice(dollarTriggerPosition + 1);
+        currentValue.slice(dollarTriggerPosition);
       
-      newValue = newValue.replace(/\$/g, '');
+      newValue = newValue.replace(/\$(?!\?\{)/g, '');
       
       if (isCustomMessageField) {
         setCustomMessages({ 'Message': newValue });
       } else {
         setCredentials(prev => ({ ...prev, [activePillSelector]: newValue }));
       }
-      setLastInsertedPill(pill);
+      
+      setLastInsertedPill({ value: pill, instanceIndex: instanceIndex });
     }
     closePillSelector();
-};
+  };
 
   const handleSave = () => {
     if (isFormValid) {
-      const formData: { event: string; export: string; [key: string]: string } = {
-        ...credentials,
+      const finalCredentials: Record<string, any> = { ...credentials };
+      
+      // ✅ Always format telegram_chatId as an object if the action is Telegram.
+      if (appType === 'telegram' && 'telegram_chatId' in finalCredentials) {
+        const trigger = availableDataSources.find(source => source.stepNumber === 1);
+        const isTriggerTelegram = trigger?.appType === 'telegram';
+
+        if (isTriggerTelegram) {
+          // If trigger is Telegram, respect the user's choice from the dropdown
+          finalCredentials.telegram_chatId = {
+            isCustom: chatIdSource === 'custom',
+            text: credentials.telegram_chatId || ''
+          };
+        } else {
+          // If trigger is NOT Telegram, the Chat ID is always considered custom.
+          finalCredentials.telegram_chatId = {
+            isCustom: true,
+            text: credentials.telegram_chatId || ''
+          };
+        }
+      }
+
+      const formData: { event: string; export: string; [key: string]: any } = {
+        ...finalCredentials,
         ...customMessages,
         event: selectedAction,
         export: selectedExport,
@@ -454,7 +486,7 @@ export default function ActionDropdown({
             <select
               value={selectedExport}
               onChange={(e) => setSelectedExport(e.target.value)}
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[rgb(109,59,228)]"
+              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
             >
               <option value="" disabled>Choose export value</option>
               {exportOptions.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}

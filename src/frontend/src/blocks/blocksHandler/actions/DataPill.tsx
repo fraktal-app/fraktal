@@ -1,8 +1,5 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-
-// The component receives this type from its parent, so no local definition is needed.
 import type { AvailableDataSource } from '../../../components/workflowBuilder/types';
-
 
 // --- UTILITY FUNCTIONS ---
 
@@ -15,16 +12,14 @@ const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string })
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
 
-  // ✅ Use a more generic regex to support the new "{1.telegram.messenger-detail}" format.
-  const pillRegex = /(\{[^}]+\})/g;
+  const pillRegex = /(\$\?\{[^}]+\})/g;
   const parts = str.split(pillRegex);
-
   const filteredParts = parts.filter(part => part && part.length > 0);
 
   return filteredParts.map(part => {
-    // ✅ Update the test to match the new generic format.
-    if (/^\{[^}]+\}$/.test(part)) {
-      const label = labelMap[part] || part.slice(1, -1);
+    if (/^\$\?\{[^}]+\}$/.test(part)) {
+      const mapKey = part.substring(2);
+      const label = labelMap[mapKey] || mapKey.slice(1, -1);
       return `<span
         contentEditable="false"
         style="display: inline-block; background-color: #2a2e3f; border: 1px solid #4a4f62; border-radius: 4px; padding: 1px 6px; margin: 0 2px; font-size: 0.875rem; color: #c5c5d2; user-select: none; vertical-align: middle;"
@@ -49,7 +44,6 @@ const htmlToString = (html: string): string => {
   });
 
   const rawText = tempDiv.textContent || '';
-  
   return rawText.replace(/\u00A0/g, ' ');
 };
 
@@ -64,14 +58,14 @@ const setCursorAfterNode = (node: Node) => {
     }
 };
 
-
 // --- COMPONENT DEFINITION ---
 
 type ContentEditableWithPillsInputProps = {
   value: string;
   onChange: (newValue: string) => void;
   onPillTrigger: (element: HTMLDivElement, currentValue: string, cursorPosition: number) => void; 
-  lastInsertedPill: string | null;
+  // ✅ The prop now expects an object with the pill's value and its instance index.
+  lastInsertedPill: { value: string; instanceIndex: number } | null;
   className?: string;
   placeholder?: string;
   rows?: number;
@@ -94,7 +88,6 @@ const ContentEditableWithPillsInput = ({
     const map: { [key: string]: string } = {};
     for (const source of availableDataSources) {
         for (const key in source.data) {
-            // ✅ Generate the map key using the new "{number.appType.key}" format.
             const pillString = `{${source.stepNumber}.${source.appType}.${key}}`;
             map[pillString] = source.data[key].label;
         }
@@ -110,16 +103,21 @@ const ContentEditableWithPillsInput = ({
         editorRef.current.innerHTML = stringToHtmlWithPills(value, pillLabelMap);
       }
       
+      // ✅ Cursor Placement Logic
       if (lastInsertedPill) {
-        const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill}"]`);
-        const lastPillNode = pillNodes[pillNodes.length - 1];
-        if (lastPillNode) {
-            setCursorAfterNode(lastPillNode);
+        // Find all spans that match the inserted pill's value.
+        const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill.value}"]`);
+        // Use the instanceIndex to select the correct node from the list.
+        const targetNode = pillNodes[lastInsertedPill.instanceIndex];
+        
+        if (targetNode) {
+            setCursorAfterNode(targetNode);
         }
       }
     }
   }, [value, lastInsertedPill, pillLabelMap]);
 
+  // handleInput and handleKeyDown remain unchanged...
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const currentTarget = e.currentTarget;
     const newStringValue = htmlToString(currentTarget.innerHTML);
