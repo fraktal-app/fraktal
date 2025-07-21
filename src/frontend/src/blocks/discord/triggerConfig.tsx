@@ -1,15 +1,15 @@
 import { MessageSquare,} from "lucide-react";
 import type { InputField } from "../common/types"
 
+const DISCORD_SERVER_URL = import.meta.env.VITE_DISCORD_SERVER_URL;
+
 export function generatediscordExternalLink(
   guildId?: string,
   channelId?: string,
   userId?: string,
   workflowId?: string,
-
-
 ): string {
-  return `https://fraktal-external-server-production.up.railway.app/configure?guild_id=${guildId}&channel_id=${channelId}&workflow_id=${workflowId}&user_id=${userId}`; 
+  return `${DISCORD_SERVER_URL}/configure?guild_id=${guildId}&channel_id=${channelId}&workflow_id=${workflowId}&user_id=${userId}`; 
 }
 
 export function discordLinkCommand({

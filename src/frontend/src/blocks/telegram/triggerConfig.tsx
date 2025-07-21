@@ -9,9 +9,9 @@ export function generateTelegramWebhookLink(
 ): string {
   //TODO change this to exec engine url
   //TODO Remove webhookURL from workflow JSON
-  const publicUrl = "https://8f1b6315c65f.ngrok-free.app";
+  const executionEngineURL = import.meta.env.VITE_EXECUTION_ENGINE_URL ;
 
-  return `https://api.telegram.org/bot${botToken}/setWebhook?url=${publicUrl}/webhook/telegram/${userId}/${workflowId}/`; 
+  return `https://api.telegram.org/bot${botToken}/setWebhook?url=${executionEngineURL}/webhook/telegram/${userId}/${workflowId}/`; 
 }
 
 export function TelegramLinkCommand({
