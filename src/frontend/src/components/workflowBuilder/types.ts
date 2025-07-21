@@ -16,7 +16,7 @@ export interface WorkflowStep {
   stepNumber: number
    configData?: {
     event: string
-    export: string
+    export: any
     [key: string]: any
   }
   showDropdown?: boolean
@@ -34,7 +34,7 @@ export interface TriggerData {
   appType?: string
   label?: string
   event: string | null
-  export: string | null
+  export: any | null
   clientId?: string
   clientPassword?: string
   credentials: Record<string, any>
@@ -46,6 +46,11 @@ export interface ActionData {
   appType?: string
   label?: string
   event: string | null
-  export: string | null
+  export: any | null
   credentials?: Record<string, any>
+}
+export interface AvailableDataSource {
+  stepNumber: number
+  stepLabel: string
+  data: any
 }

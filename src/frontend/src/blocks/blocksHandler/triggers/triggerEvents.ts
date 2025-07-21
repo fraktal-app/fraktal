@@ -1,8 +1,8 @@
 import type { InputField } from "../../common/types";
-import { discordExportEvents, discordInputFields, discordTriggerEvents } from "../../discord/triggerConfig";
+import { discordExportEvents, discordInputFields, discordTriggerEvents,  } from "../../discord/triggerConfig";
 import { githubExportEvents, githubInputFields, githubTriggerEvents } from "../../github/triggerConfig";
 import { rssExportEvents, rssInputFields, rssTriggerEvents } from "../../rss/triggerConfig";
-import { telegramExportEvents, telegramInputFields, telegramTriggerEvents } from "../../telegram/triggerConfig";
+import { telegramExportEvents, telegramInputFields, telegramTriggerEvents, } from "../../telegram/triggerConfig";
 import { tokenExportEvents, tokenInputFields, tokenTriggerEvents } from "../../token/triggerConfig";
 import { walletExportEvents, walletInputFields, walletTriggerEvents } from "../../wallet/triggerConfig";
 

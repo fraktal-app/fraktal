@@ -1,8 +1,8 @@
 import type { InputField } from "../../common/types";
 import { aiActionInputFields, aiExportEvents, aiResponseDropdownOptions } from "../../ai/actionConfig";
-import { discordActionInputFields, discordExportEvents, discordResponseDropdownOptions } from "../../discord/actionConfig";
+import { discordActionInputFields, discordCustomMessage, discordExportEvents, discordResponseDropdownOptions } from "../../discord/actionConfig";
 import { notionActionInputFields, notionExportEvents, notionResponseDropdownOptions } from "../../notion/actionConfig";
-import { telegramActionInputFields, telegramExportEvents, telegramResponseDropdownOptions } from "../../telegram/actionConfig";
+import { telegramActionInputFields, telegramCustomMessage, telegramExportEvents, telegramResponseDropdownOptions } from "../../telegram/actionConfig";
 import { twitterActionInputFields, twitterExportEvents, twitterResponseDropdownOptions } from "../../twitter/actionConfig";
 import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownOptions } from "../../webhook/actionConfig";
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
@@ -30,6 +30,11 @@ export const actionInputFieldsByApp: Record<string, InputField[]> = {
   email: emailActionInputFields.email
 };
 
+export const customMessageFieldsByAction: Record<string, InputField[]> = {
+   ...discordCustomMessage,
+   ...telegramCustomMessage
+
+}
 export const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>>= {
   ...telegramExportEvents,
   ...discordExportEvents,
@@ -40,4 +45,3 @@ export const exportEventsByAction: Record<string, Array<{ value: string; label: 
   ...apiExportEvents,
   ...emailExportEvents
 };
-

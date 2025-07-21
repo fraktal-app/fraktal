@@ -1,7 +1,7 @@
 import { X, ArrowDown } from "lucide-react"
 import TriggerDropdown from "../../blocks/blocksHandler/triggers/Triggers"
 import ActionDropdown from "../../blocks/blocksHandler/actions/Actions"
-import type { WorkflowStep as WorkflowStepType } from "./types"
+import type { WorkflowStep as WorkflowStepType, AvailableDataSource } from "./types";
 
 interface WorkflowStepProps {
   step: WorkflowStepType
@@ -17,6 +17,7 @@ interface WorkflowStepProps {
   onShowDropdown: (stepId: string) => void
   userId: string
   workflowId: string
+  availableDataSources: AvailableDataSource[];
 }
 
 export function WorkflowStep({
@@ -33,6 +34,7 @@ export function WorkflowStep({
   onShowDropdown,
   userId,
   workflowId,
+  availableDataSources,
 }: WorkflowStepProps) {
   return (
     <div className="relative">
@@ -119,7 +121,8 @@ export function WorkflowStep({
         {step.showDropdown && step.type === "trigger" && (
           <TriggerDropdown
             isOpen={step.showDropdown as boolean}
-            onSave={(formData: { event: string; clientId?: string; clientPassword?: string; export: string }) =>
+            // ✅ FIXED: Used a more generic type to allow all form data to pass through.
+            onSave={(formData: { [key: string]: any }) =>
               onSaveConfig(step.id, formData)
             }
             onCancel={() => onCancelConfig(step.id)}
@@ -132,7 +135,8 @@ export function WorkflowStep({
         {step.showDropdown && step.type === "action" && (
           <ActionDropdown
             isOpen={step.showDropdown as boolean}
-            onSave={(formData: { event: string; clientId?: string; clientPassword?: string; export: string }) =>
+            // ✅ FIXED: Used a more generic type to allow all form data, including custom messages.
+            onSave={(formData: { [key: string]: any }) =>
               onSaveConfig(step.id, formData)
             }
             onCancel={() => onCancelConfig(step.id)}
@@ -140,6 +144,7 @@ export function WorkflowStep({
             userId={userId}
             workflowId={workflowId}
             initialData={step.configData}
+            availableDataSources={availableDataSources}
           />
         )}
       </div>

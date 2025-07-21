@@ -1,7 +1,12 @@
 // components/workflowBuilder/WorkflowCanvas.tsx
 import { Plus } from "lucide-react"
-import type { WorkflowStep as WorkflowStepType } from "./types"
+import type { AppBlock, WorkflowStep as WorkflowStepType, AvailableDataSource } from "./types"
 import { WorkflowStep } from "./WorkflowSteps"
+
+// We now import the event maps to find the labels for selected exports.
+import { exportEventsByAction } from "../../blocks/blocksHandler/actions/actionResponse" 
+import { exportEventsByApp } from "../../blocks/blocksHandler/triggers/triggerEvents"
+
 
 interface WorkflowCanvasProps {
   workflowSteps: WorkflowStepType[]
@@ -17,6 +22,23 @@ interface WorkflowCanvasProps {
   userId: string
   workflowId: string
 }
+
+interface ConfiguredWorkflowStep extends WorkflowStepType {
+    app: AppBlock;
+    configData: {
+        event: string;
+        export: string;
+        [key: string]: any;
+    };
+}
+
+function isStepConfigured(step: WorkflowStepType): step is ConfiguredWorkflowStep {
+    return !!(step.app && step.configData && step.configData.event && step.configData.export);
+}
+
+const triggerExportEvents = {
+ ...exportEventsByApp,
+};
 
 export function WorkflowCanvas({
   workflowSteps,
@@ -35,32 +57,68 @@ export function WorkflowCanvas({
   return (
     <main
       className="flex-1 overflow-y-auto bg-[#0d0f1c]"
-      style={{
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       <div className="min-h-full flex items-center justify-center p-8">
         <div className="w-full max-w-2xl">
           <div className="space-y-4">
-            {workflowSteps.map((step, index) => (
-              <WorkflowStep
-                key={step.id}
-                step={step}
-                index={index}
-                totalSteps={workflowSteps.length}
-                draggedApp={draggedApp}
-                onDragOver={onDragOver}
-                onDrop={onDrop}
-                onRemoveStep={onRemoveStep}
-                onClearStep={onClearStep}
-                onSaveConfig={onSaveConfig}
-                onCancelConfig={onCancelConfig}
-                onShowDropdown={onShowDropdown}
-                userId={userId}
-                workflowId={workflowId}
-              />
-            ))}
+            
+            {workflowSteps.map((step, index) => {
+              const previousSteps = workflowSteps.slice(0, index)
+
+              const availableDataSources: AvailableDataSource[] = previousSteps
+                .filter(isStepConfigured)
+                .map(prevStep => {
+                  const eventKey = prevStep.configData.event;
+                  const exportKey = prevStep.configData.export; // This is the selected value, e.g., "messageId"
+                  let exportLabel = exportKey; // Use the key as a fallback label
+
+                  // Determine whether to look in the trigger or action export maps
+                  const exportOptions = prevStep.type === 'trigger'
+                    ? triggerExportEvents[eventKey as keyof typeof triggerExportEvents]
+                    : exportEventsByAction[eventKey as keyof typeof exportEventsByAction];
+
+                  // Find the full option object to get its human-readable label
+                  if (exportOptions && Array.isArray(exportOptions)) {
+                    const selectedOption = exportOptions.find(opt => opt.value === exportKey);
+                    if (selectedOption) {
+                      exportLabel = selectedOption.label;
+                    }
+                  }
+                  
+                  // The data object for the pill selector now only contains the single field
+                  // that the user explicitly chose to export from the previous step.
+                  const exportData = {
+                    [exportKey]: { label: exportLabel }
+                  };
+
+                  return {
+                    stepNumber: prevStep.stepNumber,
+                    stepLabel: prevStep.app.label,
+                    data: exportData,
+                  }
+                })
+
+              return (
+                <WorkflowStep
+                  key={step.id}
+                  step={step}
+                  index={index}
+                  totalSteps={workflowSteps.length}
+                  draggedApp={draggedApp}
+                  onDragOver={onDragOver}
+                  onDrop={onDrop}
+                  onRemoveStep={onRemoveStep}
+                  onClearStep={onClearStep}
+                  onSaveConfig={onSaveConfig}
+                  onCancelConfig={onCancelConfig}
+                  onShowDropdown={onShowDropdown}
+                  userId={userId}
+                  workflowId={workflowId}
+                  availableDataSources={availableDataSources}
+                />
+              )
+            })}
 
             <div className="flex justify-center pt-4">
               <button

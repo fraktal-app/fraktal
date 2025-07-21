@@ -27,8 +27,7 @@ export const DiscordBotLink = () => {
 
 export const discordResponseDropdownOptions= 
   [
-  { value: "send_message", label: "Send Exported Data",  icon: MessageSquare ,requiresLinkName: true },
-  { value: "send_custom_message", label: "Send Custom Message", icon: MessageSquare },
+  { value: "send_discord_message", label: "Send Message",  icon: MessageSquare ,requiresLinkName: true },
   // { value: "send_notification", label: "Send notification" },
   ];
   
@@ -36,14 +35,14 @@ export const discordActionInputFields: Record<string, InputField[]> = {
  
     discord: [
   {
-    key: "guildId",
+    key: "discord_guildId",
     label: "Guild ID",
     placeholder: "Enter your Discord Server (Guild) ID",
     type: "text",
     required: true,
   },
   {
-    key: "channelId",
+    key: "discord_channelId",
     label: "Channel ID",
     placeholder: "Enter the Channel ID to send the message to",
     type: "text",
@@ -52,11 +51,24 @@ export const discordActionInputFields: Record<string, InputField[]> = {
 ]
 }
 
+export const discordCustomMessage: Record<string, InputField[]> = {
+  "send_discord_message": [
+    {
+      key: "discord_message",
+      label: "Custom Message",
+      placeholder: "Enter your custom message here...",
+      type: "textarea",
+      required: true,
+      allowDataMapping: true,
+      description: "This message will be sent to the specified Discord channel."
+    }
+  ],
+}
 
 
 export const discordExportEvents = {
-  "send_message": [
-    { value: "messageId", label: "Message ID", icon: MessageSquare },
-    { value: "channel", label: "Channel Sent", icon: MessageSquare },
+  "send_discord_message": [
+    { value: "timestamp", label: "Timestamp", icon: MessageSquare },
+    { value: "message_content", label: "Message Content", icon: MessageSquare },
   ],
 }

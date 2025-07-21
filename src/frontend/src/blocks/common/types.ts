@@ -6,6 +6,8 @@ export type InputField =
       type: "text" | "password" | "textarea"
       required?: boolean
       maxLength?: number
+      allowDataMapping?: boolean;
+      description?: string
     }
   | {
       key: string
@@ -14,4 +16,6 @@ export type InputField =
       type: "select"
       required?: boolean
       options: Array<{ value: string; label: string }>
+      allowDataMapping?: boolean;
+      description?: string
     }

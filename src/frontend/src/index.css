@@ -18,3 +18,11 @@ body {
 .dark .navbar {
   @apply bg-gray-800 text-white;
 }
+
+
+[contentEditable=true][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #9b9bab; /* Or your placeholder color */
+  pointer-events: none;
+  display: block; /* For a div */
+}
