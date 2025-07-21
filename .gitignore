@@ -2,3 +2,5 @@ node_modules
 .dfx
 .azle
 snippets
+
+.env

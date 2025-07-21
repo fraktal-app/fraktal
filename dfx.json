@@ -45,7 +45,8 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_execution_engine"
+                    "CANISTER_ID_execution_engine",
+                    "SENDGRID_API_KEY"
                 ]
             }
         }

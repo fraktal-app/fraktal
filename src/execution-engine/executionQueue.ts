@@ -1,3 +1,4 @@
+import { emailActionsHandler } from "./blocks/email/email";
 import { telegramActionsHandler } from "./blocks/telegram/telegram";
 
 // A class that manages execution of queued async tasks
@@ -67,6 +68,11 @@ async function handleAction(action: any): Promise<void> {
         case "telegram":
             console.log(`Handling Action: ${action.appType} & ${action.event}`);
             await telegramActionsHandler(action);
+            break;
+
+        case "email":
+            console.log(`Handling Action: ${action.appType} & ${action.event}`);
+            await emailActionsHandler(action);
             break;
 
         default:
