@@ -5,6 +5,35 @@ import { outputLinkConfigByApp } from "./outputLinks";
 import type { AvailableDataSource, } from "../../../components/workflowBuilder/types";
 import ContentEditableWithPillsInput from './DataPill';
 
+const htmlToString = (html: string): string => {
+  let processedHtml = html;
+
+  const tempPillDiv = document.createElement('div');
+  tempPillDiv.innerHTML = processedHtml;
+  tempPillDiv.querySelectorAll('span[data-pill-value]').forEach(pill => {
+    const value = pill.getAttribute('data-pill-value');
+    if (value) {
+      pill.replaceWith(document.createTextNode(value));
+    }
+  });
+  processedHtml = tempPillDiv.innerHTML;
+
+  processedHtml = processedHtml
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/p>/gi, '\n');
+
+  const tempStripDiv = document.createElement('div');
+  tempStripDiv.innerHTML = processedHtml;
+  let text = tempStripDiv.textContent || '';
+
+  if (text.endsWith('\n')) {
+    text = text.slice(0, -1);
+  }
+
+  return text.replace(/\u00A0/g, ' ');
+};
+
 type ActionOption = {
   value: string;
   label: string;
@@ -65,7 +94,7 @@ function DataPillSelector({
             {Object.entries(source.data).map(([key, valueInfo]) => (
               <li key={key}>
                 <button
-                  onClick={() => onSelect(`$?{${source.stepNumber}.${source.appType}.${key}}`)}
+                  onClick={() => onSelect(`$?{${source.stepType}.${source.typeIndex}.${source.appType}.${key}}`)}
                   className="w-full px-3 py-2 text-left text-sm text-white hover:bg-[#3a3f52]"
                   >
                   {(valueInfo as any).label || key}
@@ -155,7 +184,7 @@ export default function ActionDropdown({
   appType,
   initialData,
   availableDataSources,
-  userId: _userId, 
+  userId: _userId,
   workflowId: _workflowId,
 }: ActionDropdownProps) {
   const [credentials, setCredentials] = useState<Record<string, string>>({});
@@ -254,16 +283,32 @@ export default function ActionDropdown({
       setCredentials(prev => ({ ...prev, [key]: value }));
     }
   };
+  
+  const handlePillTrigger = (key: string, element: HTMLElement) => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      
+      const range = selection.getRangeAt(0);
+      const precedingRange = document.createRange();
+      precedingRange.setStart(element, 0);
+      precedingRange.setEnd(range.startContainer, range.startOffset);
 
-  const handlePillTrigger = (key: string, element: HTMLElement, _currentValue: string, cursorPosition: number) => {
-      const rect = element.getBoundingClientRect();
+      const tempDiv = document.createElement('div');
+      tempDiv.appendChild(precedingRange.cloneContents());
+      const precedingHtml = tempDiv.innerHTML;
+
+      const stringBeforeCursor = htmlToString(precedingHtml);
+      const absolutePosition = stringBeforeCursor.length;
+      
+      // ✅ MODIFIED: Get the coordinates of the cursor itself, not the whole input box.
+      const rect = range.getBoundingClientRect();
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       setDropdownPosition({
         x: rect.left + scrollLeft,
         y: rect.bottom + scrollTop + 5
       });
-      setDollarTriggerPosition(cursorPosition - 1);
+      setDollarTriggerPosition(absolutePosition);
       setActivePillSelector(key);
   };
   
@@ -274,16 +319,14 @@ export default function ActionDropdown({
         ? customMessages[activePillSelector] || ''
         : credentials[activePillSelector] || '';
       
-      const textBeforeInsertion = currentValue.substring(0, dollarTriggerPosition);
+      const textBeforeInsertion = currentValue.substring(0, dollarTriggerPosition - 1);
       const escapedPill = pill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const instanceIndex = (textBeforeInsertion.match(new RegExp(escapedPill, 'g')) || []).length;
 
-      let newValue = 
-        currentValue.slice(0, dollarTriggerPosition) + 
-        pill + 
+      const newValue = 
+        currentValue.slice(0, dollarTriggerPosition - 1) + 
+        pill +
         currentValue.slice(dollarTriggerPosition);
-      
-      newValue = newValue.replace(/\$(?!\?\{)/g, '');
       
       if (isCustomMessageField) {
         setCustomMessages({ 'Message': newValue });
@@ -365,8 +408,7 @@ export default function ActionDropdown({
           const isTriggerTelegram = trigger?.appType === field.conditional?.appType;
 
           if (field.key === 'telegram_chatId' && field.conditional && isTriggerTelegram) {
-            const isTriggerMode = chatIdSource === 'trigger';
-
+            
             return (
               <div className="flex flex-col gap-2" key={field.key}>
                 <div className="flex items-center gap-2">
@@ -390,16 +432,17 @@ export default function ActionDropdown({
                   <option value="trigger">{field.conditional.pillLabel}</option>
                 </select>
                 
-                <div className="relative">
-                  <input
-                    type={field.type}
-                    value={isTriggerMode ? field.conditional.pillLabel : (credentials[field.key] || "")}
-                    onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
-                    placeholder={field.placeholder}
-                    disabled={isTriggerMode}
-                    className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10 disabled:bg-[#2a2e3f]/60 disabled:text-gray-400 disabled:cursor-not-allowed"
-                  />
-                </div>
+                {chatIdSource === 'custom' && (
+                  <div className="relative">
+                    <input
+                      type={field.type}
+                      value={credentials[field.key] || ""}
+                      onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
+                      placeholder={field.placeholder}
+                      className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
+                    />
+                  </div>
+                )}
               </div>
             );
           }
@@ -416,10 +459,11 @@ export default function ActionDropdown({
                     <ContentEditableWithPillsInput
                     value={credentials[field.key] || ""}
                     onChange={(newValue) => handleDataMappingChange(field.key, newValue)}
-                    onPillTrigger={(el, val, pos) => handlePillTrigger(field.key, el, val, pos)}
+                    onPillTrigger={(el) => handlePillTrigger(field.key, el)}
                     placeholder={field.placeholder}
                     className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] pr-10"
                     lastInsertedPill={lastInsertedPill}
+                    setLastInsertedPill={setLastInsertedPill}
                     availableDataSources={availableDataSources}
                   />
                 ) : field.type === "textarea" ? (
@@ -461,11 +505,12 @@ export default function ActionDropdown({
               <ContentEditableWithPillsInput
                 value={customMessages[messageStateKey] || ""}
                 onChange={(newValue) => handleDataMappingChange(messageStateKey, newValue)}
-                onPillTrigger={(el, val, pos) => handlePillTrigger(messageStateKey, el, val, pos)}
+                onPillTrigger={(el) => handlePillTrigger(messageStateKey, el)}
                 placeholder={field.placeholder}
                 rows={4}
                 className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] resize-none pr-10"
                 lastInsertedPill={lastInsertedPill}
+                setLastInsertedPill={setLastInsertedPill}
                 availableDataSources={availableDataSources}
               />
               {field.allowDataMapping && (<button type="button" className="absolute top-2.5 right-3 text-[#9b9bab] hover:text-white cursor-help" title="Type $ to insert datafrom a previous step."><Info className="h-4 w-4"/></button>)}

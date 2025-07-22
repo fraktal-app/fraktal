@@ -147,34 +147,11 @@ export function useWorkflowHandlers(
         ...(Object.keys(credentials).length > 0 && { credentials }),
       };
     });
-
-    const variables: string[] = [];
-    const pillRegex = /\$\?\{[^}]+\}/g;
-    const allStepsData = [triggerData, ...actionsData].filter(Boolean);
-
-    allStepsData.forEach(step => {
-      if (step && step.credentials) {
-        Object.values(step.credentials).forEach(value => {
-          let textToScan = '';
-          if (typeof value === 'string') {
-            textToScan = value;
-          } else if (typeof value === 'object' && value !== null && (value as any).text) {
-            textToScan = (value as any).text;
-          }
-
-          const matches = textToScan.match(pillRegex);
-          if (matches) {
-            variables.push(...matches);
-          }
-        });
-      }
-    });
     
     const workflowData = {
       name: workflowName,
       trigger: triggerData,
       actions: actionsData,
-      variables: variables, 
     };
 
     console.log("Full Workflow JSON:", workflowData);

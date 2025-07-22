@@ -1,9 +1,7 @@
-// components/workflowBuilder/WorkflowCanvas.tsx
 import { Plus } from "lucide-react"
 import type { AppBlock, WorkflowStep as WorkflowStepType, AvailableDataSource } from "./types"
 import { WorkflowStep } from "./WorkflowSteps"
 
-// We now import the event maps to find the labels for selected exports.
 import { exportEventsByAction } from "../../blocks/blocksHandler/actions/actionResponse" 
 import { exportEventsByApp } from "../../blocks/blocksHandler/triggers/triggerEvents"
 interface WorkflowCanvasProps {
@@ -66,7 +64,7 @@ export function WorkflowCanvas({
 
               const availableDataSources: AvailableDataSource[] = previousSteps
                 .filter(isStepConfigured)
-                .map(prevStep => {
+                .map((prevStep, prevStepIndex, allFilteredPrevSteps) => {
                   const eventKey = prevStep.configData.event;
                   const exportKey = prevStep.configData.export; 
                   let exportLabel = exportKey; 
@@ -86,11 +84,21 @@ export function WorkflowCanvas({
                     [exportKey]: { label: exportLabel }
                   };
 
+                  let typeIndex = 0;
+                  if (prevStep.type === 'action') {
+                      const previousActions = allFilteredPrevSteps
+                          .slice(0, prevStepIndex)
+                          .filter(s => s.type === 'action');
+                      typeIndex = previousActions.length;
+                  }
+
                   return {
                     stepNumber: prevStep.stepNumber,
                     stepLabel: prevStep.app.label,
                     data: exportData,
                     appType: prevStep.app.type,
+                    stepType: prevStep.type,
+                    typeIndex: typeIndex,
                   }
                 })
 

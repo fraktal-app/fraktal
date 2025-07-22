@@ -52,6 +52,8 @@ export interface ActionData {
 export interface AvailableDataSource {
   stepNumber: number;
   stepLabel: string;
-  data: any;
+  data: { [key: string]: { label: string } };
   appType: string;
+  stepType: 'trigger' | 'action';
+  typeIndex: number;
 }

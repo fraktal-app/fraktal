@@ -11,38 +11,54 @@ const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string })
       .replace(/'/g, "&#039;");
 
   const pillRegex = /(\$\?\{[^}]+\})/g;
-  const parts = str.split(pillRegex);
-  const filteredParts = parts.filter(part => part && part.length > 0);
 
-  return filteredParts.map(part => {
-    if (/^\$\?\{[^}]+\}$/.test(part)) {
+  if (str === '') return '';
+
+  const parts = str.split(pillRegex);
+
+  return parts.map(part => {
+    if (pillRegex.test(part)) {
       const mapKey = part.substring(2);
       const label = labelMap[mapKey] || mapKey.slice(1, -1);
       return `<span
-        contentEditable="false"
-        style="display: inline-block; background-color: #2a2e3f; border: 1px solid #4a4f62; border-radius: 4px; padding: 1px 6px; margin: 0 2px; font-size: 0.875rem; color: #c5c5d2; user-select: none; vertical-align: middle;"
-        data-pill-value="${escapeHtml(part)}"
+          contentEditable="false"
+          style="display: inline-block; background-color: #2a2e3f; border: 1px solid #4a4f62; border-radius: 4px; padding: 1px 6px; margin: 0 2px; font-size: 0.875rem; color: #c5c5d2; user-select: none; vertical-align: middle;"
+          data-pill-value="${escapeHtml(part)}"
       >
-        ${escapeHtml(label)}
+          ${escapeHtml(label)}
       </span>`;
     }
-    return escapeHtml(part);
+    return escapeHtml(part).replace(/\n/g, '<br>');
   }).join('');
 };
 
 const htmlToString = (html: string): string => {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html.replace(/<br\s*\/?>/gi, '\n');
+  let processedHtml = html;
 
-  tempDiv.querySelectorAll('span[data-pill-value]').forEach(pill => {
+  const tempPillDiv = document.createElement('div');
+  tempPillDiv.innerHTML = processedHtml;
+  tempPillDiv.querySelectorAll('span[data-pill-value]').forEach(pill => {
     const value = pill.getAttribute('data-pill-value');
     if (value) {
       pill.replaceWith(document.createTextNode(value));
     }
   });
+  processedHtml = tempPillDiv.innerHTML;
 
-  const rawText = tempDiv.textContent || '';
-  return rawText.replace(/\u00A0/g, ' ');
+  processedHtml = processedHtml
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/p>/gi, '\n');
+
+  const tempStripDiv = document.createElement('div');
+  tempStripDiv.innerHTML = processedHtml;
+  let text = tempStripDiv.textContent || '';
+
+  if (text.endsWith('\n')) {
+    text = text.slice(0, -1);
+  }
+
+  return text.replace(/\u00A0/g, ' ');
 };
 
 const setCursorAfterNode = (node: Node) => {
@@ -59,8 +75,9 @@ const setCursorAfterNode = (node: Node) => {
 type ContentEditableWithPillsInputProps = {
   value: string;
   onChange: (newValue: string) => void;
-  onPillTrigger: (element: HTMLDivElement, currentValue: string, cursorPosition: number) => void; 
+  onPillTrigger: (element: HTMLDivElement) => void; 
   lastInsertedPill: { value: string; instanceIndex: number } | null;
+  setLastInsertedPill: (v: null) => void; 
   className?: string;
   placeholder?: string;
   rows?: number;
@@ -72,6 +89,7 @@ const ContentEditableWithPillsInput = ({
   onChange,
   onPillTrigger,
   lastInsertedPill,
+  setLastInsertedPill,
   className = "",
   placeholder = "",
   rows = 1,
@@ -83,7 +101,7 @@ const ContentEditableWithPillsInput = ({
     const map: { [key: string]: string } = {};
     for (const source of availableDataSources) {
         for (const key in source.data) {
-            const pillString = `{${source.stepNumber}.${source.appType}.${key}}`;
+            const pillString = `{${source.stepType}.${source.typeIndex}.${source.appType}.${key}}`;
             map[pillString] = source.data[key].label;
         }
     }
@@ -91,52 +109,41 @@ const ContentEditableWithPillsInput = ({
   }, [availableDataSources]);
 
   useEffect(() => {
-    if (editorRef.current) {
-      const currentDomString = htmlToString(editorRef.current.innerHTML);
-
-      if (value !== currentDomString) {
-        editorRef.current.innerHTML = stringToHtmlWithPills(value, pillLabelMap);
-      }
-      
-      // ✅ Cursor Placement Logic
-      if (lastInsertedPill) {
-        // Find all spans that match the inserted pill's value.
-        const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill.value}"]`);
-        // Use the instanceIndex to select the correct node from the list.
-        const targetNode = pillNodes[lastInsertedPill.instanceIndex];
-        
-        if (targetNode) {
-            setCursorAfterNode(targetNode);
-        }
+    if (!editorRef.current) return;
+    const currentDomString = htmlToString(editorRef.current.innerHTML);
+    if (value !== currentDomString) {
+      editorRef.current.innerHTML = stringToHtmlWithPills(value, pillLabelMap);
+    }
+    if (lastInsertedPill) {
+      const pillNodes = editorRef.current.querySelectorAll(`span[data-pill-value="${lastInsertedPill.value}"]`);
+      const targetNode = pillNodes[lastInsertedPill.instanceIndex];
+      if (targetNode) {
+        setCursorAfterNode(targetNode);
       }
     }
   }, [value, lastInsertedPill, pillLabelMap]);
 
-  // handleInput and handleKeyDown remain unchanged...
+  useEffect(() => {
+    if (lastInsertedPill) {
+      const timer = setTimeout(() => {
+        setLastInsertedPill(null);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [lastInsertedPill, setLastInsertedPill]);
+
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const currentTarget = e.currentTarget;
     const newStringValue = htmlToString(currentTarget.innerHTML);
-    
     onChange(newStringValue);
-    
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const textNode = range.startContainer;
-        
         if (textNode.nodeType === Node.TEXT_NODE && range.startOffset > 0) {
             const textContent = textNode.textContent || '';
             if (textContent[range.startOffset - 1] === '$') {
-                const editor = editorRef.current;
-                let absolutePosition = 0;
-                if (editor) {
-                    const precedingRange = document.createRange();
-                    precedingRange.setStart(editor, 0);
-                    precedingRange.setEnd(range.startContainer, range.startOffset);
-                    absolutePosition = precedingRange.toString().length;
-                }
-                
-                onPillTrigger(currentTarget, newStringValue, absolutePosition); 
+                onPillTrigger(currentTarget); 
             }
         }
     }
@@ -145,17 +152,14 @@ const ContentEditableWithPillsInput = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const selection = window.getSelection();
     if (!selection || !selection.isCollapsed) return;
-
     const range = selection.getRangeAt(0);
     const container = range.startContainer;
-
     if (e.key === 'Backspace' && range.startOffset === 0 && container.previousSibling && (container.previousSibling as HTMLElement).hasAttribute('data-pill-value')) {
         e.preventDefault();
         container.previousSibling.remove();
         handleInput(e as any); 
         return;
     }
-
     if (e.key === 'ArrowRight') {
         const node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE && range.startOffset === node.textContent?.length) {
@@ -166,7 +170,6 @@ const ContentEditableWithPillsInput = ({
             }
         }
     }
-
     if (e.key === 'ArrowLeft') {
         const node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE && range.startOffset === 0) {
