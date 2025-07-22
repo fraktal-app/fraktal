@@ -93,6 +93,7 @@ export function WorkflowCanvas({
                   }
 
                   return {
+                    id: prevStep.id, // ✅ FIXED: Added the missing 'id' property.
                     stepNumber: prevStep.stepNumber,
                     stepLabel: prevStep.app.label,
                     data: exportData,

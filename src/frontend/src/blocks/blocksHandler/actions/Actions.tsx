@@ -2,7 +2,9 @@ import { ChevronDown, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction, customMessageFieldsByAction } from "./actionResponse";
 import { outputLinkConfigByApp } from "./outputLinks";
-import type { AvailableDataSource, } from "../../../components/workflowBuilder/types";
+// Assuming paths to your type definitions
+import type { AvailableDataSource,} from "../../../components/workflowBuilder/types";
+import type { InputField } from "../../../blocks/common/types";
 import ContentEditableWithPillsInput from './DataPill';
 
 const htmlToString = (html: string): string => {
@@ -86,7 +88,7 @@ function DataPillSelector({
   return (
     <div ref={dropdownRef} className="fixed z-50 w-64 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg shadow-lg max-h-60 overflow-auto"style={{ left: position.x, top: position.y }} >
       {sources.map((source) => (
-        <div key={source.stepNumber}>
+        <div key={source.id}>
           <h4 className="px-3 py-2 text-xs font-bold text-white uppercase tracking-wider bg-[#1b1f2a]">
             {source.stepNumber}. {source.stepLabel}
           </h4>
@@ -94,7 +96,7 @@ function DataPillSelector({
             {Object.entries(source.data).map(([key, valueInfo]) => (
               <li key={key}>
                 <button
-                  onClick={() => onSelect(`$?{${source.stepType}.${source.typeIndex}.${source.appType}.${key}}`)}
+                  onClick={() => onSelect(`$?{${source.id}.${source.appType}/${key}}`)}
                   className="w-full px-3 py-2 text-left text-sm text-white hover:bg-[#3a3f52]"
                   >
                   {(valueInfo as any).label || key}
@@ -158,7 +160,7 @@ function CustomSelect({
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-[#2a2e3f] borderborder-[#3a3f52] rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map((option) => (
+          {options.map((option: ActionOption) => ( // ✅ FIXED: Added ActionOption type
             <button
               key={option.value}
               onClick={() => {
@@ -197,6 +199,11 @@ export default function ActionDropdown({
   const [lastInsertedPill, setLastInsertedPill] = useState<{ value: string; instanceIndex: number } | null>(null);
   const [chatIdSource, setChatIdSource] = useState<'custom' | 'trigger'>('custom');
 
+  const triggerSource = availableDataSources.find(source => source.stepNumber === 1);
+  const triggerChatIdPill = triggerSource 
+      ? `$?{${triggerSource.id}.${triggerSource.appType}/chatId}`
+      : null;
+
   const closePillSelector = () => {
     setActivePillSelector(null);
     setDollarTriggerPosition(null);
@@ -204,26 +211,21 @@ export default function ActionDropdown({
 
   useEffect(() => {
     if (initialData) {
-      setSelectedAction(initialData.event || "");
+      const action = initialData.event || "";
+      setSelectedAction(action);
       setSelectedExport(initialData.export || "");
       
       const chatIdData = initialData.telegram_chatId;
       if (typeof chatIdData === 'object' && chatIdData !== null && 'isCustom' in chatIdData) {
         setChatIdSource(chatIdData.isCustom ? 'custom' : 'trigger');
       } else if (typeof chatIdData === 'string') {
-        const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
-        const telegramChatIdField = credentialFields.find(f => f.key === 'telegram_chatId');
-        if (telegramChatIdField?.conditional && chatIdData === telegramChatIdField.conditional.pill) {
+        const oldTriggerPill = '$?{trigger.0.telegram.chatId}';
+        const typoTriggerPill = '$?{triggger.telegram.chatId}';
+        if ((triggerChatIdPill && chatIdData === triggerChatIdPill) || chatIdData === oldTriggerPill || chatIdData === typoTriggerPill) {
           setChatIdSource('trigger');
         } else {
           setChatIdSource('custom');
         }
-      }
-
-      if (initialData.message) {
-        setCustomMessages({ 'message': initialData.message });
-      } else {
-        setCustomMessages({});
       }
 
       const creds = { ...initialData };
@@ -231,11 +233,20 @@ export default function ActionDropdown({
         creds.telegram_chatId = creds.telegram_chatId.text || '';
       }
       
+      const initialCustomMessages: Record<string, string> = {};
+      const customFields = customMessageFieldsByAction[action] || [];
+      customFields.forEach(field => {
+        if (creds[field.key]) {
+          initialCustomMessages[field.key] = creds[field.key];
+          delete creds[field.key];
+        }
+      });
+      setCustomMessages(initialCustomMessages);
+
       delete creds.event;
       delete creds.export;
       delete creds.linkName;
       delete creds.command;
-      delete creds.message; 
       setCredentials(creds);
 
     } else {
@@ -245,7 +256,7 @@ export default function ActionDropdown({
         setCustomMessages({});
         setChatIdSource('custom');
     }
-}, [initialData, isOpen, appType]);
+  }, [initialData, isOpen, appType, triggerChatIdPill]);
 
   useEffect(() => {
     if (lastInsertedPill) {
@@ -258,27 +269,31 @@ export default function ActionDropdown({
   const exportOptions = selectedAction ? exportEventsByAction[selectedAction] || [] : [];
   const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
   const customMessageFields = selectedAction ? customMessageFieldsByAction[selectedAction] || [] : [];
-  const isCustomMessagesValid = customMessageFields.every(field => !field.required || customMessages[`message`]?.trim());
+  
+  const isCustomMessagesValid = customMessageFields.every(field => !field.required || (customMessages[field.key] && customMessages[field.key].trim()));
 
   const isFormValid = Boolean(
     selectedAction &&
     (exportOptions.length === 0 || selectedExport) &&
-    credentialFields.every(field => !field.required || credentials[field.key]?.trim()) && 
+    credentialFields.every(field => !field.required || (credentials[field.key] && credentials[field.key].trim())) && 
     isCustomMessagesValid
   );
 
   const handleDataMappingChange = (key: string, value: string) => {
     if (activePillSelector === key && dollarTriggerPosition !== null) {
+      const isCustomField = customMessageFields.some(field => field.key === key);
+      const currentValue = isCustomField ? customMessages[key] : credentials[key];
       const typedAfter = value.length > dollarTriggerPosition + 1 && value[dollarTriggerPosition + 1] !== '{';
-      const dollarRemoved = value[dollarTriggerPosition] !== '$';
+      const dollarRemoved = !currentValue || !value.startsWith(currentValue.substring(0, dollarTriggerPosition - 1));
 
       if (typedAfter || dollarRemoved) {
           closePillSelector();
       }
     }
 
-    if (key === 'message') {
-      setCustomMessages({ 'message': value });    
+    const isCustomField = customMessageFields.some(field => field.key === key);
+    if (isCustomField) {
+      setCustomMessages(prev => ({...prev, [key]: value }));    
     } else {
       setCredentials(prev => ({ ...prev, [key]: value }));
     }
@@ -313,8 +328,9 @@ export default function ActionDropdown({
   
   const handlePillSelect = (pill: string) => {
     if (activePillSelector && dollarTriggerPosition !== null) {
-      const isCustomMessageField = activePillSelector === 'message';
-      const currentValue = isCustomMessageField
+      const isCustomField = customMessageFields.some(field => field.key === activePillSelector);
+      
+      const currentValue = isCustomField
         ? customMessages[activePillSelector] || ''
         : credentials[activePillSelector] || '';
       
@@ -327,8 +343,8 @@ export default function ActionDropdown({
         pill +
         currentValue.slice(dollarTriggerPosition);
       
-      if (isCustomMessageField) {
-        setCustomMessages({ 'message': newValue });
+      if (isCustomField) {
+        setCustomMessages(prev => ({...prev, [activePillSelector]: newValue }));
       } else {
         setCredentials(prev => ({ ...prev, [activePillSelector]: newValue }));
       }
@@ -343,20 +359,10 @@ export default function ActionDropdown({
       const finalCredentials: Record<string, any> = { ...credentials };
       
       if (appType === 'telegram' && 'telegram_chatId' in finalCredentials) {
-        const trigger = availableDataSources.find(source => source.stepNumber === 1);
-        const isTriggerTelegram = trigger?.appType === 'telegram';
-
-        if (isTriggerTelegram) {
           finalCredentials.telegram_chatId = {
             isCustom: chatIdSource === 'custom',
             text: credentials.telegram_chatId || ''
           };
-        } else {
-          finalCredentials.telegram_chatId = {
-            isCustom: true,
-            text: credentials.telegram_chatId || ''
-          };
-        }
       }
 
       const formData: { event: string; export: string; [key: string]: any } = {
@@ -402,9 +408,8 @@ export default function ActionDropdown({
       </div>
 
       <div className="space-y-3">
-        {credentialFields.map((field) => {
-          const trigger = availableDataSources.find(source => source.stepNumber === 1);
-          const isTriggerTelegram = trigger?.appType === field.conditional?.appType;
+        {credentialFields.map((field: InputField) => { // ✅ FIXED: Added InputField type
+          const isTriggerTelegram = triggerSource?.appType === field.conditional?.appType;
 
           if (field.key === 'telegram_chatId' && field.conditional && isTriggerTelegram) {
             
@@ -419,8 +424,8 @@ export default function ActionDropdown({
                   onChange={(e) => {
                     const source = e.target.value as 'custom' | 'trigger';
                     setChatIdSource(source);
-                    if (source === 'trigger' && field.conditional?.pill) {
-                      handleDataMappingChange(field.key, field.conditional.pill);
+                    if (source === 'trigger' && triggerChatIdPill) {
+                      handleDataMappingChange(field.key, triggerChatIdPill);
                     } else {
                       handleDataMappingChange(field.key, '');
                     }
@@ -489,12 +494,9 @@ export default function ActionDropdown({
         })}
       </div>
 
-      {customMessageFields.map((field) => {
-        const messageStateKey = 'message'; 
-        const uniqueReactKey = `customMessage_${selectedAction}_${field.key}`; 
-
+      {customMessageFields.map((field: InputField) => { // ✅ FIXED: Added InputField type
         return (
-          <div className="flex flex-col gap-2" key={uniqueReactKey}>
+          <div className="flex flex-col gap-2" key={field.key}>
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
               {field.allowDataMapping && (<span className="text-xs font-mono text-[#a37ff0] bg-[#6d3be4]/20 px-1.5 py-0.5 rounded-md" title="Data mapping available">$</span>)}
@@ -502,9 +504,9 @@ export default function ActionDropdown({
             </div>
             <div className="relative">
               <ContentEditableWithPillsInput
-                value={customMessages[messageStateKey] || ""}
-                onChange={(newValue) => handleDataMappingChange(messageStateKey, newValue)}
-                onPillTrigger={(el) => handlePillTrigger(messageStateKey, el)}
+                value={customMessages[field.key] || ""}
+                onChange={(newValue) => handleDataMappingChange(field.key, newValue)}
+                onPillTrigger={(el) => handlePillTrigger(field.key, el)}
                 placeholder={field.placeholder}
                 rows={4}
                 className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4] resize-none pr-10"
@@ -530,7 +532,7 @@ export default function ActionDropdown({
               className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
             >
               <option value="" disabled>Choose export value</option>
-              {exportOptions.map((option) => (<option key={option.value} value={option.value}>{option.label}</option>))}
+              {exportOptions.map((option: { value: string; label: string; }) => (<option key={option.value} value={option.value}>{option.label}</option>))} {/* ✅ FIXED: Added explicit type */}
             </select>
           ) : (<div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">No export options available for this action</div>)}
         </div>

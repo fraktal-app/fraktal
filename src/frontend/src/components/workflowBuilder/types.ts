@@ -50,6 +50,7 @@ export interface ActionData {
   credentials?: Record<string, any>
 }
 export interface AvailableDataSource {
+  id: string;
   stepNumber: number;
   stepLabel: string;
   data: { [key: string]: { label: string } };

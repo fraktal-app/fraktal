@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useMemo } from 'react';
+// Assuming the path to your type definition file
 import type { AvailableDataSource } from '../../../components/workflowBuilder/types';
 
+// ✅ MODIFIED: Updated to look up labels using the new pill format
 const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string }): string => {
   const escapeHtml = (unsafe: string) =>
     unsafe
@@ -18,8 +20,9 @@ const stringToHtmlWithPills = (str: string, labelMap: { [key: string]: string })
 
   return parts.map(part => {
     if (pillRegex.test(part)) {
-      const mapKey = part.substring(2);
-      const label = labelMap[mapKey] || mapKey.slice(1, -1);
+      // Extract the key from the format: $?{<key>}
+      const mapKey = part.substring(3, part.length - 1); 
+      const label = labelMap[mapKey] || mapKey; // Use the key itself as a fallback label
       return `<span
           contentEditable="false"
           style="display: inline-block; background-color: #2a2e3f; border: 1px solid #4a4f62; border-radius: 4px; padding: 1px 6px; margin: 0 2px; font-size: 0.875rem; color: #c5c5d2; user-select: none; vertical-align: middle;"
@@ -97,13 +100,15 @@ const ContentEditableWithPillsInput = ({
 }: ContentEditableWithPillsInputProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
+  // ✅ MODIFIED: Generates the label map using the new pill format
   const pillLabelMap = useMemo(() => {
     const map: { [key: string]: string } = {};
     for (const source of availableDataSources) {
-        for (const key in source.data) {
-            const pillString = `{${source.stepType}.${source.typeIndex}.${source.appType}.${key}}`;
-            map[pillString] = source.data[key].label;
-        }
+      if (!source.id) continue;
+      for (const key in source.data) {
+        const mapKey = `${source.id}.${source.appType}/${key}`;
+        map[mapKey] = source.data[key].label;
+      }
     }
     return map;
   }, [availableDataSources]);
