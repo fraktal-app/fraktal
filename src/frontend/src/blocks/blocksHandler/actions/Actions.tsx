@@ -201,7 +201,7 @@ export default function ActionDropdown({
 
   const triggerSource = availableDataSources.find(source => source.stepNumber === 1);
   const triggerChatIdPill = triggerSource 
-      ? `$?{${triggerSource.id}.${triggerSource.appType}/chatId}`
+      ? `$?{${triggerSource.id}.${triggerSource.appType}/chat_id}`
       : null;
 
   const closePillSelector = () => {

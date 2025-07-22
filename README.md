@@ -15,3 +15,5 @@ No-code automation on-chain. Build powerful workflows on the Internet Computer.
 - `dfx canister create --all`
 - `source scripts/add-env.sh`
 - `dfx deploy`
+
+- Start execution engine by: `ngrok http 4943 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="readily-certain-ant.ngrok-free.app"`

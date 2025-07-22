@@ -1,8 +1,16 @@
 import { fetchWorkflowFromDB } from "../../lib/db";
 import ExecutionQueue from '../../executionQueue'
+import { interpretTemplate } from "../../lib";
 
 // Sends a Telegram message using the Bot API
-async function sendTelegramMessage(botToken: string, chatId: string | number, text: string): Promise<void> {
+async function sendTelegramMessage(action: any, data: any): Promise<void> {
+
+  const botToken = action.credentials.telegram_botToken;
+
+  const chatId = action.credentials.telegram_chatId.isCustom ? action.credentials.telegram_chatId.text : interpretTemplate(action.credentials.telegram_chatId.text, data);
+
+  const message = interpretTemplate(action.credentials.message, data);
+ 
   const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: {
@@ -10,7 +18,7 @@ async function sendTelegramMessage(botToken: string, chatId: string | number, te
     },
     body: JSON.stringify({
       chat_id: chatId || "",
-      text: text || "Default Message",
+      text: message || "Default Message",
     }),
   });
 
@@ -35,8 +43,8 @@ export async function telegramTriggerWebhook(req, res){
     //Put onto Queue
     try{
         //TODO: Add Execution log for users
-        const res = await fetchWorkflowFromDB(userId, workflowId);
-        let workflow = res;
+        const response = await fetchWorkflowFromDB(userId, workflowId);
+        let workflow = response;
 
         try{
             let workflowJSON = JSON.parse(workflow.json);
@@ -50,17 +58,17 @@ export async function telegramTriggerWebhook(req, res){
         //Extract relevant message data
         const extractedData = {
             chat_id: msg.chat.id,
-            user_id: msg.from.id,
             username: msg.from.username,
             name: `${msg.from.first_name} ${msg.from.last_name}`,
             message: msg.text,
-            timestamp: msg.date,
         };
+
+        const label = `${workflow.json.trigger.id!}.${workflow.json.trigger.appType!}`
 
         //Add message data to workflow
         workflow.data = {
             ...(workflow.data || {}),
-            "trigger-1.telegram" : extractedData
+            [label] : extractedData
         }
 
         ExecutionQueue.add(workflow)
@@ -77,14 +85,13 @@ export async function telegramTriggerWebhook(req, res){
 }
 
 
-export async function telegramActionsHandler(action){
+export async function telegramActionsHandler(action, data){
     //TODO add fail/execution logging
     switch(action.event){
-        case "send_message":
+        case "send_telegram_message":
             await sendTelegramMessage(
-                action.credentials.botToken,
-                action.credentials.chatId,
-                action.credentials.message
+                action,
+                data
             );
             break;
 

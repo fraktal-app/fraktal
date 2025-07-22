@@ -39,8 +39,9 @@ class ExecutionQueue {
             // Ensure the task has actions to execute
             if (task.json.actions && task.json.actions.length > 0) {
                 const action = task.json.actions.shift(); // Take the first action
+                const data = task.data; //Take related state data
 
-                await handleAction(action); // Handle the action asynchronously
+                await handleAction(action, data); // Handle the action asynchronously
 
                 // If there are more actions left, clone and requeue the task
                 if (task.json.actions.length > 0) {
@@ -63,11 +64,11 @@ const instance = new ExecutionQueue();
 export default instance;
 
 // Handles an individual action based on its app type
-async function handleAction(action: any): Promise<void> {
+async function handleAction(action: any, data: any): Promise<void> {
     switch (action.appType) {
         case "telegram":
             console.log(`Handling Action: ${action.appType} & ${action.event}`);
-            await telegramActionsHandler(action);
+            await telegramActionsHandler(action, data);
             break;
 
         case "email":
