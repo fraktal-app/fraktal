@@ -9,7 +9,7 @@ async function sendTelegramMessage(botToken: string, chatId: string | number, te
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      chat_id: chatId,
+      chat_id: chatId || "",
       text: text || "Default Message",
     }),
   });
@@ -60,7 +60,7 @@ export async function telegramTriggerWebhook(req, res){
         //Add message data to workflow
         workflow.data = {
             ...(workflow.data || {}),
-            "telegram-trigger" : extractedData
+            "trigger-1.telegram" : extractedData
         }
 
         ExecutionQueue.add(workflow)

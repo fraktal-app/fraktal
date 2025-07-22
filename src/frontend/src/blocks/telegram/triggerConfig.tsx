@@ -139,14 +139,18 @@ export const telegramTriggerEvents = [
 
 export const telegramExportEvents = {
   "new-message-telegram": [
-    { value: "messenger-detail", label: "Messenger Detail", icon: Send },
-    { value: "message", label: "Message Detail", icon: Send },
-    { value: "everything", label: "Everything", icon: Send },
+    { value: "chat_id", label: "Chat ID", icon: Send },
+    { value: "user_id", label: "User ID", icon: Send },
+    { value: "username", label: "Username", icon: Send },
+    { value: "name", label: "Full Name", icon: Send },
+    { value: "message", label: "Message", icon: Send },
   ],
   "command-received-telegram": [
-    { value: "messenger-detail", label: "Messenger Detail", icon: Send },
-    { value: "command", label: "Command", icon: Send },
-    { value: "everything", "label": "Everything", icon: Send },
+    { value: "chat_id", label: "Chat ID", icon: Send },
+    { value: "user_id", label: "User ID", icon: Send },
+    { value: "username", label: "Username", icon: Send },
+    { value: "name", label: "Full Name", icon: Send },
+    { value: "message", label: "Message", icon: Send },
   ],
 };
 
