@@ -220,8 +220,8 @@ export default function ActionDropdown({
         }
       }
 
-      if (initialData.Message) {
-        setCustomMessages({ 'Message': initialData.Message });
+      if (initialData.message) {
+        setCustomMessages({ 'message': initialData.message });
       } else {
         setCustomMessages({});
       }
@@ -235,7 +235,7 @@ export default function ActionDropdown({
       delete creds.export;
       delete creds.linkName;
       delete creds.command;
-      delete creds.Message; 
+      delete creds.message; 
       setCredentials(creds);
 
     } else {
@@ -258,7 +258,7 @@ export default function ActionDropdown({
   const exportOptions = selectedAction ? exportEventsByAction[selectedAction] || [] : [];
   const credentialFields = appType ? actionInputFieldsByApp[appType] || [] : [];
   const customMessageFields = selectedAction ? customMessageFieldsByAction[selectedAction] || [] : [];
-  const isCustomMessagesValid = customMessageFields.every(field => !field.required || customMessages[`Message`]?.trim());
+  const isCustomMessagesValid = customMessageFields.every(field => !field.required || customMessages[`message`]?.trim());
 
   const isFormValid = Boolean(
     selectedAction &&
@@ -277,8 +277,8 @@ export default function ActionDropdown({
       }
     }
 
-    if (key === 'Message') {
-      setCustomMessages({ 'Message': value });    
+    if (key === 'message') {
+      setCustomMessages({ 'message': value });    
     } else {
       setCredentials(prev => ({ ...prev, [key]: value }));
     }
@@ -300,7 +300,6 @@ export default function ActionDropdown({
       const stringBeforeCursor = htmlToString(precedingHtml);
       const absolutePosition = stringBeforeCursor.length;
       
-      // ✅ MODIFIED: Get the coordinates of the cursor itself, not the whole input box.
       const rect = range.getBoundingClientRect();
       const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
@@ -314,7 +313,7 @@ export default function ActionDropdown({
   
   const handlePillSelect = (pill: string) => {
     if (activePillSelector && dollarTriggerPosition !== null) {
-      const isCustomMessageField = activePillSelector === 'Message';
+      const isCustomMessageField = activePillSelector === 'message';
       const currentValue = isCustomMessageField
         ? customMessages[activePillSelector] || ''
         : credentials[activePillSelector] || '';
@@ -329,7 +328,7 @@ export default function ActionDropdown({
         currentValue.slice(dollarTriggerPosition);
       
       if (isCustomMessageField) {
-        setCustomMessages({ 'Message': newValue });
+        setCustomMessages({ 'message': newValue });
       } else {
         setCredentials(prev => ({ ...prev, [activePillSelector]: newValue }));
       }
@@ -491,7 +490,7 @@ export default function ActionDropdown({
       </div>
 
       {customMessageFields.map((field) => {
-        const messageStateKey = 'Message'; 
+        const messageStateKey = 'message'; 
         const uniqueReactKey = `customMessage_${selectedAction}_${field.key}`; 
 
         return (

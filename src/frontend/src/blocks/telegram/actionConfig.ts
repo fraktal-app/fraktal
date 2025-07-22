@@ -37,7 +37,7 @@ export const telegramActionInputFields: Record<string, InputField[]> = {
 export const telegramCustomMessage: Record<string, InputField[]> = {
   "send_telegram_message": [
     {
-      key: "Message",
+      key: "message",
       label: "Message",
       placeholder: "Enter your message here...",
       type: "textarea",
