@@ -41,6 +41,7 @@ export function discordLinkCommand({
     if (!guildId || !channelId) return;
     setRequestStatus('loading');
     try {
+      
     const response = await fetch(extLink,  {
         method: 'GET',
         headers: {
@@ -49,6 +50,7 @@ export function discordLinkCommand({
         },
       mode: 'cors', // Explicitly enable CORS
     });      
+
       if (response.ok) {
         setRequestStatus('success');
         setTimeout(() => setRequestStatus('idle'), 3000);

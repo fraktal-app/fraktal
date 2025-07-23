@@ -1,4 +1,5 @@
 import { AIActionsHandler } from "./blocks/ai/ai";
+import { discordActionHandler } from "./blocks/discord/discord";
 import { emailActionsHandler } from "./blocks/email/email";
 import { telegramActionsHandler } from "./blocks/telegram/telegram";
 
@@ -85,9 +86,12 @@ async function handleAction(action: any, data: any){
 
         case "ai":
             return await AIActionsHandler(action, data);
-            
+
+        case "discord":
+            return await discordActionHandler(action, data);
+
         case "email":
-            return await emailActionsHandler(action);
+            return await emailActionsHandler(action, data);
 
         default:
             console.error(`Unknown action type: ${action.appType}`);

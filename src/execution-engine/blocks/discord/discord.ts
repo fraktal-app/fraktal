@@ -1,5 +1,6 @@
 import { fetchWorkflowFromDB } from "../../lib/db";
 import ExecutionQueue from '../../executionQueue'
+import { interpretTemplate } from "../../lib/lib";
 
 export async function discordTriggerWebhook(req, res){
   const userId = req.params.userId;
@@ -22,8 +23,6 @@ export async function discordTriggerWebhook(req, res){
           console.error(e);
           res.sendStatus(500);
       }
-
-      console.log(workflow);
 
       //Extract relevant message data
       const extractedData = {
@@ -58,6 +57,50 @@ export async function discordTriggerWebhook(req, res){
   }
 
   res.sendStatus(200);
+}
+
+// Sends a Telegram message using the Bot API
+async function sendDiscordMessage(action: any, data: any): Promise<void> {
+
+  const guild_id = interpretTemplate(action.credentials.discord_guildId, data);
+  const channel_id = interpretTemplate(action.credentials.discord_channelId, data);
+  const message = interpretTemplate(action.credentials.discord_message, data);
+ 
+  const response = await fetch(` https://tiger-desired-airedale.ngrok-free.app/send-message`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      guild_id: guild_id || "",
+      channel_id: channel_id || "",
+      content: message || "Default message"
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    console.error('Failed to send Discord message:', result);
+  } else {
+    console.log('Message sent:');
+  }
+}
+
+export async function discordActionHandler(action: any, data: any){
+    //TODO add fail/execution logging
+    switch(action.event){
+        case "send_discord_message":
+            await sendDiscordMessage(
+                action,
+                data
+            );
+            break;
+
+        default:
+            console.warn(`Unknown Telegram action event: ${action.event}`);
+            break;
+    }
 }
 
 

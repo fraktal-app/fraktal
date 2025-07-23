@@ -1,4 +1,6 @@
-import { Github,  } from "lucide-react";
+
+import { Github } from "lucide-react";
+
 import type { InputField } from "../common/types"
 
 export const githubInputFields: Record<string, InputField[]> = {
@@ -44,6 +46,6 @@ export const githubTriggerEvents =
     { value: "issue-closed", label: "Issue Closed", icon: Github },
   ];
 
-  export const githubExportEvents = {
+export const githubExportEvents = {
    
 }

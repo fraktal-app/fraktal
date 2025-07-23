@@ -1,6 +1,13 @@
-export async function sendEmail(to: string, subject: string, html: string) {
+import { interpretTemplate } from "../../lib/lib";
+
+export async function sendEmail(action: any, data: any) {
   
-  const footerHTML = `<div style="text-align:center;font-size:12px;color:#888">Sent by a workflow on <a href="https://x.com/fraktal_app" style="font-size:12px;color:#888"> Fraktal </a>.</div>`;
+
+  const to = interpretTemplate(action.credentials.to, data) || "";
+  const subject = interpretTemplate(action.credentials.subject, data) || "";
+  const html = interpretTemplate(action.credentials.html, data) || "";
+
+  const footerHTML = `<div style="text-align:center;font-size:12px;color:#888">Sent by a workflow on <a href="https://x.com/fraktal_app" style="font-size:12px;color:#888"> Fraktal </a>. <br/> <a href="https://x.com/fraktal_app" style="font-size:12px;color:#888"> Unsubscribe</a> </div>`;
 
   try {
 
@@ -38,14 +45,13 @@ export async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
-export async function emailActionsHandler(action: any){
+export async function emailActionsHandler(action: any, data: any){
     //TODO add fail/execution logging
     switch(action.event){
         case "send_email":
             await sendEmail(
-                action.credentials.to,
-                action.credentials.subject,
-                action.credentials.html
+                action,
+                data
             );
             break;
 
