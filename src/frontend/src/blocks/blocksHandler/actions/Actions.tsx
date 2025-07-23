@@ -2,12 +2,12 @@ import { ChevronDown, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction, customMessageFieldsByAction } from "./actionResponse";
 import { outputLinkConfigByApp } from "./outputLinks";
-// Assuming paths to your type definitions
 import type { AvailableDataSource,} from "../../../components/workflowBuilder/types";
 import type { InputField } from "../../../blocks/common/types";
 import ContentEditableWithPillsInput from './DataPill';
 
 const htmlToString = (html: string): string => {
+  // ... (no changes in this function)
   let processedHtml = html;
 
   const tempPillDiv = document.createElement('div');
@@ -18,6 +18,7 @@ const htmlToString = (html: string): string => {
       pill.replaceWith(document.createTextNode(value));
     }
   });
+  
   processedHtml = tempPillDiv.innerHTML;
 
   processedHtml = processedHtml
@@ -65,6 +66,7 @@ function DataPillSelector({
   onClose: () => void;
   position: { x: number; y: number };
 }) {
+  // ... (no changes in this component)
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -123,6 +125,7 @@ function CustomSelect({
   placeholder: string
   className?: string
 }) {
+  // ... (no changes in this component)
   const [isOpen, setIsOpen] = useState(false)
   const selectRef = useRef<HTMLDivElement>(null)
 
@@ -160,7 +163,7 @@ function CustomSelect({
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-[#2a2e3f] borderborder-[#3a3f52] rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map((option: ActionOption) => ( // ✅ FIXED: Added ActionOption type
+          {options.map((option: ActionOption) => (
             <button
               key={option.value}
               onClick={() => {
@@ -197,12 +200,26 @@ export default function ActionDropdown({
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
   const [dollarTriggerPosition, setDollarTriggerPosition] = useState<number | null>(null);
   const [lastInsertedPill, setLastInsertedPill] = useState<{ value: string; instanceIndex: number } | null>(null);
+  
+  // State for Telegram
   const [chatIdSource, setChatIdSource] = useState<'custom' | 'trigger'>('custom');
+  
+  // ✨ NEW: State for Discord reply logic
+  const [discordReplySource, setDiscordReplySource] = useState<'custom' | 'trigger'>('custom');
 
   const triggerSource = availableDataSources.find(source => source.stepNumber === 1);
+  
+  // Pills for Telegram
   const triggerChatIdPill = triggerSource 
       ? `$?{${triggerSource.id}.${triggerSource.appType}/chat_id}`
       : null;
+
+  // ✨ NEW: Pills for Discord
+  const triggerGuildIdPill = triggerSource ? `$?{${triggerSource.id}.${triggerSource.appType}/guild_id}` : null;
+  const triggerChannelIdPill = triggerSource ? `$?{${triggerSource.id}.${triggerSource.appType}/channel_id}` : null;
+  
+  // ✨ NEW: Derived boolean for conditional UI
+  const isDiscordReplyScenario = appType === 'discord' && triggerSource?.appType === 'discord';
 
   const closePillSelector = () => {
     setActivePillSelector(null);
@@ -214,49 +231,70 @@ export default function ActionDropdown({
       const action = initialData.event || "";
       setSelectedAction(action);
       setSelectedExport(initialData.export || "");
-      
+
+      const currentCredentialKeys = (appType && actionInputFieldsByApp[appType])
+        ? actionInputFieldsByApp[appType].map(field => field.key)
+        : [];
+      const currentCustomMessageKeys = customMessageFieldsByAction[action]
+        ? customMessageFieldsByAction[action].map(field => field.key)
+        : [];
+
+      const newCredentials: Record<string, any> = {};
+      const newCustomMessages: Record<string, string> = {};
+
+      for (const key in initialData) {
+        if (Object.prototype.hasOwnProperty.call(initialData, key)) {
+            if (currentCredentialKeys.includes(key)) {
+                newCredentials[key] = initialData[key];
+            }
+            if (currentCustomMessageKeys.includes(key)) {
+                newCustomMessages[key] = initialData[key];
+            }
+        }
+      }
+
+      // Logic for Telegram Chat ID
       const chatIdData = initialData.telegram_chatId;
-      if (typeof chatIdData === 'object' && chatIdData !== null && 'isCustom' in chatIdData) {
-        setChatIdSource(chatIdData.isCustom ? 'custom' : 'trigger');
-      } else if (typeof chatIdData === 'string') {
-        const oldTriggerPill = '$?{trigger.0.telegram.chatId}';
-        const typoTriggerPill = '$?{triggger.telegram.chatId}';
-        if ((triggerChatIdPill && chatIdData === triggerChatIdPill) || chatIdData === oldTriggerPill || chatIdData === typoTriggerPill) {
-          setChatIdSource('trigger');
+      if (appType === 'telegram' && chatIdData) {
+          if (typeof chatIdData === 'object' && chatIdData !== null && 'isCustom' in chatIdData) {
+              setChatIdSource(chatIdData.isCustom ? 'custom' : 'trigger');
+              newCredentials.telegram_chatId = chatIdData.text || '';
+          } else if (typeof chatIdData === 'string') {
+              const oldTriggerPill = '$?{trigger.0.telegram.chatId}';
+              const typoTriggerPill = '$?{triggger.telegram.chatId}';
+              if ((triggerChatIdPill && chatIdData === triggerChatIdPill) || chatIdData === oldTriggerPill || chatIdData === typoTriggerPill) {
+                  setChatIdSource('trigger');
+              } else {
+                  setChatIdSource('custom');
+              }
+              newCredentials.telegram_chatId = chatIdData;
+          }
+      }
+
+      // ✨ NEW: Logic to initialize Discord reply source from existing data
+      if (isDiscordReplyScenario) {
+        if (
+          initialData.discord_guildId === triggerGuildIdPill &&
+          initialData.discord_channelId === triggerChannelIdPill
+        ) {
+          setDiscordReplySource('trigger');
         } else {
-          setChatIdSource('custom');
+          setDiscordReplySource('custom');
         }
       }
 
-      const creds = { ...initialData };
-      if (typeof creds.telegram_chatId === 'object' && creds.telegram_chatId !== null) {
-        creds.telegram_chatId = creds.telegram_chatId.text || '';
-      }
-      
-      const initialCustomMessages: Record<string, string> = {};
-      const customFields = customMessageFieldsByAction[action] || [];
-      customFields.forEach(field => {
-        if (creds[field.key]) {
-          initialCustomMessages[field.key] = creds[field.key];
-          delete creds[field.key];
-        }
-      });
-      setCustomMessages(initialCustomMessages);
-
-      delete creds.event;
-      delete creds.export;
-      delete creds.linkName;
-      delete creds.command;
-      setCredentials(creds);
+      setCredentials(newCredentials);
+      setCustomMessages(newCustomMessages);
 
     } else {
-        setCredentials({});
-        setSelectedAction("");
-        setSelectedExport("");
-        setCustomMessages({});
-        setChatIdSource('custom');
+      setCredentials({});
+      setSelectedAction("");
+      setSelectedExport("");
+      setCustomMessages({});
+      setChatIdSource('custom');
+      setDiscordReplySource('custom'); // ✨ NEW: Reset discord state
     }
-  }, [initialData, isOpen, appType, triggerChatIdPill]);
+  }, [initialData, isOpen, appType, triggerChatIdPill, isDiscordReplyScenario, triggerGuildIdPill, triggerChannelIdPill]);
 
   useEffect(() => {
     if (lastInsertedPill) {
@@ -275,16 +313,17 @@ export default function ActionDropdown({
   const isFormValid = Boolean(
     selectedAction &&
     (exportOptions.length === 0 || selectedExport) &&
-    credentialFields.every(field => !field.required || (credentials[field.key] && credentials[field.key].trim())) && 
+    credentialFields.every(field => !field.required || (credentials[field.key] && String(credentials[field.key]).trim())) && 
     isCustomMessagesValid
   );
 
   const handleDataMappingChange = (key: string, value: string) => {
+    // ... (no changes in this function)
     if (activePillSelector === key && dollarTriggerPosition !== null) {
       const isCustomField = customMessageFields.some(field => field.key === key);
       const currentValue = isCustomField ? customMessages[key] : credentials[key];
       const typedAfter = value.length > dollarTriggerPosition + 1 && value[dollarTriggerPosition + 1] !== '{';
-      const dollarRemoved = !currentValue || !value.startsWith(currentValue.substring(0, dollarTriggerPosition - 1));
+      const dollarRemoved = !currentValue || !value.startsWith(String(currentValue).substring(0, dollarTriggerPosition - 1));
 
       if (typedAfter || dollarRemoved) {
           closePillSelector();
@@ -299,7 +338,22 @@ export default function ActionDropdown({
     }
   };
   
+  // ✨ NEW: Handler for the Discord reply dropdown
+  const handleDiscordReplySourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const source = e.target.value as 'custom' | 'trigger';
+    setDiscordReplySource(source);
+
+    if (source === 'trigger') {
+      if (triggerGuildIdPill) handleDataMappingChange('discord_guildId', triggerGuildIdPill);
+      if (triggerChannelIdPill) handleDataMappingChange('discord_channelId', triggerChannelIdPill);
+    } else {
+      handleDataMappingChange('discord_guildId', '');
+      handleDataMappingChange('discord_channelId', '');
+    }
+  };
+
   const handlePillTrigger = (key: string, element: HTMLElement) => {
+      // ... (no changes in this function)
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
       
@@ -327,12 +381,13 @@ export default function ActionDropdown({
   };
   
   const handlePillSelect = (pill: string) => {
+    // ... (no changes in this function)
     if (activePillSelector && dollarTriggerPosition !== null) {
       const isCustomField = customMessageFields.some(field => field.key === activePillSelector);
       
       const currentValue = isCustomField
         ? customMessages[activePillSelector] || ''
-        : credentials[activePillSelector] || '';
+        : String(credentials[activePillSelector] || '');
       
       const textBeforeInsertion = currentValue.substring(0, dollarTriggerPosition - 1);
       const escapedPill = pill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -355,6 +410,7 @@ export default function ActionDropdown({
   };
 
   const handleSave = () => {
+    // ... (no changes in this function)
     if (isFormValid) {
       const finalCredentials: Record<string, any> = { ...credentials };
       
@@ -385,6 +441,11 @@ export default function ActionDropdown({
   const appOutputLinkConfig = appType ? outputLinkConfigByApp[appType] : undefined;
   const AppSpecificComponent = appOutputLinkConfig?.Component;
 
+  // ✨ NEW: Logic to determine if bot link should be shown
+  const shouldShowBotLink = appType === 'discord'
+    ? !(isDiscordReplyScenario && discordReplySource === 'trigger')
+    : selectedActionObj?.requiresLinkName;
+
   if (!isOpen) return null;
 
   return (
@@ -408,10 +469,29 @@ export default function ActionDropdown({
       </div>
 
       <div className="space-y-3">
-        {credentialFields.map((field: InputField) => { // ✅ FIXED: Added InputField type
-          const isTriggerTelegram = triggerSource?.appType === field.conditional?.appType;
+        {/* ✨ NEW: Render Discord dropdown when applicable */}
+        {isDiscordReplyScenario && (
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-[#c5c5d2]">Reply Destination</label>
+            <select
+              value={discordReplySource}
+              onChange={handleDiscordReplySourceChange}
+              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+            >
+              <option value="custom">Custom Guild & Channel ID</option>
+              <option value="trigger">Reply to Discord Trigger</option>
+            </select>
+          </div>
+        )}
 
-          if (field.key === 'telegram_chatId' && field.conditional && isTriggerTelegram) {
+        {credentialFields.map((field: InputField) => {
+          // ✨ NEW: Hide Guild/Channel ID fields if replying to trigger
+          if (isDiscordReplyScenario && discordReplySource === 'trigger' && (field.key === 'discord_guildId' || field.key === 'discord_channelId')) {
+            return null;
+          }
+
+          const isTriggerTelegram = triggerSource?.appType === 'telegram';
+          if (field.key === 'telegram_chatId' && isTriggerTelegram) {
             
             return (
               <div className="flex flex-col gap-2" key={field.key}>
@@ -433,7 +513,7 @@ export default function ActionDropdown({
                   className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
                 >
                   <option value="custom">Custom Chat ID</option>
-                  <option value="trigger">{field.conditional.pillLabel}</option>
+                  <option value="trigger">Reply to Trigger's Chat ID</option>
                 </select>
                 
                 {chatIdSource === 'custom' && (
@@ -494,7 +574,8 @@ export default function ActionDropdown({
         })}
       </div>
 
-      {customMessageFields.map((field: InputField) => { // ✅ FIXED: Added InputField type
+      {customMessageFields.map((field: InputField) => {
+        // ... (no changes in this block)
         return (
           <div className="flex flex-col gap-2" key={field.key}>
             <div className="flex items-center gap-2">
@@ -521,9 +602,12 @@ export default function ActionDropdown({
         );
       })}
 
-      {AppSpecificComponent && selectedActionObj?.requiresLinkName && (<AppSpecificComponent {...appOutputLinkConfig.propBuilder({})} />)}
+      {/* ✨ NEW: Conditionally render the bot link */}
+      {AppSpecificComponent && shouldShowBotLink && (<AppSpecificComponent {...appOutputLinkConfig.propBuilder({})} />)}
+      
       {selectedAction && (
         <div className="flex flex-col gap-2 pt-3">
+          {/* ... (no changes in this block) */}
           <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
           {exportOptions.length > 0 ? (
             <select
@@ -532,7 +616,7 @@ export default function ActionDropdown({
               className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
             >
               <option value="" disabled>Choose export value</option>
-              {exportOptions.map((option: { value: string; label: string; }) => (<option key={option.value} value={option.value}>{option.label}</option>))} {/* ✅ FIXED: Added explicit type */}
+              {exportOptions.map((option: { value: string; label: string; }) => (<option key={option.value} value={option.value}>{option.label}</option>))}
             </select>
           ) : (<div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">No export options available for this action</div>)}
         </div>

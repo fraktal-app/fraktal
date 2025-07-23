@@ -28,7 +28,6 @@ export const DiscordBotLink = () => {
 export const discordResponseDropdownOptions= 
   [
   { value: "send_discord_message", label: "Send Message",  icon: MessageSquare ,requiresLinkName: true },
-  // { value: "send_notification", label: "Send notification" },
   ];
   
 export const discordActionInputFields: Record<string, InputField[]> = {
@@ -64,7 +63,6 @@ export const discordCustomMessage: Record<string, InputField[]> = {
     }
   ],
 }
-
 
 export const discordExportEvents = {
   "send_discord_message": [

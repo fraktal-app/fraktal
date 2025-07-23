@@ -43,7 +43,7 @@ export const aiCustomPrompt: Record<string, InputField[]> = {
   "summarize_input": [
     {
       key: "prompt",
-      label: "Propmt",
+      label: "Prompt",
       placeholder: "Enter your prompt here...",
       type: "textarea",
       required: true,
@@ -54,7 +54,7 @@ export const aiCustomPrompt: Record<string, InputField[]> = {
   "extract_information": [
     {
       key: "prompt",
-      label: "Propmt",
+      label: "Prompt",
       placeholder: "Enter your prompt here...",
       type: "textarea",
       required: true,
