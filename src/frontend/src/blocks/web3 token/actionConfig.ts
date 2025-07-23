@@ -13,9 +13,9 @@ export const web3TokenActionInputFields: Record<string, InputField[]> = {
   
     web3Token: [
       {
-        key: "network",
-        label: "Select Network",
-        placeholder: "Select a network",
+        key: "token",
+        label: "Select Token",
+        placeholder: "Select a token",
         type: "select",
         required: true,
         options: [
