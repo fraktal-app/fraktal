@@ -1,9 +1,13 @@
 import { TrendingUp } from "lucide-react";
 import type { InputField } from "../common/types"
 
-export const walletInputFields: Record<string, InputField[]> = {
-  
-  wallet : [
+export const web3WalletResponseDropdownOptions = 
+  [
+    { value: "get_wallet_balance", label: "Get wallet balance", icon: TrendingUp },
+  ];
+
+export const web3WalletActionInputFields: Record<string, InputField[]> = {
+  web3Wallet : [
   {
     key: "walletAddress",
     label: "Wallet Address",
@@ -12,28 +16,22 @@ export const walletInputFields: Record<string, InputField[]> = {
     required: true,
   },
   {
-    key: "network",
-    label: "Network",
+    key: "blockchainNetwork",
+    label: "Blockchain Network",
     placeholder: "Select a network",
     type: "select",
     required: true,
     options: [
-      { value: "Ethereum", label: "Ethereum" },
-      { value: "Polygon", label: "Polygon" },
-      { value: "BSC", label: "Binance Smart Chain" },
-      { value: "Arbitrum", label: "Arbitrum" },
-      { value: "Other", label: "Other" }
+      { value: "ETH", label: "Ethereum (ETH)" },
+      { value: "SOL", label: "Solana (SOL)" },
+      { value: "BTC", label: "Bitcoin (BTC)" },
     ],
   }
 ]
 }
 
-export const walletTriggerEvents = 
-  [
-    { value: "get_wallet_balance", label: "Balance Above Threshold", icon: TrendingUp },
-  ];
 
-export const walletExportEvents = {
+export const web3WalletExportEvents = {
     "get_wallet_balance": [
     { value: "current_wallet_balance", label: "Current Balance", icon: TrendingUp },
   ],

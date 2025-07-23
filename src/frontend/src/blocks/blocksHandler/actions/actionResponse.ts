@@ -8,6 +8,7 @@ import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownO
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
 import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../email/actionConfig";
 import { web3TokenActionInputFields, web3TokenExportEvents, web3TokenResponseDropdownOptions } from "../../web3 token/actionConfig";
+import { web3WalletActionInputFields, web3WalletExportEvents, web3WalletResponseDropdownOptions } from "../../web3 wallet/actionConfig";
 
 export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; icon: any  }>>   = {
   telegram: telegramResponseDropdownOptions,
@@ -18,7 +19,8 @@ export const actionDropdownOptions: Record<string, Array<{ value: string; label:
   ai: aiResponseDropdownOptions,
   api: apiResponseDropdownOptions,
   email: emailResponseDropdownOptions,
-  web3Token: web3TokenResponseDropdownOptions
+  web3Token: web3TokenResponseDropdownOptions,
+  web3Wallet: web3WalletResponseDropdownOptions
 };
 
 export const actionInputFieldsByApp: Record<string, InputField[]> = {
@@ -30,7 +32,8 @@ export const actionInputFieldsByApp: Record<string, InputField[]> = {
   ai: aiActionInputFields.ai,
   api: apiActionInputFields.api,
   email: emailActionInputFields.email,
-  web3Token: web3TokenActionInputFields.web3Token
+  web3Token: web3TokenActionInputFields.web3Token,
+  web3Wallet: web3WalletActionInputFields.web3Wallet
 };
 
 export const customMessageFieldsByAction: Record<string, InputField[]> = {
@@ -48,5 +51,6 @@ export const exportEventsByAction: Record<string, Array<{ value: string; label: 
   ...aiExportEvents,
   ...apiExportEvents,
   ...emailExportEvents,
-  ...web3TokenExportEvents
+  ...web3TokenExportEvents,
+  ...web3WalletExportEvents
 };

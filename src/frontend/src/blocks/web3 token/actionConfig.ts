@@ -1,9 +1,9 @@
-import { MessageSquare } from "lucide-react";
+import { Coins, } from "lucide-react";
 import type { InputField } from "../common/types";
 
 export const web3TokenResponseDropdownOptions = 
    [  
-  { value: "get_token_price", label: "Get token price", icon: MessageSquare },
+  { value: "get_token_price", label: "Get token price", icon: Coins },
   //{ value: "send_alert", label: "Send alert" },
   //{ value: "pin_message", label: "Pin message" },
 ];
@@ -33,7 +33,8 @@ export const web3TokenActionInputFields: Record<string, InputField[]> = {
 
 export const web3TokenExportEvents = {
   "get_token_price": [
-    { value: "token_price", label: "Token price", icon: MessageSquare },
-    { value: "change_in_24_hrs", label: "Percent change in Last 24 Hrs", icon: MessageSquare },
+    { value: "token_price", label: "Token price", icon: Coins },
+    { value: "change_in_24_hrs", label: "Percent change in Last 24 Hrs", icon: Coins },
+
   ],
 }

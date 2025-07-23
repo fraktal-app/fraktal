@@ -1,4 +1,4 @@
-import { ChevronDown, Info } from "lucide-react";
+import { ChevronDown, Info, List, MessageSquareReply, PenSquare, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction, customMessageFieldsByAction } from "./actionResponse";
 import { outputLinkConfigByApp } from "./outputLinks";
@@ -201,24 +201,18 @@ export default function ActionDropdown({
   const [dollarTriggerPosition, setDollarTriggerPosition] = useState<number | null>(null);
   const [lastInsertedPill, setLastInsertedPill] = useState<{ value: string; instanceIndex: number } | null>(null);
   
-  // State for Telegram
   const [chatIdSource, setChatIdSource] = useState<'custom' | 'trigger'>('custom');
-  
-  // ✨ NEW: State for Discord reply logic
   const [discordReplySource, setDiscordReplySource] = useState<'custom' | 'trigger'>('custom');
 
   const triggerSource = availableDataSources.find(source => source.stepNumber === 1);
   
-  // Pills for Telegram
   const triggerChatIdPill = triggerSource 
       ? `$?{${triggerSource.id}.${triggerSource.appType}/chat_id}`
       : null;
 
-  // ✨ NEW: Pills for Discord
   const triggerGuildIdPill = triggerSource ? `$?{${triggerSource.id}.${triggerSource.appType}/guild_id}` : null;
   const triggerChannelIdPill = triggerSource ? `$?{${triggerSource.id}.${triggerSource.appType}/channel_id}` : null;
   
-  // ✨ NEW: Derived boolean for conditional UI
   const isDiscordReplyScenario = appType === 'discord' && triggerSource?.appType === 'discord';
 
   const closePillSelector = () => {
@@ -253,7 +247,6 @@ export default function ActionDropdown({
         }
       }
 
-      // Logic for Telegram Chat ID
       const chatIdData = initialData.telegram_chatId;
       if (appType === 'telegram' && chatIdData) {
           if (typeof chatIdData === 'object' && chatIdData !== null && 'isCustom' in chatIdData) {
@@ -271,7 +264,6 @@ export default function ActionDropdown({
           }
       }
 
-      // ✨ NEW: Logic to initialize Discord reply source from existing data
       if (isDiscordReplyScenario) {
         if (
           initialData.discord_guildId === triggerGuildIdPill &&
@@ -292,7 +284,7 @@ export default function ActionDropdown({
       setSelectedExport("");
       setCustomMessages({});
       setChatIdSource('custom');
-      setDiscordReplySource('custom'); // ✨ NEW: Reset discord state
+      setDiscordReplySource('custom');
     }
   }, [initialData, isOpen, appType, triggerChatIdPill, isDiscordReplyScenario, triggerGuildIdPill, triggerChannelIdPill]);
 
@@ -316,6 +308,21 @@ export default function ActionDropdown({
     credentialFields.every(field => !field.required || (credentials[field.key] && String(credentials[field.key]).trim())) && 
     isCustomMessagesValid
   );
+  
+  const discordReplyOptions: ActionOption[] = [
+    { value: 'custom', label: 'Custom Guild & Channel ID', icon: PenSquare },
+    { value: 'trigger', label: 'Reply to Discord Trigger', icon: MessageSquareReply },
+  ];
+
+  const chatIdOptions: ActionOption[] = [
+    { value: 'custom', label: 'Custom Chat ID', icon: PenSquare },
+    { value: 'trigger', label: "Reply to Trigger's Chat ID", icon: MessageSquareReply },
+  ];
+
+  const exportOptionsWithIcon: ActionOption[] = exportOptions.map(option => ({
+    ...option,
+    icon: Upload,
+  }));
 
   const handleDataMappingChange = (key: string, value: string) => {
     // ... (no changes in this function)
@@ -338,9 +345,9 @@ export default function ActionDropdown({
     }
   };
   
-  // ✨ NEW: Handler for the Discord reply dropdown
-  const handleDiscordReplySourceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const source = e.target.value as 'custom' | 'trigger';
+  // ✨ FIXED: Handler signature now accepts `string` to match CustomSelect prop
+  const handleDiscordReplySourceChange = (value: string) => {
+    const source = value as 'custom' | 'trigger';
     setDiscordReplySource(source);
 
     if (source === 'trigger') {
@@ -349,6 +356,17 @@ export default function ActionDropdown({
     } else {
       handleDataMappingChange('discord_guildId', '');
       handleDataMappingChange('discord_channelId', '');
+    }
+  };
+
+  // ✨ FIXED: Handler signature now accepts `string` to match CustomSelect prop
+  const handleChatIdSourceChange = (value: string) => {
+    const source = value as 'custom' | 'trigger';
+    setChatIdSource(source);
+    if (source === 'trigger' && triggerChatIdPill) {
+        handleDataMappingChange('telegram_chatId', triggerChatIdPill);
+    } else {
+        handleDataMappingChange('telegram_chatId', '');
     }
   };
 
@@ -441,7 +459,6 @@ export default function ActionDropdown({
   const appOutputLinkConfig = appType ? outputLinkConfigByApp[appType] : undefined;
   const AppSpecificComponent = appOutputLinkConfig?.Component;
 
-  // ✨ NEW: Logic to determine if bot link should be shown
   const shouldShowBotLink = appType === 'discord'
     ? !(isDiscordReplyScenario && discordReplySource === 'trigger')
     : selectedActionObj?.requiresLinkName;
@@ -469,23 +486,19 @@ export default function ActionDropdown({
       </div>
 
       <div className="space-y-3">
-        {/* ✨ NEW: Render Discord dropdown when applicable */}
         {isDiscordReplyScenario && (
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-[#c5c5d2]">Reply Destination</label>
-            <select
+            <CustomSelect
+              options={discordReplyOptions}
               value={discordReplySource}
               onChange={handleDiscordReplySourceChange}
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-            >
-              <option value="custom">Custom Guild & Channel ID</option>
-              <option value="trigger">Reply to Discord Trigger</option>
-            </select>
+              placeholder="Select reply destination"
+            />
           </div>
         )}
 
         {credentialFields.map((field: InputField) => {
-          // ✨ NEW: Hide Guild/Channel ID fields if replying to trigger
           if (isDiscordReplyScenario && discordReplySource === 'trigger' && (field.key === 'discord_guildId' || field.key === 'discord_channelId')) {
             return null;
           }
@@ -499,25 +512,15 @@ export default function ActionDropdown({
                   <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
                   {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
                 </div>
-                <select
-                  value={chatIdSource}
-                  onChange={(e) => {
-                    const source = e.target.value as 'custom' | 'trigger';
-                    setChatIdSource(source);
-                    if (source === 'trigger' && triggerChatIdPill) {
-                      handleDataMappingChange(field.key, triggerChatIdPill);
-                    } else {
-                      handleDataMappingChange(field.key, '');
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-                >
-                  <option value="custom">Custom Chat ID</option>
-                  <option value="trigger">Reply to Trigger's Chat ID</option>
-                </select>
+                <CustomSelect
+                    options={chatIdOptions}
+                    value={chatIdSource}
+                    onChange={handleChatIdSourceChange}
+                    placeholder="Select Chat ID source"
+                />
                 
                 {chatIdSource === 'custom' && (
-                  <div className="relative">
+                  <div className="relative mt-2">
                     <input
                       type={field.type}
                       value={credentials[field.key] || ""}
@@ -532,22 +535,23 @@ export default function ActionDropdown({
           }
 
           if (field.type === 'select') {
+            const fieldOptionsWithIcon: ActionOption[] = field.options.map(option => ({
+                ...option,
+                icon: List,
+            }));
+            
             return (
               <div className="flex flex-col gap-2" key={field.key}>
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
                   {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
                 </div>
-                <select
+                <CustomSelect
+                  options={fieldOptionsWithIcon}
                   value={credentials[field.key] || ""}
-                  onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
-                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-                >
-                  <option value="" disabled>{field.placeholder || "Select an option"}</option>
-                  {field.options.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                  onChange={(value) => handleDataMappingChange(field.key, value)}
+                  placeholder={field.placeholder || "Select an option"}
+                />
                 {field.description && (<p className="text-xs text-[#9b9bab] mt-1">{field.description}</p>)}
               </div>
             );
@@ -624,22 +628,18 @@ export default function ActionDropdown({
         );
       })}
 
-      {/* ✨ NEW: Conditionally render the bot link */}
       {AppSpecificComponent && shouldShowBotLink && (<AppSpecificComponent {...appOutputLinkConfig.propBuilder({})} />)}
       
       {selectedAction && (
         <div className="flex flex-col gap-2 pt-3">
-          {/* ... (no changes in this block) */}
           <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
           {exportOptions.length > 0 ? (
-            <select
-              value={selectedExport}
-              onChange={(e) => setSelectedExport(e.target.value)}
-              className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
-            >
-              <option value="" disabled>Choose export value</option>
-              {exportOptions.map((option: { value: string; label: string; }) => (<option key={option.value} value={option.value}>{option.label}</option>))}
-            </select>
+            <CustomSelect
+                options={exportOptionsWithIcon}
+                value={selectedExport}
+                onChange={setSelectedExport}
+                placeholder="Choose export value"
+            />
           ) : (<div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">No export options available for this action</div>)}
         </div>
       )}
