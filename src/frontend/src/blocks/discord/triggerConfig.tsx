@@ -41,7 +41,7 @@ export function discordLinkCommand({
     if (!guildId || !channelId) return;
     setRequestStatus('loading');
     try {
-      const response = await fetch(extLink);
+      const response = await fetch(extLink)
       
       if (response.ok) {
         setRequestStatus('success');

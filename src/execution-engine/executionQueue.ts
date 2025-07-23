@@ -1,3 +1,4 @@
+import { AIActionsHandler } from "./blocks/ai/ai";
 import { emailActionsHandler } from "./blocks/email/email";
 import { telegramActionsHandler } from "./blocks/telegram/telegram";
 
@@ -41,7 +42,18 @@ class ExecutionQueue {
                 const action = task.json.actions.shift(); // Take the first action
                 const data = task.data; //Take related state data
 
-                await handleAction(action, data); // Handle the action asynchronously
+                const responseData = await handleAction(action, data); // Handle the action asynchronously
+
+                if(responseData){
+                    const label = `${action.id!}.${action.appType!}`
+
+                    //Add message data to workflow
+                    task.data = {
+                        ...(task.data || {}),
+                        [label] : responseData
+                    }
+                }
+
 
                 // If there are more actions left, clone and requeue the task
                 if (task.json.actions.length > 0) {
@@ -64,17 +76,18 @@ const instance = new ExecutionQueue();
 export default instance;
 
 // Handles an individual action based on its app type
-async function handleAction(action: any, data: any): Promise<void> {
+async function handleAction(action: any, data: any){
+    console.log(`Handling Action: ${action.appType} & ${action.event}`);
+    
     switch (action.appType) {
         case "telegram":
-            console.log(`Handling Action: ${action.appType} & ${action.event}`);
-            await telegramActionsHandler(action, data);
-            break;
+            return await telegramActionsHandler(action, data);
 
+        case "ai":
+            return await AIActionsHandler(action, data);
+            
         case "email":
-            console.log(`Handling Action: ${action.appType} & ${action.event}`);
-            await emailActionsHandler(action);
-            break;
+            return await emailActionsHandler(action);
 
         default:
             console.error(`Unknown action type: ${action.appType}`);

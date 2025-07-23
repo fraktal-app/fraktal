@@ -1,14 +1,12 @@
 import { fetchWorkflowFromDB } from "../../lib/db";
 import ExecutionQueue from '../../executionQueue'
-import { interpretTemplate } from "../../lib";
+import { interpretTemplate } from "../../lib/lib";
 
 // Sends a Telegram message using the Bot API
 async function sendTelegramMessage(action: any, data: any): Promise<void> {
 
   const botToken = action.credentials.telegram_botToken;
-
   const chatId = action.credentials.telegram_chatId.isCustom ? action.credentials.telegram_chatId.text : interpretTemplate(action.credentials.telegram_chatId.text, data);
-
   const message = interpretTemplate(action.credentials.message, data);
  
   const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -36,7 +34,7 @@ export async function telegramTriggerWebhook(req, res){
     const workflowId = req.params.workflowId;
     const msg = req.body.message;
 
-     // Ignore non-message updates (e.g., join events)
+    // Ignore non-message updates (e.g., join events)
     if (!msg || !msg.text) return res.sendStatus(200); 
 
     //Fetch workflow from DB
