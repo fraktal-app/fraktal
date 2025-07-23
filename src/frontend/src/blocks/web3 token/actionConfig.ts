@@ -13,8 +13,8 @@ export const web3TokenActionInputFields: Record<string, InputField[]> = {
   
     web3Token: [
         {
-            key: "eth",
-            label: "",
+            key: "network",
+            label: "Select Network",
             placeholder: "Enter your Telegram Bot Token",
             type: "text",
             required: true,

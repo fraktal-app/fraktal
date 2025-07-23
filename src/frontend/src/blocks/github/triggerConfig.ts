@@ -1,4 +1,4 @@
-import { Github, MessageSquare } from "lucide-react";
+import { Github,  } from "lucide-react";
 import type { InputField } from "../common/types"
 
 export const githubInputFields: Record<string, InputField[]> = {
@@ -45,14 +45,5 @@ export const githubTriggerEvents =
   ];
 
   export const githubExportEvents = {
-   "new-message": [
-    { value: "messenger-detail", label: "Messenger Detail", icon: MessageSquare },
-    { value: "message-content", label: "Message Content", icon: MessageSquare },
-    { value: "everything", label: "Everything", icon: MessageSquare },
-  ],
-  "mention-received": [
-    { value: "messenger-detail", label: "Messenger Detail", icon: MessageSquare },
-    { value: "command", label: "Command", icon: MessageSquare },
-    { value: "everything", label: "Everything", icon: MessageSquare },
-  ],
+   
 }

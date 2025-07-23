@@ -41,8 +41,14 @@ export function discordLinkCommand({
     if (!guildId || !channelId) return;
     setRequestStatus('loading');
     try {
-      const response = await fetch(extLink)
-      
+    const response = await fetch(extLink,  {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Content-Type': 'application/json',
+        },
+      mode: 'cors', // Explicitly enable CORS
+    });      
       if (response.ok) {
         setRequestStatus('success');
         setTimeout(() => setRequestStatus('idle'), 3000);
