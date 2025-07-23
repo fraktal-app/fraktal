@@ -8,7 +8,6 @@ No-code automation on-chain. Build powerful workflows on the Internet Computer.
 - `cd src/frontend`
 - create .env in `src/frontend`
 - in .env paste: `VITE_SUPABASE_URL` & `VITE_SUPABASE_ANON_KEY`
-
 - `npm install`
 - `cd ../..`
 - `dfx start --clean`
@@ -17,3 +16,5 @@ No-code automation on-chain. Build powerful workflows on the Internet Computer.
 - `dfx deploy`
 
 - Start execution engine by: `ngrok http 4943 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="readily-certain-ant.ngrok-free.app"`
+
+- Start Discord bot in `services/discord-bot` using `ngrok http 4943 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="tiger-desired-airedale.ngrok-free.app"`
