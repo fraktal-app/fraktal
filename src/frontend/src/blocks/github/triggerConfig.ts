@@ -18,7 +18,11 @@ export const githubTriggerEvents =
 
 export const githubExportEvents = {
   "push": [
-    { value: "message", label: "Message", icon: Github },
+    { value: "repo_fullname", label: "Repositry Full Name", icon: Github },
+    { value: "pusher_name", label: "Pusher Name", icon: Github },
+    { value: "head_commit_message", label: "Head Commit Message", icon: Github },
+    { value: "head_commit_author", label: "Head Commit Author", icon: Github },
+    { value: "head_commit_url", label: "Head Commit Url", icon: Github },
   ],
   "pull_request": [
     { value: "message", label: "Message", icon: Github },
