@@ -12,32 +12,27 @@ export const web3TokenResponseDropdownOptions =
 export const web3TokenActionInputFields: Record<string, InputField[]> = {
   
     web3Token: [
-        {
-            key: "network",
-            label: "Select Network",
-            placeholder: "Enter your Telegram Bot Token",
-            type: "text",
-            required: true,
-        },
-        {
-            key: "telegram_chatId",
-            label: "Chat ID",
-            placeholder: "Enter the Custom Chat ID to send the message to",
-            type: "text",
-            required: true,
-            conditional: {
-                basedOn: 'triggerApp',
-                appType: 'telegram',
-                pill: '$?{trigger-1.telegram/chat_id}',
-                pillLabel: 'Reply to Trigger\'s Chat ID'
-            }
-        },
+      {
+        key: "network",
+        label: "Select Network",
+        placeholder: "Select a network",
+        type: "select",
+        required: true,
+        options: [
+          { value: "ETH", label: "Ethereum (ETH)" },
+          { value: "SOL", label: "Solana (SOL)" },
+          { value: "BTC", label: "Bitcoin (BTC)" },
+          { value: "ICP", label: "Internet Computer (ICP)" },
+          { value: "USDC", label: "USD Coin (USDC)" },
+          { value: "USDT", label: "Tether (USDT)" },
+        ],
+      },
+      
     ]
 };
 
 export const web3TokenExportEvents = {
-  "send_telegram_message": [
-    { value: "chatID", label: "Chat ID", icon: MessageSquare },
-    { value: "channel", label: "Channel Sent", icon: MessageSquare },
+  "get_token_price": [
+    { value: "token_price", label: "Token price", icon: MessageSquare },
   ],
 }

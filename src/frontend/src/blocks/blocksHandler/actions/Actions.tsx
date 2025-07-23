@@ -530,6 +530,28 @@ export default function ActionDropdown({
               </div>
             );
           }
+
+          if (field.type === 'select') {
+            return (
+              <div className="flex flex-col gap-2" key={field.key}>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-[#c5c5d2]">{field.label}</label>
+                  {field.required && (<span className="bg-red-500/20 text-red-400 text-xs px-1.5 py-0.5 rounded-full">*</span>)}
+                </div>
+                <select
+                  value={credentials[field.key] || ""}
+                  onChange={(e) => handleDataMappingChange(field.key, e.target.value)}
+                  className="w-full px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white focus:outline-none focus:border-[#6d3be4]"
+                >
+                  <option value="" disabled>{field.placeholder || "Select an option"}</option>
+                  {field.options.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                {field.description && (<p className="text-xs text-[#9b9bab] mt-1">{field.description}</p>)}
+              </div>
+            );
+          }
           
           return (
             <div className="flex flex-col gap-2" key={field.key}>

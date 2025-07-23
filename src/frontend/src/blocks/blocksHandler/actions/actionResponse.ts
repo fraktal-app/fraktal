@@ -7,6 +7,7 @@ import { twitterActionInputFields, twitterExportEvents, twitterResponseDropdownO
 import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownOptions } from "../../webhook/actionConfig";
 import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
 import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../email/actionConfig";
+import { web3TokenActionInputFields, web3TokenExportEvents, web3TokenResponseDropdownOptions } from "../../web3 token/actionConfig";
 
 export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; icon: any  }>>   = {
   telegram: telegramResponseDropdownOptions,
@@ -16,7 +17,8 @@ export const actionDropdownOptions: Record<string, Array<{ value: string; label:
   twitter: twitterResponseDropdownOptions,
   ai: aiResponseDropdownOptions,
   api: apiResponseDropdownOptions,
-  email: emailResponseDropdownOptions
+  email: emailResponseDropdownOptions,
+  web3Token: web3TokenResponseDropdownOptions
 };
 
 export const actionInputFieldsByApp: Record<string, InputField[]> = {
@@ -27,7 +29,8 @@ export const actionInputFieldsByApp: Record<string, InputField[]> = {
   twitter: twitterActionInputFields.twitter,
   ai: aiActionInputFields.ai,
   api: apiActionInputFields.api,
-  email: emailActionInputFields.email
+  email: emailActionInputFields.email,
+  web3Token: web3TokenActionInputFields.web3Token
 };
 
 export const customMessageFieldsByAction: Record<string, InputField[]> = {
@@ -44,5 +47,6 @@ export const exportEventsByAction: Record<string, Array<{ value: string; label: 
   ...twitterExportEvents,
   ...aiExportEvents,
   ...apiExportEvents,
-  ...emailExportEvents
+  ...emailExportEvents,
+  ...web3TokenExportEvents
 };
