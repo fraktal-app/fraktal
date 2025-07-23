@@ -3,6 +3,7 @@ import { discordActionHandler } from "./blocks/discord/discord";
 import { emailActionsHandler } from "./blocks/email/email";
 import { telegramActionsHandler } from "./blocks/telegram/telegram";
 import { tokenActionsHandler } from "./blocks/web3/token";
+import { web3WalletActionsHandler } from "./blocks/web3/wallet";
 
 // A class that manages execution of queued async tasks
 class ExecutionQueue {
@@ -44,7 +45,12 @@ class ExecutionQueue {
                 const action = task.json.actions.shift(); // Take the first action
                 const data = task.data; //Take related state data
 
-                const responseData = await handleAction(action, data); // Handle the action asynchronously
+                const responseData: any = await handleAction(action, data); // Handle the action asynchronously
+
+
+                if(responseData?.error){
+                    return;
+                }
 
                 if(responseData){
                     const label = `${action.id!}.${action.appType!}`
@@ -97,8 +103,11 @@ async function handleAction(action: any, data: any){
         case "email":
             return await emailActionsHandler(action, data);
 
+        case "web3Wallet":
+            return await web3WalletActionsHandler(action, data);
+
         default:
             console.error(`Unknown action type: ${action.appType}`);
-            break;
+            return { error: "Unknown appType"}
     }
 }
