@@ -155,10 +155,16 @@ export const discordTriggerEvents = [
 
 export const discordExportEvents = {
   "mention-received": [
-    { value: "messenger-detail", label: "Messenger Detail", icon: MessageSquare },
-    { value: "command", label: "Command", icon: MessageSquare },
-    { value: "everything", label: "Everything", icon: MessageSquare },
-  ],
-}
+    { value: "message", label: "Message", icon: MessageSquare },
+    { value: "username", label: "Username", icon: MessageSquare },
+    { value: "author_id", label: "Author ID", icon: MessageSquare },
+    { value: "channel_name", label: "Channel Name", icon: MessageSquare },
+    { value: "channel_id", label: "Channel ID", icon: MessageSquare },
+    { value: "server_name", label: "Server Name", icon: MessageSquare },
+    { value: "server_id", label: "Server ID", icon: MessageSquare },
+    { value: "guild_id", label: "Guild ID", icon: MessageSquare },
+  ]
+};
+
 
 export default discordLinkCommand;
