@@ -1,51 +1,34 @@
-
 import { Github } from "lucide-react";
-
-import type { InputField } from "../common/types"
+import type { InputField } from "../common/types";
+import GithubOutputLink from "./GithubOutputLink";
 
 export const githubInputFields: Record<string, InputField[]> = {
   github: [
-    {
-      key: "personalAccessToken",
-      label: "Personal Access Token (PAT)",
-      placeholder: "Enter your GitHub PAT with repo and issues scope",
-      type: "password",
-      required: true,
-    },
-    {
-      key: "username",
-      label: "GitHub Username",
-      placeholder: "Enter your GitHub username",
-      type: "text",
-      required: true,
-    },
-    {
-      key: "repository",
-      label: "Repository Name",
-      placeholder: 'e.g., "username/repo-name"',
-      type: "text",
-      required: true,
-    },
-    {
-      key: "branch",
-      label: "Branch",
-      placeholder: "Select branch to monitor(Main/Master/Dev)",
-      type: "text",
-      required: true,
-    }
+
   ]
 };
 
-
 export const githubTriggerEvents = 
   [
-    { value: "new-issue", label: "New Issue Created", icon: Github },
-    { value: "new-pr", label: "New Pull Request", icon: Github },
-    { value: "pr-merged", label: "Pull Request Merged", icon: Github },
-    { value: "new-commit", label: "New Commit Pushed", icon: Github },
-    { value: "issue-closed", label: "Issue Closed", icon: Github },
+    { value: "push", label: "New Commit Pushed", icon: Github, requiresLinkName: true },
+    { value: "pull_request", label: "New Pull Request", icon: Github, requiresLinkName: true },
+    { value: "issues", label: "New Issue Created", icon: Github, requiresLinkName: true },
+    { value: "member", label: "New Member", icon: Github, requiresLinkName: true },
   ];
 
 export const githubExportEvents = {
-   
-}
+  "push": [
+    { value: "message", label: "Message", icon: Github },
+  ],
+  "pull_request": [
+    { value: "message", label: "Message", icon: Github },
+  ],
+  "issues": [
+    { value: "message", label: "Message", icon: Github },
+  ],
+  "member": [
+    { value: "message", label: "Message", icon: Github },
+  ],
+};
+
+export default GithubOutputLink;

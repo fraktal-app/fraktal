@@ -1,9 +1,9 @@
-import { Rss, Search } from "lucide-react";
+import { Rss, } from "lucide-react";
 import type { InputField } from "../common/types"
 
 export const rssInputFields: Record<string, InputField[]> = {
   
-  RSS: [
+  rss: [
   {
     key: "feedUrl",
     label: "RSS Feed URL",
@@ -23,24 +23,16 @@ export const rssInputFields: Record<string, InputField[]> = {
 
 export const rssTriggerEvents = 
   [
-    {
-    value: "new-feed-item",
-    label: "New Feed Item Published",
-    icon: Rss, 
-  },
   {
-    value: "feed-updated",
+    value: "feed_updated",
     label: "Feed Metadata Updated",
     icon: Rss,
   },
-  {
-    value: "item-matches-keyword",
-    label: "Feed Item Contains Keyword",
-    icon: Search, 
-  }
   ];
 
 
 export const rssExportEvents = {
-   
+   "feed_updated": [
+    { value: "new_item", label: "New feed item", icon: Rss },
+  ],
 }

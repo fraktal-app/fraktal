@@ -1,6 +1,8 @@
+// src/components/triggers/outputLinks.ts
 import React from "react";
 import { TelegramLinkCommand } from "../../telegram/triggerConfig";
 import discordLinkCommand from "../../discord/triggerConfig";
+import GithubOutputLink from "../../github/triggerConfig";
 
 interface AllAvailableProps {
   botToken: string;
@@ -22,10 +24,8 @@ type SaveDataHandler = (data: {
 }) => Record<string, any>;
 
 interface OutputLinkConfig {
-  // Use React.FC<any> to allow for flexible props
   Component: React.FC<any>;
   getSaveData: SaveDataHandler;
-  // A function to build the specific props required by the Component
   propBuilder: (props: AllAvailableProps) => Record<string, any>;
 }
 
@@ -42,7 +42,6 @@ export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
       workflowId: props.workflowId,
     }),
   },
-
   discord: {
      Component: discordLinkCommand,
     getSaveData: ({guildId, channelId}) => ({
@@ -56,6 +55,14 @@ export const outputLinkConfigByApp: Record<string, OutputLinkConfig> = {
       workflowId: props.workflowId,
       guildId: props.guildId,
       channelId: props.channelId,
+    }),
+  },
+  github: {
+    Component: GithubOutputLink,
+    getSaveData: () => ({}), // No extra data to save for GitHub
+    propBuilder: (props) => ({
+      userId: props.userId,
+      workflowId: props.workflowId,
     }),
   },
 };

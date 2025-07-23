@@ -9,6 +9,7 @@ import telegram from "../../assets/telegram.png"
 import token from "../../assets/token.png"
 //import twitter from "../../assets/twitter.jpg"
 import ai from "../../assets/ai.png"
+//import rss from "../../assets/rss.png"
 import type { AppBlock } from "./types"
 
 
@@ -19,7 +20,7 @@ export const appBlocks: AppBlock[] = [
   { type: "github", label: "GitHub", icon: Github, iconUrl: github, color: "white", category: "trigger" },
   { type: "web3Wallet", label: "Web3 Wallet", icon: TrendingUp, iconUrl: wallet, color: "white", category: "action"},
   { type: "web3Token", label: "Token Price", icon: Coins , iconUrl: token, color: "white", category: "action" },
-  // { type: "rss", label: "RSS Feed", icon: Coins , iconUrl: etherium, color: "white", category: "trigger" },
+  //{ type: "rss", label: "RSS Feed", icon: Rss , iconUrl: rss, color: "white", category: "trigger" },
   { type: "discord",label: "Discord",icon: MessageSquare,iconUrl: discord,color: "white",category: "action"},
   // { type: "notion",label: "Notion",icon: FileText,iconUrl: notion,color: "white",category: "action"},
   { type: "telegram",label: "Telegram",icon: Send,iconUrl: telegram,color: "white",category: "action",},
