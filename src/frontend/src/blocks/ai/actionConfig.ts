@@ -1,4 +1,12 @@
+import { BrainCircuit,  } from "lucide-react";
 import type { InputField } from "../common/types";
+
+export const aiResponseDropdownOptions = 
+    [
+  { value: "generate_text", label: "Generate text", icon: BrainCircuit},
+  { value: "summarize_input", label: "Summarize input", icon: BrainCircuit},
+  { value: "extract_information", label: "Extract information", icon: BrainCircuit},
+];
 
 export const aiActionInputFields: Record<string, InputField[]> = {
   
@@ -20,14 +28,50 @@ export const aiActionInputFields: Record<string, InputField[]> = {
 ]
 }
 
-export const aiResponseDropdownOptions = 
-    [
-  // { value: "generate_text", label: "Generate text" },
-  // { value: "summarize_input", label: "Summarize input" },
-  // { value: "extract_information", label: "Extract information" },
-];
+export const aiCustomPrompt: Record<string, InputField[]> = {
+  "generate_text": [
+    {
+      key: "prompt",
+      label: "Propmt",
+      placeholder: "Enter your prompt here...",
+      type: "textarea",
+      required: true,
+      allowDataMapping: true,
+      description: "This prompt will be used to extract information from the input.."
+    }
+  ],
+  "summarize_input": [
+    {
+      key: "prompt",
+      label: "Propmt",
+      placeholder: "Enter your prompt here...",
+      type: "textarea",
+      required: true,
+      allowDataMapping: true,
+      description: "This prompt will be used to extract information from the input."
+    }
+  ],
+  "extract_information": [
+    {
+      key: "prompt",
+      label: "Propmt",
+      placeholder: "Enter your prompt here...",
+      type: "textarea",
+      required: true,
+      allowDataMapping: true,
+      description: "This prompt will be used to extract information from the input."
+    }
+  ],
+}
 
-
-export const aiExportEvents: Record<string, Array<{ value: string; label: string; icon: any }>> = {
-  
+export const aiExportEvents= {
+  "generate_text": [
+    { value: "response", label: "Response", icon: BrainCircuit },
+  ],
+  "summarize_input": [
+    { value: "response", label: "Response", icon: BrainCircuit },
+  ],
+  "extract_information": [
+    { value: "response", label: "Response", icon: BrainCircuit },
+  ],
 }

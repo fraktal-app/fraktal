@@ -1,5 +1,5 @@
 import type { InputField } from "../../common/types";
-import { aiActionInputFields, aiExportEvents, aiResponseDropdownOptions } from "../../ai/actionConfig";
+import { aiActionInputFields, aiCustomPrompt, aiExportEvents, aiResponseDropdownOptions } from "../../ai/actionConfig";
 import { discordActionInputFields, discordCustomMessage, discordExportEvents, discordResponseDropdownOptions } from "../../discord/actionConfig";
 import { notionActionInputFields, notionExportEvents, notionResponseDropdownOptions } from "../../notion/actionConfig";
 import { telegramActionInputFields, telegramCustomMessage, telegramExportEvents, telegramResponseDropdownOptions } from "../../telegram/actionConfig";
@@ -32,7 +32,8 @@ export const actionInputFieldsByApp: Record<string, InputField[]> = {
 
 export const customMessageFieldsByAction: Record<string, InputField[]> = {
    ...discordCustomMessage,
-   ...telegramCustomMessage
+   ...telegramCustomMessage,
+   ...aiCustomPrompt
 
 }
 export const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>>= {
