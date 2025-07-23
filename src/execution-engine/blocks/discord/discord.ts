@@ -36,8 +36,6 @@ export async function discordTriggerWebhook(req, res){
           guild_id: body.server_id
       };
 
-      //console.log(workflow);
-
       const label = `${workflow.json.trigger.id!}.${workflow.json.trigger.appType!}`
 
       //Add message data to workflow
@@ -83,7 +81,7 @@ async function sendDiscordMessage(action: any, data: any): Promise<void> {
   if (!result.success) {
     console.error('Failed to send Discord message:', result);
   } else {
-    console.log('Message sent:');
+    console.log('Message sent');
   }
 }
 

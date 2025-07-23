@@ -47,7 +47,8 @@
                     "CANISTER_ID_database", 
                     "CANISTER_ID_execution_engine",
                     "SENDGRID_API_KEY",
-                    "GROQ_AI_API_KEY"
+                    "GROQ_AI_API_KEY",
+                    "COIN_CAP_API_KEY"
                 ]
             }
         }

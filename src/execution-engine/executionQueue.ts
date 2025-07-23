@@ -2,6 +2,7 @@ import { AIActionsHandler } from "./blocks/ai/ai";
 import { discordActionHandler } from "./blocks/discord/discord";
 import { emailActionsHandler } from "./blocks/email/email";
 import { telegramActionsHandler } from "./blocks/telegram/telegram";
+import { tokenActionsHandler } from "./blocks/web3/token";
 
 // A class that manages execution of queued async tasks
 class ExecutionQueue {
@@ -89,6 +90,9 @@ async function handleAction(action: any, data: any){
 
         case "discord":
             return await discordActionHandler(action, data);
+
+        case "web3Token":
+            return await tokenActionsHandler(action, data);
 
         case "email":
             return await emailActionsHandler(action, data);

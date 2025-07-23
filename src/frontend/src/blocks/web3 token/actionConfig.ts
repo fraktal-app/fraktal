@@ -34,5 +34,6 @@ export const web3TokenActionInputFields: Record<string, InputField[]> = {
 export const web3TokenExportEvents = {
   "get_token_price": [
     { value: "token_price", label: "Token price", icon: MessageSquare },
+    { value: "change_in_24_hrs", label: "Percent change in Last 24 Hrs", icon: MessageSquare },
   ],
 }
