@@ -65,8 +65,4 @@ export const discordCustomMessage: Record<string, InputField[]> = {
 }
 
 export const discordExportEvents = {
-  "send_discord_message": [
-    { value: "timestamp", label: "Timestamp", icon: MessageSquare },
-    { value: "message_content", label: "Message Content", icon: MessageSquare },
-  ],
 }

@@ -49,8 +49,5 @@ export const telegramCustomMessage: Record<string, InputField[]> = {
 }
 
 export const telegramExportEvents = {
-  "send_telegram_message": [
-    { value: "chatID", label: "Chat ID", icon: MessageSquare },
-    { value: "channel", label: "Channel Sent", icon: MessageSquare },
-  ],
+
 }

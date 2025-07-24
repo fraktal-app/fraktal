@@ -21,8 +21,9 @@ No-code automation on-chain. Build powerful workflows on the Internet Computer.
 
 
 ### TODO:
-- Convert to Monolith
+- Convert to Monolithic architechture 
 - Increase type safety
 - Increase documentation
 - Use LLM canister
 - Use Eth RPC canister
+- Enable multiple data export

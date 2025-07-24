@@ -128,12 +128,6 @@ export const telegramTriggerEvents = [
     label: "New Message Received",
     icon: Send,
     requiresLinkName: true,
-  },
-  {
-    value: "command-received-telegram",
-    label: "Command Received",
-    icon: Send,
-    requiresLinkName: true,
   }
 ];
 
@@ -143,13 +137,7 @@ export const telegramExportEvents = {
     { value: "username", label: "Username", icon: Send },
     { value: "name", label: "Full Name", icon: Send },
     { value: "message", label: "Message", icon: Send },
-  ],
-  "command-received-telegram": [
-    { value: "chat_id", label: "Chat ID", icon: Send },
-    { value: "username", label: "Username", icon: Send },
-    { value: "name", label: "Full Name", icon: Send },
-    { value: "message", label: "Message", icon: Send },
-  ],
+  ]
 };
 
 export default TelegramLinkCommand;

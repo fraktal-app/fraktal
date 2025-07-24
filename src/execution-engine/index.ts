@@ -3,6 +3,7 @@ import express, { Request } from 'express';
 import ExecutionQueue from './executionQueue'
 import { telegramTriggerWebhook } from './blocks/telegram/telegram';
 import { discordTriggerWebhook } from './blocks/discord/discord';
+import { githubTriggerWebhook } from './blocks/github/github';
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.get("/queue", (req, res) => {
 
 app.post("/webhook/telegram/:userId/:workflowId/", telegramTriggerWebhook)
 app.post("/webhook/discord/:userId/:workflowId/", discordTriggerWebhook)
+app.post("/webhook/github/:userId/:workflowId/", githubTriggerWebhook)
 
 app.listen();

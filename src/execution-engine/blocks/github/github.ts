@@ -1,15 +1,11 @@
 import { fetchWorkflowFromDB } from "../../lib/db";
 import ExecutionQueue from '../../executionQueue'
 
-export async function telegramTriggerWebhook(req, res){
+export async function githubTriggerWebhook(req, res){
     const userId = req.params.userId;
     const workflowId = req.params.workflowId;
-    const githubEvent = req.headers['X-GitHub-Event'];
-
-    console.log({
-        githubEvent,
-        body: req.body
-    })
+    const githubEvent = req.headers['x-github-event'];
+    const body = req.body;
 
     //Fetch workflow from DB
     //Put onto Queue
@@ -27,25 +23,31 @@ export async function telegramTriggerWebhook(req, res){
             res.sendStatus(500);
         }
 
-        console.log(workflow);
+        let extractedData;
 
-        // //Extract relevant message data
-        // const extractedData = {
-        //     chat_id: msg.chat.id,
-        //     username: msg.from.username,
-        //     name: `${msg.from.first_name} ${msg.from.last_name}`,
-        //     message: msg.text,
-        // };
+        //Check if this event is same as trigger event
+        if(workflow.json.trigger.event == githubEvent){
 
-        // const label = `${workflow.json.trigger.id!}.${workflow.json.trigger.appType!}`
+            if(githubEvent == 'push'){
+                extractedData = {
+                    repo_fullname: body.repository.full_name,
+                    pusher_name: body.pusher.name,
+                    head_commit_message: body.head_commit.message,
+                    head_commit_author: body.head_commit.author.username,
+                    head_commit_url: body.head_commit.url
+                };
+            }
+        }
 
-        // //Add message data to workflow
-        // workflow.data = {
-        //     ...(workflow.data || {}),
-        //     [label] : extractedData
-        // }
+        const label = `${workflow.json.trigger.id!}.${workflow.json.trigger.appType!}`
 
-        // ExecutionQueue.add(workflow)
+        //Add message data to workflow
+        workflow.data = {
+            ...(workflow.data || {}),
+            [label] : extractedData
+        }
+
+        ExecutionQueue.add(workflow)
     }
     catch(e){
         console.error(e);

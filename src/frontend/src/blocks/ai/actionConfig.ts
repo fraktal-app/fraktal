@@ -1,11 +1,8 @@
 import { BrainCircuit,  } from "lucide-react";
 import type { InputField } from "../common/types";
 
-export const aiResponseDropdownOptions = 
-    [
+export const aiResponseDropdownOptions = [
   { value: "generate_text", label: "Generate text", icon: BrainCircuit},
-  { value: "summarize_input", label: "Summarize input", icon: BrainCircuit},
-  { value: "extract_information", label: "Extract information", icon: BrainCircuit},
 ];
 
 export const aiActionInputFields: Record<string, InputField[]> = {
