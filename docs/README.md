@@ -35,8 +35,12 @@ These blocks initiate workflows when something happens in a connected app or ser
     - Select Export data
 
 - **GitHub Trigger**: Listen to events like pushes, pull requests, and issues via GitHub webhooks.
+    - Select event type (e.g., "Issue Created", "Pull Request Opened", "Push to Branch")
+    - You will get a link for your workflow.
+    - Go to the GitHub repo → **Settings** → **Webhooks** → **Add webhook**
+    - Paste the URL, set Content Type to `application/json`, and enable desired events
+    - Click **Add webhook** and return to Fraktal to proceed with configuring blocks
 
----
 
 ## Actions
 
