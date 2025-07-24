@@ -16,6 +16,8 @@ export const emailActionInputFields: Record<string, InputField[]> = {
       placeholder: "Enter email subject",
       type: "text",
       required: true,
+      allowDataMapping: true,
+
     },
     {
       key: "html",
