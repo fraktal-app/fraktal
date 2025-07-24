@@ -1,14 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600&display=swap');
 
+@theme {  --font-dm-sans: "DM Sans", sans-serif; }
 body {
-  @apply bg-white text-black;
+  @apply bg-white text-black ;
+    font-family: "DM Sans", sans-serif;
 }
 
 .dark body {
-  @apply bg-gray-900 text-white;
+  @apply bg-gray-900 text-white; 
+  font-family: "DM Sans", sans-serif;
+
 }
 
 /* Example for navbar */

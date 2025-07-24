@@ -24,6 +24,7 @@ export const emailActionInputFields: Record<string, InputField[]> = {
       type: "textarea",
       required: true,
       maxLength: 1000,
+      allowDataMapping: true,
     },
   ]
 };
