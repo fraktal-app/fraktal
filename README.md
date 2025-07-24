@@ -4,7 +4,7 @@
 
 Bring No-Code Automation On-Chain. Design and deploy powerful automated workflows without writing backend code - no servers, no limits. Connect Web2, Web3, and AI services using modular triggers and actions that run natively on the Internet Computer.
 
-🧠 Built for #WCHL2025 • 🔗 [Visit App](https://x.com/fraktal_app) • 🌐 Powered by Internet Computer (ICP)
+ 🔗 [Visit App](https://x.com/fraktal_app)
 
 <br>
 
