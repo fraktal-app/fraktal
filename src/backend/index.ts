@@ -241,6 +241,51 @@ app.post("/get-workflows-by-user-id", async (req, res) => {
         res.status(500).json({"error": "Internal Server Error"})
     }
 })
+
+/**
+ * POST /delete-workflow
+ * Delete a workflow by ID from the database.
+ */
+app.post("/delete-workflow", async (req, res) => {
+
+    try{
+        const { workflow_id } = req.body;
+        
+        if (!workflow_id) {
+            return res.status(400).json({ 
+                error: "No workflow ID found." 
+            });
+        }
+
+        //req.body does not work, so we'll put req info in query by encoding into the URL
+        const params = toUrlEncoded({
+            workflow_id
+        });
+
+        const response = await fetch(dbURL + "/http_request_update", {
+            body: serialize({
+                candidPath: '/scripts/http_canister.did',
+                args: [{
+                    url : "/workflows/delete-workflow?" + params,
+                    method : "DELETE",
+                    body : [],
+                    headers : [
+                         ["Content-Type", "application/json"]
+                    ]
+                }]
+            })
+        });
+    
+        const responseJson = await response.json();
+        const result = parseEncodedResponse(responseJson.body)
+        res.json(result);
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({"error": "Internal Server Error"})
+    }
+})
+
 // Serve static frontend files from /dist
 app.use(express.static('/dist'));
 
