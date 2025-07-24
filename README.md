@@ -6,6 +6,8 @@ Bring No-Code Automation On-Chain. Design and deploy powerful automated workflow
 
 🧠 Built for #WCHL2025 • 🔗 [Visit App](https://x.com/fraktal_app) • 🌐 Powered by Internet Computer (ICP)
 
+<br>
+
 ## Overview
 
 **Fraktal** is a no-code automation platform for building and executing decentralized workflows on the [**Internet Computer (ICP)**](https://internetcomputer.org/). It empowers developers and non-developers alike to create powerful automations using modular **triggers** and **actions** — all without writing backend code.
@@ -13,6 +15,8 @@ Bring No-Code Automation On-Chain. Design and deploy powerful automated workflow
 Fraktal abstracts complex integrations across **Web2**, **Web3**, and **AI/LLM** services into composable building blocks. Whether you're reacting to a GitHub issue, automating Telegram bots, posting to Discord, or chaining prompts with AI models - Fraktal makes it possible without servers or infrastructure management.
 
 Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless architecture](https://internetcomputer.org/docs/current/developer-docs/overview/what-is-ic/) for **trustless**, **persistent**, and **low-latency** execution. Whether you're a developer, builder, or curious hacker, Fraktal gives you the tools to automate the future one block at a time.
+
+<br>
 
 ## Core Principles
 
@@ -23,6 +27,8 @@ Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless a
 - **Interoperability**: Fraktal bridges Web2, Web3, and AI ecosystems through integrations with platforms like GitHub, Telegram, Discord, LLMs, and blockchain wallets.
 
 - **No-Code Accessibility**: Fraktal is designed for developers and non-developers alike — empowering anyone to build, visualize, and deploy complex automations with ease.
+
+<br>
 
 ## Features
 
@@ -62,6 +68,8 @@ Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless a
 - Each block can export its output for downstream use.
 - Chain AI outputs to message actions, or wallet data to price alerts.
 - Create modular, composable, and reusable automation logic.
+
+<br>
 
 ## Usage Guide
 
@@ -104,6 +112,8 @@ Drag a action from the sidebar into the canvas. Configure the block by entering 
 - Your workflow is now live!
 
 
+<br>
+
 ## Supported Integrations
 
 Fraktal currently supports blocks for:
@@ -120,8 +130,14 @@ More integrations and advanced conditionals (filters, branches, loops) are comin
 For a full breakdown of available blocks, their parameters, and usage examples, see [`Blocks Information`](./docs/README.md).
 
 
+<br>
+
 ## Architechture 
 ![image info](./docs/assets/architechture.png)
+
+
+<br>
+
 
 ## Instructions for Running Locally
 
@@ -142,6 +158,8 @@ For a full breakdown of available blocks, their parameters, and usage examples, 
 - Start Discord bot in `services/discord-bot` using `ngrok http 5000 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="<discord-bot-url>"`
 
 
+<br>
+
 
 ## Tech Stack
 
@@ -152,6 +170,9 @@ For a full breakdown of available blocks, their parameters, and usage examples, 
 | **Execution Engine** | Internet Computer (Azle)            |
 | **Integrations**  | Telegram, Discord, GitHub, Web3, LLMs, Email |
 | **Infra**         | ICP (Execution), Ngrok (Dev Tunnels) |
+
+
+<br>
 
 
 ## Folder Structure
