@@ -17,7 +17,7 @@ No-code automation on-chain. Build powerful workflows on the Internet Computer.
 
 - Start execution engine by: `ngrok http 4943 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="readily-certain-ant.ngrok-free.app"`
 
-- Start Discord bot in `services/discord-bot` using `ngrok http 4943 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="tiger-desired-airedale.ngrok-free.app"`
+- Start Discord bot in `services/discord-bot` using `ngrok http 5000 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url="tiger-desired-airedale.ngrok-free.app"`
 
 
 ### TODO:

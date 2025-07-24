@@ -1,5 +1,5 @@
 const Executions = () => {
-  return <div className="text-white">COMMING SOON!</div>;
+  return <div className="flex text-white text-3xl">COMING SOON!</div>;
 };
 
 export default Executions;
