@@ -10,7 +10,7 @@ Connect Web2, Web3, and AI services using modular triggers and actions that run 
 
  <br>
 
-## 🌐 Overview
+##  Overview
 
 **Fraktal** is a no-code automation platform for building and executing decentralized workflows on the [**Internet Computer (ICP)**](https://internetcomputer.org/). It empowers developers and non-developers alike to create powerful automations using modular **triggers** and **actions** — all without writing backend code.
 
@@ -20,7 +20,7 @@ Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless a
 
  <br>
 
-## 🧱 Core Principles
+##  Core Principles
 
 - **Trustless & Serverless Execution**: Fraktal workflows run entirely on the Internet Computer, leveraging decentralized canister smart contracts for persistent, verifiable, and censorship-resistant automation — with no centralized servers or backend infrastructure required.
 
@@ -32,7 +32,7 @@ Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless a
 
  <br>
 
-## ✨ Features
+##  Features
 
 ### 1. Visual Workflow Builder
 - Build and edit automations using an intuitive drag-and-drop interface.
@@ -73,7 +73,7 @@ Workflows run natively on-chain, leveraging [ICP’s decentralized, serverless a
 
  <br>
 
-## 🛠️ Usage Guide
+##  Usage Guide
 
 ### 1. Create a New Flow
 
@@ -112,7 +112,7 @@ Drag an action from the sidebar into the canvas. Configure the block by entering
 
  <br>
 
-## 🔌 Supported Integrations
+##  Supported Integrations
 
 Fraktal currently supports blocks for:
 
@@ -123,19 +123,19 @@ Fraktal currently supports blocks for:
 - **AI/LLMs** – Text generation, summarization, and prompt chaining.  
 - **Email** – Template-based email sending with services like SendGrid.
 
-🧩 *More integrations and advanced conditionals (filters, branches, loops) are coming soon.*
+*More integrations and advanced conditionals (filters, branches, loops) are coming soon.*
 
 For a full breakdown of available blocks, their parameters, and usage examples, see [`Blocks Information`](./docs/README.md).
 
  <br>
 
-## 🏗 Architecture
+##  Architecture
 
 ![image info](./docs/assets/architechture.png)
 
  <br>
 
-## 🧪 Instructions for Running Locally
+##  Instructions for Running Locally
 
 ```
 # Clone the Repo
@@ -165,7 +165,7 @@ ngrok http 5000 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url=
 
  <br>
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Layer             | Tech/Tooling                                |
 |-------------------|----------------------------------------------|
@@ -178,7 +178,7 @@ ngrok http 5000 --host-header="bkyz2-fmaaa-aaaaa-qaaaq-cai.raw.localhost" --url=
 
 <br>
 
-## 📁 Folder Structure
+##  Folder Structure
 
 ```
 fraktal/
