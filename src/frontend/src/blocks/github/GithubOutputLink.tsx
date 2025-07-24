@@ -32,7 +32,7 @@ export function GithubOutputLink({
       </p>
       <div className="relative flex items-center mt-2">
         {/* Replaced 'truncate' with 'break-all' to allow wrapping */}
-        <div className="w-full select-all break-all pl-3 pr-10 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-md text-white">
+        <div className="w-full select-all break-all pl-3 pr-10 py-2 bg-[#2a2e3f] text-sm border border-[#3a3f52] rounded-md text-gray-500">
           {webhookUrl}
         </div>
         <button
