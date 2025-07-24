@@ -1,11 +1,7 @@
 import type { InputField } from "../../common/types";
 import { aiActionInputFields, aiCustomPrompt, aiExportEvents, aiResponseDropdownOptions } from "../../ai/actionConfig";
 import { discordActionInputFields, discordCustomMessage, discordExportEvents, discordResponseDropdownOptions } from "../../discord/actionConfig";
-import { notionActionInputFields, notionExportEvents, notionResponseDropdownOptions } from "../../notion/actionConfig";
 import { telegramActionInputFields, telegramCustomMessage, telegramExportEvents, telegramResponseDropdownOptions } from "../../telegram/actionConfig";
-import { twitterActionInputFields, twitterExportEvents, twitterResponseDropdownOptions } from "../../twitter/actionConfig";
-import { webhookActionInputFields, webhookExportEvents, webhookResponseDropdownOptions } from "../../webhook/actionConfig";
-import { apiActionInputFields, apiExportEvents, apiResponseDropdownOptions } from "../../api/actionConfig";
 import { emailActionInputFields, emailExportEvents, emailResponseDropdownOptions } from "../../email/actionConfig";
 import { web3TokenActionInputFields, web3TokenExportEvents, web3TokenResponseDropdownOptions } from "../../web3 token/actionConfig";
 import { web3WalletActionInputFields, web3WalletExportEvents, web3WalletResponseDropdownOptions } from "../../web3 wallet/actionConfig";
@@ -13,11 +9,7 @@ import { web3WalletActionInputFields, web3WalletExportEvents, web3WalletResponse
 export const actionDropdownOptions: Record<string, Array<{ value: string; label: string; icon: any  }>>   = {
   telegram: telegramResponseDropdownOptions,
   discord: discordResponseDropdownOptions,
-  notion: notionResponseDropdownOptions,
-  webhook: webhookResponseDropdownOptions,
-  twitter: twitterResponseDropdownOptions,
   ai: aiResponseDropdownOptions,
-  api: apiResponseDropdownOptions,
   email: emailResponseDropdownOptions,
   web3Token: web3TokenResponseDropdownOptions,
   web3Wallet: web3WalletResponseDropdownOptions
@@ -26,11 +18,7 @@ export const actionDropdownOptions: Record<string, Array<{ value: string; label:
 export const actionInputFieldsByApp: Record<string, InputField[]> = {
   telegram: telegramActionInputFields.telegram,
   discord: discordActionInputFields.discord,
-  notion: notionActionInputFields.notion,
-  webhook: webhookActionInputFields.webhook,
-  twitter: twitterActionInputFields.twitter,
   ai: aiActionInputFields.ai,
-  api: apiActionInputFields.api,
   email: emailActionInputFields.email,
   web3Token: web3TokenActionInputFields.web3Token,
   web3Wallet: web3WalletActionInputFields.web3Wallet
@@ -45,11 +33,7 @@ export const customMessageFieldsByAction: Record<string, InputField[]> = {
 export const exportEventsByAction: Record<string, Array<{ value: string; label: string; icon: any }>>= {
   ...telegramExportEvents,
   ...discordExportEvents,
-  ...notionExportEvents,
-  ...webhookExportEvents,
-  ...twitterExportEvents,
   ...aiExportEvents,
-  ...apiExportEvents,
   ...emailExportEvents,
   ...web3TokenExportEvents,
   ...web3WalletExportEvents
