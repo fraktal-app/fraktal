@@ -34,9 +34,34 @@ export async function githubTriggerWebhook(req, res){
                     pusher_name: body.pusher.name,
                     head_commit_message: body.head_commit.message,
                     head_commit_author: body.head_commit.author.username,
-                    head_commit_url: body.head_commit.url
+                    head_commit_url: body.head_commit.html_url
                 };
             }
+
+            else if(githubEvent == 'issues'){
+                extractedData = {
+                    issue_url: body.issue.html_url,
+                    issue_title: body.issue.title,
+                    issue_raised_by: body.issue.user.login,
+                    issue_message: body.issue.body,
+                    issue_repo_name: body.repository.full_name,
+                    issue_repo_url: body.repository.html_url
+                };
+            }
+
+            else if(githubEvent == 'pull_request'){
+                extractedData = {
+                    pull_request_url: body.pull_request.html_url,
+                    pull_request_title: body.pull_request.title,
+                    pull_request_raised_by: body.pull_request.user.login,
+                    pull_request_message: body.pull_request.body,
+                    pull_request_repo_name: body.repository.full_name,
+                    pull_request_repo_url: body.repository.html_url
+                };
+            }
+        }
+        else{
+            return;
         }
 
         const label = `${workflow.json.trigger.id!}.${workflow.json.trigger.appType!}`

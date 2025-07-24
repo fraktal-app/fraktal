@@ -25,7 +25,7 @@ async function sendTelegramMessage(action: any, data: any): Promise<void> {
   if (!result.ok) {
     console.error('Failed to send Telegram message:', result);
   } else {
-    console.log('Message sent:', result.result.text);
+    console.log('Message sent');
   }
 }
 
