@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import { getURL, supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import { Loader } from 'lucide-react';
@@ -85,7 +85,8 @@ export default function Login() {
     const { data, error } = await supabase.auth.signInWithOAuth({ 
       provider,
       options: {    
-        skipBrowserRedirect: true 
+        skipBrowserRedirect: true, 
+        redirectTo: getURL()
       },
     })
     
@@ -126,7 +127,7 @@ export default function Login() {
       theme="dark"
       transition={Bounce}
       />
-  <div className="w-1/2 relative h-full bg-black flex flex-col justify-end p-12 overflow-hidden">
+  <div className="w-1/2 relative h-full bg-black flex flex-col justify-end p-12 overflow-hidden ">
 
     <div className="absolute inset-0 z-0">
       <Aurora
@@ -151,7 +152,7 @@ export default function Login() {
           <div className="text-center mb-8">
             <h2 className="text-white text-4xl font-semibold mb-3">Login</h2>
             <p className="text-gray-400 text-base">
-              Enter your credentials to access your account
+              Start automating your workflows with Fraktal
             </p>
           </div>
           <div className="space-y-4">
@@ -171,13 +172,8 @@ export default function Login() {
               <span className="font-medium">Sign in with GitHub</span>
             </button>
           </div>
-          <div className="text-center mt-8">
-            <p className="text-gray-400">
-              Not a member?{" "}
-              <a href="#" className="text-orange-400 hover:text-orange-300 font-medium transition-colors duration-200">
-                Create an account
-              </a>
-            </p>
+          <div className="mt-6 text-gray-400 text-sm text-center">
+            By signing in, you agree to our <a href="/#" className="text-white hover:underline">Terms of Service</a> and <a href="/#" className="text-white hover:underline">Privacy Policy</a>
           </div>
         </div>
       </div>

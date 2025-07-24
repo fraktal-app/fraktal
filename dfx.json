@@ -3,6 +3,7 @@
         "fraktal-main": {
             "type": "azle",
             "main": "src/backend/index.ts",
+            "specified_id": "br5f7-7uaaa-aaaaa-qaaca-cai",
             "custom": {
                 "experimental": true,
                 "assets": [
@@ -12,7 +13,7 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine"
                 ],
                 "build_assets": "npm run build"
             }
@@ -21,22 +22,21 @@
         "database": {
             "type": "azle",
             "main": "src/database/index.ts",
+            "specified_id": "be2us-64aaa-aaaaa-qaabq-cai",
             "custom": {
                 "experimental": true,
-                "assets": [
-                    ["src/scripts", "scripts"]
-                ],
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine"
                 ]
             }
         },
 
-        "trigger-engine": {
+        "execution-engine": {
             "type": "azle",
-            "main": "src/trigger-engine/index.ts",
+            "main": "src/execution-engine/index.ts",
+            "specified_id": "bkyz2-fmaaa-aaaaa-qaaaq-cai",
             "custom": {
                 "experimental": true,
                 "assets": [
@@ -45,7 +45,11 @@
                 "env": [
                     "CANISTER_ID_fraktal_main", 
                     "CANISTER_ID_database", 
-                    "CANISTER_ID_trigger_engine"
+                    "CANISTER_ID_execution_engine",
+                    "SENDGRID_API_KEY",
+                    "GROQ_AI_API_KEY",
+                    "COIN_CAP_API_KEY",
+                    "CHAINBASE_API_KEY"
                 ]
             }
         }

@@ -1,3 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@theme {  --font-dm-sans: "DM Sans", sans-serif; }
+body {
+  @apply bg-white text-black ;
+    font-family: "DM Sans", sans-serif;
+}
+
+.dark body {
+  @apply bg-gray-900 text-white; 
+  font-family: "DM Sans", sans-serif;
+
+}
+
+/* Example for navbar */
+.navbar {
+  @apply bg-white text-black;
+}
+
+.dark .navbar {
+  @apply bg-gray-800 text-white;
+}
+
+
+[contentEditable=true][data-placeholder]:empty:before {
+  content: attr(data-placeholder);
+  color: #9b9bab; /* Or your placeholder color */
+  pointer-events: none;
+  display: block; /* For a div */
+}
