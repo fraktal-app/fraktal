@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { exportEventsByApp, inputFieldsByApp, triggerEventsByApp } from "./triggerEvents";
 import { outputLinkConfigByApp } from "./outputLinks";
@@ -79,6 +79,101 @@ function CustomSelect({
   )
 }
 
+function MultiSelectDropdown({
+  options,
+  selectedValues,
+  onSave,
+  placeholder = "Select...",
+}: {
+  options: { value: string; label: string }[];
+  selectedValues: string[];
+  onSave: (newValues: string[]) => void;
+  placeholder?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [tempSelection, setTempSelection] = useState<string[]>(selectedValues);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync temp state when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      setTempSelection(selectedValues);
+    }
+  }, [isOpen, selectedValues]);
+
+  // Click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleToggle = (value: string) => {
+    setTempSelection(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  };
+
+  const handleOk = () => {
+    onSave(tempSelection);
+    setIsOpen(false);
+  };
+
+  const displayText =
+    selectedValues.length > 0
+      ? `${selectedValues.length} item(s) selected`
+      : placeholder;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-10 px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg text-left flex items-center justify-between hover:border-[#4a4f62] text-white"
+      >
+        <span>{displayText}</span>
+        <ChevronDown className={`h-4 w-4 text-[#9b9bab] transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg shadow-lg p-3">
+          <div className="space-y-2 max-h-40 overflow-y-auto mb-2">
+            {options.map(option => (
+              <label key={option.value} className="flex items-center gap-3 cursor-pointer text-white p-1 rounded-md hover:bg-[#3a3f52]">
+                {/* Container for the custom checkbox */}
+                <div className="relative w-4 h-4 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={tempSelection.includes(option.value)}
+                    onChange={() => handleToggle(option.value)}
+                    className="absolute opacity-0 w-full h-full cursor-pointer peer"
+                  />
+                  {/* Background box */}
+                  <div className="w-full h-full rounded bg-[#2a2e3f] border border-[#3a3f52] peer-checked:bg-[#6d3be4] peer-checked:border-[#6d3be4] transition-colors"></div>
+                  {/* Checkmark Icon */}
+                  <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            onClick={handleOk}
+            className="w-full px-3 py-1 text-sm font-medium text-white bg-[#6d3be4] border border-transparent rounded-md hover:bg-[#5a2fc7]"
+          >
+            OK
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export default function TriggerDropdown({
   isOpen,
   onSave,
@@ -89,16 +184,16 @@ export default function TriggerDropdown({
   initialData,
 }: {
   isOpen: boolean
-  onSave: (formData: { event: string; export: string; [key: string]: string }) => void;
+  onSave: (formData: { event: string; export: string[]; [key: string]: any }) => void;
   onCancel: () => void
   appType?: string
   userId: string
   workflowId: string
-  initialData?: { [key: string]: any }; 
+  initialData?: { [key:string]: any }; 
 }) {
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [selectedTrigger, setSelectedTrigger] = useState<string>("")
-  const [selectedExport, setSelectedExport] = useState<string>("")
+  const [selectedExport, setSelectedExport] = useState<string[]>([])
   const [  botToken, setBotToken] = useState<string>("")
   const [  guildId, setGuildId] = useState<string>("")
   const [  channelId, setChannelId] = useState<string>("")
@@ -106,7 +201,8 @@ export default function TriggerDropdown({
    useEffect(() => {
     if (initialData) {
       setSelectedTrigger(initialData.event || "");
-      setSelectedExport(initialData.export || "");
+      const initialExports = initialData.export ? (Array.isArray(initialData.export) ? initialData.export : [initialData.export]) : [];
+      setSelectedExport(initialExports);
       setBotToken(initialData.botToken || "");
       setGuildId(initialData.guildId || ""); 
       setChannelId(initialData.channelId || ""); 
@@ -135,7 +231,7 @@ export default function TriggerDropdown({
 
   const isFormValid = Boolean(
   selectedTrigger &&
-  selectedExport &&
+  selectedExport.length > 0 &&
   (appType !== "telegram" || botToken.trim() !== "") &&
   (appType !== "discord" || (guildId.trim() !== "" && channelId.trim() !== "")) &&
   credentialFields.every(field => !field.required || credentials[field.key]?.trim())
@@ -146,11 +242,10 @@ export default function TriggerDropdown({
   const handleCredentialChange = (key: string, value: string) => {
     setCredentials((prev) => ({ ...prev, [key]: value }))
   }
-
   
   const handleSave = () => {
     if (isFormValid) {
-      const formData: { event: string; export: string; [key: string]: string } = {
+      const formData: { event: string; export: string[]; [key: string]: any } = {
         ...credentials,
         event: selectedTrigger,
         export: selectedExport,
@@ -233,13 +328,13 @@ export default function TriggerDropdown({
         />
       )}
 
-      {selectedTrigger && (
+      {selectedTrigger && availableExports.length > 0 && (
         <div className="space-y-2">
           <label className="text-sm font-medium text-[#c5c5d2]">Select Export Data</label>
-          <CustomSelect
+          <MultiSelectDropdown
             options={availableExports}
-            value={selectedExport}
-            onChange={setSelectedExport}
+            selectedValues={selectedExport}
+            onSave={setSelectedExport}
             placeholder="Select export data"
           />
         </div>

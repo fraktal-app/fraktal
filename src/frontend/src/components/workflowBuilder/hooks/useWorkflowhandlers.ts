@@ -66,7 +66,7 @@ export function useWorkflowHandlers(
 
   const handleSaveConfig = (
     stepId: string,
-    formData: { event: string; clientId?: string; clientPassword?: string; export: string },
+    formData: { event: string; export: string | string[]; [key: string]: any },
   ) => {
     setWorkflowSteps((prev) =>
       prev.map((step) => (step.id === stepId ? { ...step, configData: formData, showDropdown: false } : step)),

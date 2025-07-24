@@ -1,4 +1,4 @@
-import { ChevronDown, Info, List, MessageSquareReply, PenSquare, Upload } from "lucide-react";
+import { ChevronDown, Info, List, MessageSquareReply, PenSquare, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { actionDropdownOptions, actionInputFieldsByApp, exportEventsByAction, customMessageFieldsByAction } from "./actionResponse";
 import { outputLinkConfigByApp } from "./outputLinks";
@@ -182,6 +182,100 @@ function CustomSelect({
   )
 }
 
+function MultiSelectDropdown({
+  options,
+  selectedValues,
+  onSave,
+  placeholder = "Select...",
+}: {
+  options: { value: string; label: string }[];
+  selectedValues: string[];
+  onSave: (newValues: string[]) => void;
+  placeholder?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [tempSelection, setTempSelection] = useState<string[]>(selectedValues);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync temp state when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      setTempSelection(selectedValues);
+    }
+  }, [isOpen, selectedValues]);
+
+  // Click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleToggle = (value: string) => {
+    setTempSelection(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  };
+
+  const handleOk = () => {
+    onSave(tempSelection);
+    setIsOpen(false);
+  };
+
+  const displayText =
+    selectedValues.length > 0
+      ? `${selectedValues.length} item(s) selected`
+      : placeholder;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-10 px-3 py-2 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg text-left flex items-center justify-between hover:border-[#4a4f62] text-white"
+      >
+        <span>{displayText}</span>
+        <ChevronDown className={`h-4 w-4 text-[#9b9bab] transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-[#2a2e3f] border border-[#3a3f52] rounded-lg shadow-lg p-3">
+          <div className="space-y-2 max-h-40 overflow-y-auto mb-2">
+            {options.map(option => (
+              <label key={option.value} className="flex items-center gap-3 cursor-pointer text-white p-1 rounded-md hover:bg-[#3a3f52]">
+                {/* Container for the custom checkbox */}
+                <div className="relative w-4 h-4 flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={tempSelection.includes(option.value)}
+                    onChange={() => handleToggle(option.value)}
+                    className="absolute opacity-0 w-full h-full cursor-pointer peer"
+                  />
+                  {/* Background box */}
+                  <div className="w-full h-full rounded bg-[#2a2e3f] border border-[#3a3f52] peer-checked:bg-[#6d3be4] peer-checked:border-[#6d3be4] transition-colors"></div>
+                  {/* Checkmark Icon */}
+                  <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+          <button
+            onClick={handleOk}
+            className="w-full px-3 py-1 text-sm font-medium text-white bg-[#6d3be4] border border-transparent rounded-md hover:bg-[#5a2fc7]"
+          >
+            OK
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ActionDropdown({
   isOpen,
   onSave,
@@ -194,7 +288,7 @@ export default function ActionDropdown({
 }: ActionDropdownProps) {
   const [credentials, setCredentials] = useState<Record<string, string>>({});
   const [selectedAction, setSelectedAction] = useState<string>("");
-  const [selectedExport, setSelectedExport] = useState<string>("");
+  const [selectedExport, setSelectedExport] = useState<string[]>([]);
   const [customMessages, setCustomMessages] = useState<Record<string, string>>({});
   const [activePillSelector, setActivePillSelector] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ x: 0, y: 0 });
@@ -224,7 +318,8 @@ export default function ActionDropdown({
     if (initialData) {
       const action = initialData.event || "";
       setSelectedAction(action);
-      setSelectedExport(initialData.export || "");
+      const initialExports = initialData.export ? (Array.isArray(initialData.export) ? initialData.export : [initialData.export]) : [];
+      setSelectedExport(initialExports);
 
       const currentCredentialKeys = (appType && actionInputFieldsByApp[appType])
         ? actionInputFieldsByApp[appType].map(field => field.key)
@@ -281,7 +376,7 @@ export default function ActionDropdown({
     } else {
       setCredentials({});
       setSelectedAction("");
-      setSelectedExport("");
+      setSelectedExport([]);
       setCustomMessages({});
       setChatIdSource('custom');
       setDiscordReplySource('custom');
@@ -304,7 +399,7 @@ export default function ActionDropdown({
 
   const isFormValid = Boolean(
     selectedAction &&
-    (exportOptions.length === 0 || selectedExport) &&
+    (exportOptions.length === 0 || selectedExport.length > 0) &&
     credentialFields.every(field => !field.required || (credentials[field.key] && String(credentials[field.key]).trim())) && 
     isCustomMessagesValid
   );
@@ -318,11 +413,6 @@ export default function ActionDropdown({
     { value: 'custom', label: 'Custom Chat ID', icon: PenSquare },
     { value: 'trigger', label: "Reply to Trigger's Chat ID", icon: MessageSquareReply },
   ];
-
-  const exportOptionsWithIcon: ActionOption[] = exportOptions.map(option => ({
-    ...option,
-    icon: Upload,
-  }));
 
   const handleDataMappingChange = (key: string, value: string) => {
     // ... (no changes in this function)
@@ -439,7 +529,7 @@ export default function ActionDropdown({
           };
       }
 
-      const formData: { event: string; export: string; [key: string]: any } = {
+      const formData: { event: string; export: string[]; [key: string]: any } = {
         ...finalCredentials,
         ...customMessages,
         event: selectedAction,
@@ -478,7 +568,7 @@ export default function ActionDropdown({
           value={selectedAction}
           onChange={(value: string) => {
             setSelectedAction(value);
-            setSelectedExport("");
+            setSelectedExport([]);
             setCustomMessages({});
           }}
           placeholder="Select an action"
@@ -634,11 +724,11 @@ export default function ActionDropdown({
         <div className="flex flex-col gap-2 pt-3">
           <label className="text-sm font-medium text-[#c5c5d2]">Select Export Option</label>
           {exportOptions.length > 0 ? (
-            <CustomSelect
-                options={exportOptionsWithIcon}
-                value={selectedExport}
-                onChange={setSelectedExport}
-                placeholder="Choose export value"
+            <MultiSelectDropdown
+              options={exportOptions}
+              selectedValues={selectedExport}
+              onSave={setSelectedExport}
+              placeholder="Choose export value(s)"
             />
           ) : (<div className="text-sm text-[#9b9bab] p-3 bg-[#2a2e3f] rounded-lg">No export options available for this action</div>)}
         </div>

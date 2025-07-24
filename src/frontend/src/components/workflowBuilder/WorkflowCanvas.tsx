@@ -23,13 +23,15 @@ interface ConfiguredWorkflowStep extends WorkflowStepType {
     app: AppBlock;
     configData: {
         event: string;
-        export: string;
+        export: any;
         [key: string]: any;
     };
 }
 
 function isStepConfigured(step: WorkflowStepType): step is ConfiguredWorkflowStep {
-   return !!(step.app && step.configData && step.configData.event && step.configData.export);
+   const isExportValid = step.configData?.export && 
+     (Array.isArray(step.configData.export) ? step.configData.export.length > 0 : typeof step.configData.export === 'string');
+   return !!(step.app && step.configData && step.configData.event && isExportValid);
 }
 
 const triggerExportEvents = {
@@ -66,23 +68,29 @@ export function WorkflowCanvas({
                 .filter(isStepConfigured)
                 .map((prevStep, prevStepIndex, allFilteredPrevSteps) => {
                   const eventKey = prevStep.configData.event;
-                  const exportKey = prevStep.configData.export; 
-                  let exportLabel = exportKey; 
+                  
+                  const exportKeys: string[] = Array.isArray(prevStep.configData.export)
+                    ? prevStep.configData.export
+                    : [prevStep.configData.export];
 
                   const exportOptions = prevStep.type === 'trigger'
                     ? triggerExportEvents[eventKey as keyof typeof triggerExportEvents]
                     : exportEventsByAction[eventKey as keyof typeof exportEventsByAction];
-
-                  if (exportOptions && Array.isArray(exportOptions)) {
-                    const selectedOption = exportOptions.find(opt => opt.value === exportKey);
-                    if (selectedOption) {
-                      exportLabel = selectedOption.label;
-                    }
-                  }
                   
-                  const exportData = {
-                    [exportKey]: { label: exportLabel }
-                  };
+                  const exportData: { [key: string]: { label: string } } = {};
+
+                  exportKeys.forEach(exportKey => {
+                    if (!exportKey) return;
+                    
+                    let exportLabel = exportKey; 
+                    if (exportOptions && Array.isArray(exportOptions)) {
+                      const selectedOption = exportOptions.find(opt => opt.value === exportKey);
+                      if (selectedOption) {
+                        exportLabel = selectedOption.label;
+                      }
+                    }
+                    exportData[exportKey] = { label: exportLabel };
+                  });
 
                   let typeIndex = 0;
                   if (prevStep.type === 'action') {
