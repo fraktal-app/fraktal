@@ -1,5 +1,3 @@
-// src/pages/Home.tsx
-
 import { useEffect, useState } from 'react';
 import { Plus, Workflow } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
@@ -15,19 +13,19 @@ const Home = ({
 }: {
   user_id: string
 }) => {
-
   const navigate = useNavigate();
-  // Set initial state to undefined to track the initial loading state
   const [workflows, setWorkflows] = useState<WorkflowType[] | undefined>(undefined);
 
   // --- State for the delete confirmation modal ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [workflowToDelete, setWorkflowToDelete] = useState<WorkflowType | null>(null);
+  
+  // 1. Add state to manage the deletion loading status
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const getWorkflows = async () => {
       try {
-        // A small delay to make the skeleton visible for demonstration
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const baseURL = `${window.location.protocol}//${window.location.host}`;
@@ -45,7 +43,7 @@ const Home = ({
         }
       } catch (e) {
         console.error(e);
-        setWorkflows([]); // Set to empty array on error
+        setWorkflows([]);
       }
     }
 
@@ -74,8 +72,11 @@ const Home = ({
     setIsModalOpen(false);
   };
 
+  // 2. Update the delete handler to manage the loading state
   const handleConfirmDelete = async () => {
     if (!workflowToDelete) return;
+
+    setIsDeleting(true); // Set loading to true
 
     try {
       const baseURL = `${window.location.protocol}//${window.location.host}`;
@@ -86,7 +87,7 @@ const Home = ({
       });
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok) {
         setWorkflows(prevWorkflows => prevWorkflows?.filter(flow => flow.id !== workflowToDelete.id));
       } else {
         alert(`Error deleting workflow: ${data.error || 'Unknown error'}`);
@@ -94,10 +95,10 @@ const Home = ({
     } catch (e) {
       alert(`An error occurred: ${e}`);
     } finally {
-      closeDeleteModal();
+      setIsDeleting(false); // Set loading back to false
+      closeDeleteModal(); // Close the modal
     }
   };
-
 
   return (
     <>
@@ -114,23 +115,19 @@ const Home = ({
             </button>
           </div>
 
-          {/* --- 2. Render skeletons, empty state, or workflow list --- */}
           {workflows === undefined ? (
-            // Loading State: Show skeleton cards
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, index) => (
                 <WorkflowCardSkeleton key={index} />
               ))}
             </div>
           ) : workflows.length === 0 ? (
-            // Empty State: No workflows found
             <div className="border-2 border-dashed border-gray-700 rounded-lg p-12 text-center text-gray-500 mt-8">
               <Workflow className="w-12 h-12 mx-auto mb-4 text-gray-600" />
               <h4 className="text-xl font-semibold mb-2">No Workflows Found</h4>
               <p>Click "Create flow" to get started.</p>
             </div>
           ) : (
-            // Data Loaded: Show actual workflow cards
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {workflows.map((flow) => (
                 <WorkflowCard
@@ -150,6 +147,8 @@ const Home = ({
         onClose={closeDeleteModal}
         onConfirm={handleConfirmDelete}
         workflowTitle={workflowToDelete?.title || ''}
+        // 3. Pass the loading state to the modal
+        isLoading={isDeleting}
       />
     </>
   );
