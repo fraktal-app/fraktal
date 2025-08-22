@@ -9,15 +9,15 @@ import Home from "./Home";
 import Settings from "./Settings";
 import Executions from "./Executions";
 import Profile from "./Profile";
-// Import the new, leaner skeleton component
 import DashboardChromeSkeleton from "../components/DashboardChromeSkeleton";
 
 function Dashboard() {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userData, setUserData] = useState<any>();
-  const [collapsed, setCollapsed] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // tracks loading state during session check
+  const [userData, setUserData] = useState<any>(); // stores authenticated user info
+  const [collapsed, setCollapsed] = useState(false); // controls sidebar collapse/expand
   const navigate = useNavigate();
 
+  // Validate session and redirect if no user found
   async function manageUserSession() {
     const currentUserData = await getUserData();
     if (currentUserData) {
@@ -28,18 +28,19 @@ function Dashboard() {
     }
   }
 
+  // Run session check on initial render
   useEffect(() => {
     manageUserSession();
   }, []);
 
+  // Debug log to verify loaded user data
   useEffect(() => {
     console.log("👤 Dashboard userData:", userData);
   }, [userData]);
 
-  // We no longer use a full-page loader. Instead, we render the layout
-  // and conditionally show skeletons for the Navbar and Sidebar.
   return (
     <div className="flex">
+      {/* While loading, show skeleton UI for navbar/sidebar */}
       {isLoading ? (
         <DashboardChromeSkeleton />
       ) : (
@@ -49,12 +50,10 @@ function Dashboard() {
         </>
       )}
 
-      {/* The main content area is always rendered. */}
+      {/* Main content area adjusts width based on sidebar collapse state */}
       <div className={`flex-1 transition-all duration-300 ${collapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-64"}`}>
         <main className="pt-16 p-4">
           <Routes>
-            {/* The Home component will receive an undefined user_id while loading,
-                which will trigger its own card skeletons. */}
             <Route path="/" element={<Home user_id={userData?.id} />} />
             <Route path="profile" element={userData ? <Profile userData={userData} /> : null} />
             <Route path="executions" element={<Executions />} />
