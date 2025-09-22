@@ -68,46 +68,46 @@ app.get("/canister-ids", (req, res) => {
  * Validates incoming user object, serializes it into a query string, and performs an inter-canister HTTP update call
  * TODO: Change to `req.body`
  */
-app.post("/create-user", async (req, res) => {
-
-    try{
-        const { id, email, name, provider, avatar_url } = req.body;
-        const userObj = { id, email, name, provider, avatar_url };
-
-        const validation = userSchema.safeParse(userObj);
-
-        if (!validation.success) {
-            return res.status(400).json({ 
-                error: validation.error.format() 
-            });
-        }
+app.post("/create-user", async (req, res) => { 
+ 
+    try{ 
+        const { id, email, name, provider, avatar_url } = req.body; 
+        const userObj = { id, email, name, provider, avatar_url }; 
+ 
+        const validation = userSchema.safeParse(userObj); 
+ 
+        if (!validation.success) { 
+            return res.status(400).json({  
+                error: validation.error.format()  
+            }); 
+        } 
 
         //req.body does not work, so we'll put req info in query by encoding into the URL
-        const params = toUrlEncoded(userObj);
-
-        const response = await fetch(dbURL + "/http_request_update", {
-            body: serialize({
-                candidPath: '/scripts/http_canister.did',
-                args: [{
-                    url : "/users/create-user?" + params,
-                    method : "POST",
-                    body : [],
-                    headers : [
-                         ["Content-Type", "application/json"]
-                    ]
-                }]
-            })
-        });
-    
-        const responseJson = await response.json();
-        const result = parseEncodedResponse(responseJson.body)
-        res.json(result);
-    }
+        const params = toUrlEncoded(userObj); 
+ 
+        const response = await fetch(dbURL + "/http_request_update", { 
+            body: serialize({ 
+                candidPath: '/scripts/http_canister.did', 
+                args: [{ 
+                    url : "/users/create-user?" + params, 
+                    method : "POST", 
+                    body : [], 
+                    headers : [ 
+                         ["Content-Type", "application/json"] 
+                    ] 
+                }] 
+            }) 
+        }); 
+     
+        const responseJson = await response.json(); 
+        const result = parseEncodedResponse(responseJson.body) 
+        res.json(result); 
+    } 
     catch(error){
-        console.log(error)
-        res.status(500).json({"error": "Internal Server Error"})
-    }
-})
+        console.log(error) 
+        res.status(500).json({"error": "Internal Server Error"}) 
+    } 
+}) 
 
 /**
  * POST /save-workflow
