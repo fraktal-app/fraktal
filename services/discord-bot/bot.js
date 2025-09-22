@@ -275,12 +275,12 @@ function startInternalWebhookServer() {
     });
 
     server.on('error', (error) => {
-      console.error('❌ Server error:', error);
+      console.error('Server error:', error);
     });
 
     return server;
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     throw error;
   }
 }
