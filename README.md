@@ -8,7 +8,7 @@ Connect Web2, Web3, and AI services using modular triggers and actions that run 
 
 Fraktal connects Web2, Web3, and AI services using modular triggers and actions that run natively on the Internet Computer (ICP).
 
-🔗 [Visit App](https://x.com/fraktal_app)
+🔗 [Demo Video](https://www.youtube.com/watch?v=CA38i3qpjTo)
 
  <br>
 
